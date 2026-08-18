@@ -149,6 +149,13 @@ function isUnlocked(lessonId) {
   return progress.isDone(order[index - 1]) || progress.isDone(lessonId);
 }
 
+/* A phrase becomes practisable once its lesson has actually been studied —
+   so Phrases and Repaso agree on what Deb has met, and she can't jump ahead
+   into a drill for words she has never seen. */
+function phrasesUnlocked(lessonId) {
+  return settings.unlockAll || progress.isDone(lessonId);
+}
+
 function renderPath() {
   const streak = progress.currentStreak();
   const owed = progress.owedToday();
@@ -181,7 +188,7 @@ function renderPath() {
           ? `<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
           : unlocked
           ? `<svg viewBox="0 0 24 24"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3-5.7-3.1-5.7 3.1 1.2-6.3L2.8 9.3l6.4-.8z"/></svg>`
-          : `<svg viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9" rx="2.4"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>`;
+          : lockSVG("");
 
         return `
           <div class="node-slot" style="--offset:${offset}">
@@ -921,14 +928,10 @@ function drawContour(ctx, contour, width, y, colour) {
 
 function renderPhrases() {
   view.innerHTML = `
-    <div class="topbar">
-      <h1 style="margin:0">Phrases</h1>
-      <button class="link" id="add">+ Add</button>
-    </div>
+    <h1>Phrases</h1>
     <label class="field"><input type="search" id="search" placeholder="Search"></label>
     <div id="phrase-list"></div>`;
 
-  document.getElementById("add").onclick = () => editCustomPhrase(null);
   const search = document.getElementById("search");
   search.addEventListener("input", () => paint(search.value.trim().toLowerCase()));
   paint("");
@@ -942,13 +945,9 @@ function renderPhrases() {
     const sections = [];
 
     const customs = library.customPhrases.filter(match);
-    if (customs.length || !query) {
+    if (customs.length) {
       sections.push(`<div class="section-label">Deb's own phrases</div>
-        <div class="rows">${
-          customs.length
-            ? customs.map((p) => rowFor(p, true)).join("")
-            : `<div class="row" style="cursor:default"><span class="row-main"><span class="row-sub">Anything her doorman actually says can live here — add it and it joins Repaso.</span></span></div>`
-        }</div>`);
+        <div class="rows">${customs.map((p) => rowFor(p)).join("")}</div>`);
     }
 
     for (const unit of COURSE) {
@@ -957,8 +956,11 @@ function renderPhrases() {
           .map((p) => ({ ...p, language: COURSE_LANGUAGE }))
           .filter(match);
         if (!inLesson.length) continue;
-        sections.push(`<div class="section-label">${esc(unit.title)} · ${esc(lesson.title)}</div>
-          <div class="rows">${inLesson.map((p) => rowFor(p, false)).join("")}</div>`);
+        const locked = !phrasesUnlocked(lesson.id);
+        sections.push(`<div class="section-label ${locked ? "locked" : ""}">${esc(unit.title)} · ${esc(
+          lesson.title
+        )}${locked ? lockSVG() : ""}</div>
+          <div class="rows">${inLesson.map((p) => rowFor(p, locked)).join("")}</div>`);
       }
     }
 
@@ -971,18 +973,23 @@ function renderPhrases() {
         if (phrase) showPhrase(phrase);
       })
     );
+
+    document.querySelectorAll("[data-locked]").forEach((button) =>
+      button.addEventListener("click", () => toast("Do this lesson in Learn first, then practise it here 🔒"))
+    );
   }
 
-  function rowFor(phrase, custom) {
+  function rowFor(phrase, locked = false) {
     const best = library.bestScore(phrase.id);
     return `
-      <button class="row" data-phrase="${esc(phrase.id)}">
+      <button class="row ${locked ? "locked" : ""}"
+              ${locked ? `data-locked="1"` : `data-phrase="${esc(phrase.id)}"`}>
         <span class="row-main">
           <span class="row-title">${esc(phrase.text)}</span><br>
           <span class="row-sub">${esc(phrase.translation)}</span>
         </span>
-        ${best != null ? `<strong style="color:${scoreColour(best)};font-variant-numeric:tabular-nums">${Math.round(best)}</strong>` : ""}
-        <span class="chev">›</span>
+        ${best != null && !locked ? `<strong style="color:${scoreColour(best)};font-variant-numeric:tabular-nums">${Math.round(best)}</strong>` : ""}
+        ${locked ? lockSVG() : `<span class="chev">›</span>`}
       </button>`;
   }
 }
@@ -1272,6 +1279,10 @@ function parrotSVG(size = 80) {
     <path d="M73 55 Q82 66 74 80 Q68 72 66 62z" fill="#1cb0f6"/>
     <path d="M44 90 L44 96 M50 90 L50 97 M56 90 L56 96" stroke="#e0a500" stroke-width="3" stroke-linecap="round"/>
   </svg>`;
+}
+
+function lockSVG(cls = "lock-icon") {
+  return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9" rx="2.4"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>`;
 }
 
 function flameSVG() {
