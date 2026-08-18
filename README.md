@@ -29,8 +29,11 @@ A few things worth knowing:
   on. Tomorrow it'll be in Repaso.
 - **Repaso** (the dumbbell at the bottom of the path) mixes up everything
   you've already learned.
-- Anything your doorman *actually* says that isn't in here — tell Fin, or add
-  it yourself on the **Phrases** tab. Added phrases show up in Repaso.
+- **The Phrases tab** is your phrasebook: every phrase you've finished, with
+  your best score and every recording. Lessons you haven't done yet sit there
+  greyed out with a padlock, same as on the path — finish one in Learn and its
+  phrases open up.
+- Anything your doorman *actually* says that isn't in here — tell Fin.
 - **Settings → Export** saves your progress to a file once in a while. iPhones
   sometimes clear a web app's storage if it's unused for a long time.
 
