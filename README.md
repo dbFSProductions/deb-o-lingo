@@ -34,6 +34,11 @@ A few things worth knowing:
   greyed out with a padlock, same as on the path — finish one in Learn and its
   phrases open up.
 - Anything your doorman *actually* says that isn't in here — tell Fin.
+- **It updates itself.** When Fin changes something, you get it the next time
+  you open the app with signal — no App Store, nothing to press. If a lesson
+  is open the update politely waits until you've finished. There's a
+  "Check for a new version" button at the bottom of Settings for when you're
+  impatient.
 - **Settings → Export** saves your progress to a file once in a while. iPhones
   sometimes clear a web app's storage if it's unused for a long time.
 

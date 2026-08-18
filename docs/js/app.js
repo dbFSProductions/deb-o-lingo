@@ -55,6 +55,68 @@ function toast(message, ms = 2600) {
   toast.timer = setTimeout(() => (toastEl.hidden = true), ms);
 }
 
+// ---------------------------------------------------------------- updating
+//
+// Deb should never have to know what a cache is. The service worker fetches
+// fresh code whenever there's signal; this half makes sure a new build that
+// lands while the app is open actually reaches the screen — without yanking
+// the page out from under a recording.
+
+const UPDATED_FLAG = "debolingo.justUpdated";
+
+let reloadPending = false;
+let reloading = false;
+
+function midLesson() {
+  return state.tab === "learn" && state.stage === "drill";
+}
+
+/** Reload now if it's a harmless moment, otherwise as soon as it is one. */
+function applyUpdate() {
+  if (reloading) return;
+  if (midLesson()) {
+    reloadPending = true; // render() picks this up when she leaves the drill
+    return;
+  }
+  reloading = true;
+  try {
+    sessionStorage.setItem(UPDATED_FLAG, "1");
+  } catch {
+    /* private mode — the toast is a nicety, the reload is the point */
+  }
+  location.reload();
+}
+
+/** Called from render() so a deferred update lands the moment the drill ends. */
+function flushPendingUpdate() {
+  if (reloadPending && !midLesson()) applyUpdate();
+}
+
+/**
+ * Ask the server whether there's a newer build, right now. Resolves true if
+ * one is on its way in (in which case the page is about to reload itself).
+ */
+async function checkForNewVersion() {
+  if (!("serviceWorker" in navigator)) {
+    location.reload();
+    return true;
+  }
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) {
+      location.reload();
+      return true;
+    }
+    await registration.update();
+    const pending = registration.installing ?? registration.waiting;
+    if (!pending) return false;
+    pending.postMessage({ type: "skip-waiting" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function scoreClass(score) {
   if (score == null) return "";
   return score >= PASS_GREAT ? "good" : score >= PASS_OK ? "ok" : "bad";
@@ -121,6 +183,7 @@ function render() {
   const inLesson = state.tab === "learn" && state.stage !== "path";
   document.body.classList.toggle("in-lesson", inLesson);
   window.scrollTo(0, 0);
+  flushPendingUpdate(); // a new build that landed mid-drill lands now instead
   if (state.tab === "learn") {
     if (state.stage === "drill") return renderDrill();
     if (state.stage === "complete") return renderComplete();
@@ -1160,6 +1223,15 @@ function renderSettings() {
       </p>
     </div>
 
+    <div class="section-label">App version</div>
+    <div class="card">
+      <button class="btn" id="s-update" style="width:100%">Check for a new version</button>
+      <p class="tiny muted" style="margin:10px 0 0" id="s-update-status">
+        Deb-o-lingo updates itself whenever you open it with signal. This button is
+        for when you're impatient.
+      </p>
+    </div>
+
     <p class="tiny muted center" style="margin-top:22px">deb·o·lingo — made for Deb, with love (and a parrot)</p>`;
 
   document.getElementById("s-rate").oninput = (event) => {
@@ -1176,6 +1248,17 @@ function renderSettings() {
   document.getElementById("s-unlock").onchange = (event) => {
     settings.unlockAll = event.target.checked;
     settings.save();
+  };
+
+  document.getElementById("s-update").onclick = async () => {
+    const status = document.getElementById("s-update-status");
+    status.textContent = "Looking…";
+    const fresh = await checkForNewVersion();
+    // A new build reloads the page out from under us, so reaching this line
+    // at all means there wasn't one.
+    status.textContent = fresh
+      ? "Found a new version — updating now…"
+      : "You're on the newest version. ✨";
   };
 
   document.getElementById("s-voice").onchange = (event) => {
@@ -1305,8 +1388,58 @@ window.addEventListener("resize", () => {
   if (state.tab === "learn" && state.stage === "drill") drawCanvases();
 });
 
+// ------------------------------------------------------------ auto-updating
+
+const sawController = Boolean(navigator.serviceWorker?.controller);
+
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("sw.js");
+
+      // Ask GitHub Pages whether there's a newer build: on launch, and again
+      // whenever she comes back to the app (an installed PWA can sit in the
+      // background for days without a single page load).
+      const checkForUpdate = () => registration.update().catch(() => {});
+      checkForUpdate();
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") checkForUpdate();
+      });
+
+      // A worker that installed while we were looking shouldn't wait politely.
+      registration.addEventListener("updatefound", () => {
+        const installing = registration.installing;
+        installing?.addEventListener("statechange", () => {
+          if (installing.state === "installed" && navigator.serviceWorker.controller) {
+            installing.postMessage({ type: "skip-waiting" });
+          }
+        });
+      });
+    } catch {
+      /* No service worker (file://, private mode) — the app still works. */
+    }
   });
+
+  // The new worker announces itself; we say "got it" so it doesn't force a
+  // navigation, then reload on our own terms.
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data?.type !== "updated") return;
+    const worker = event.source ?? navigator.serviceWorker.controller;
+    worker?.postMessage({ type: "update-ack" });
+    applyUpdate();
+  });
+
+  // Belt and braces: a worker taking control means the code on screen is old.
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (sawController) applyUpdate();
+  });
+}
+
+try {
+  if (sessionStorage.getItem(UPDATED_FLAG)) {
+    sessionStorage.removeItem(UPDATED_FLAG);
+    toast("Updated to the newest Deb-o-lingo ✨");
+  }
+} catch {
+  /* no sessionStorage, no toast */
 }

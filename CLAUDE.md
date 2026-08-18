@@ -22,9 +22,9 @@ a Catalan trainer). Division of labour:
 | `docs/js/content.js` | **Hand-written here.** No Swift twin, no generator — unlike Xerra, editing it directly is correct. |
 
 Xerra gotchas that still apply here: the `.sheet` `display:flex` vs `hidden`
-trap (comment preserved in app.css), service-worker staleness (bump `VERSION`
-in `sw.js` when shipping changed assets), and never commit an Azure key —
-it lives only in localStorage, entered in Settings.
+trap (comment preserved in app.css), and never commit an Azure key — it lives
+only in localStorage, entered in Settings. Service-worker staleness used to be
+on that list; see below for how it was dealt with.
 
 ---
 
@@ -61,8 +61,35 @@ until node 1 done), and completion writes progress + lights the streak.
 Anything touching Azure can't be covered — no key in the repo, ever.
 
 Deployment is GitHub Pages from `main`/`docs`. All paths are relative, so it
-works from a subpath. Bump `sw.js` `VERSION` when shipping changes or the
-phone will keep the old build.
+works from a subpath.
+
+### Shipping, and why the phone used to lag behind
+
+Deb spent a day on an old build after a deploy went out fine — the service
+worker was cache-first, so her phone had no reason to ever look at the server
+again. Three things fix that, and all three matter:
+
+- **`sw.js` serves app code network-first** (cache-first only for `vendor/`
+  and `icons/`, which never change without a new filename). The cache is the
+  offline safety net, not the source of truth.
+- **The precache uses `cache: "reload"`** so a new worker can't install using
+  the very files it was meant to replace.
+- **Open windows are brought forward.** On activate, a worker that deleted a
+  stale cache messages open windows; the app reloads itself, deferring if a
+  drill is in progress (`flushPendingUpdate` in app.js). Windows on an
+  *older* build can't answer that message, so `rescueStaleWindows()`
+  navigates them after a grace period.
+
+  That rescue is **deliberately not awaited by `activate`**. A navigation
+  needs fetches, and fetches stay queued until activation resolves — awaiting
+  it deadlocks the worker against its own page, and the app appears to hang
+  for minutes. It was written that way once; don't write it that way again.
+
+Still bump `VERSION` in `sw.js` when shipping changed assets: it names the
+cache, and deleting the previous one is what tells a worker that an older
+build was on screen. Verified end to end with Playwright — a phone pinned to
+the pre-tabbar build fixes itself ~4s after one reopen, a build shipped while
+the app is open lands in well under a second, and offline still boots.
 
 ---
 
