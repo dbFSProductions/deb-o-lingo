@@ -653,7 +653,7 @@ function renderComparison() {
 
     <div class="btn-row" id="playback-row">
       <button class="btn btn-primary" id="play-model" ${state.modelBlob ? "" : "disabled"}>🔊 Listen again</button>
-      <button class="btn" id="play-you">You</button>
+      <button class="btn btn-you" id="play-you">You</button>
     </div>
 
     <div class="card" style="margin-top:14px">
