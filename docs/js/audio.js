@@ -122,15 +122,58 @@ export class Recorder {
 
 // ----------------------------------------------------------------- playback
 
+// Mic recordings are captured with autoGainControl off (the pitch analysis
+// needs the raw signal), so they arrive far quieter than Azure's mastered TTS
+// clips. Playback therefore normalises every clip's speech towards a common
+// loudness — otherwise the "You" clip is a whisper next to the model.
+const TARGET_RMS = 0.1; // ≈ -20 dBFS, about where the TTS clips sit
+const MAX_BOOST = 8;
+
+const gainCache = new WeakMap();
+
+/** Gain that brings a clip's speech up towards TARGET_RMS without clipping. */
+export async function playbackGain(blob) {
+  if (gainCache.has(blob)) return gainCache.get(blob);
+  let gain = 1;
+  try {
+    const { samples } = await monoSamples(blob);
+    const speech = trimSilence(samples);
+    let peak = 0;
+    let sum = 0;
+    for (let i = 0; i < speech.length; i++) {
+      const value = speech[i];
+      const magnitude = value < 0 ? -value : value;
+      if (magnitude > peak) peak = magnitude;
+      sum += value * value;
+    }
+    const level = Math.sqrt(sum / Math.max(1, speech.length));
+    if (level > 0 && peak > 0) {
+      // Boost only — a clip already at a good level is left alone — and cap
+      // by the peak so the boost never pushes samples into hard clipping.
+      gain = Math.max(1, Math.min(TARGET_RMS / level, 0.95 / peak, MAX_BOOST));
+    }
+  } catch {
+    // Undecodable clip: play it as-is rather than not at all.
+  }
+  gainCache.set(blob, gain);
+  return gain;
+}
+
 export class Player {
   constructor() {
     this.element = null;
     this.url = null;
     this.onEnded = null;
+    this.graph = null;
+    this.playToken = 0;
   }
 
   async play(blob, { rate = 1, onEnded = null } = {}) {
     this.stop();
+    const token = ++this.playToken;
+    const gain = await playbackGain(blob);
+    // A stop() or another play() may have superseded us while decoding.
+    if (token !== this.playToken) return null;
     this.url = URL.createObjectURL(blob);
     const audio = new Audio(this.url);
     // Time-stretch rather than pitch-shift, so slow playback still sounds
@@ -146,8 +189,28 @@ export class Player {
       callback?.();
     };
     this.element = audio;
+    this.routeThroughGain(audio, gain);
     await audio.play();
     return audio;
+  }
+
+  /**
+   * Route the element through a GainNode so quiet clips can be boosted above
+   * the element's own 1.0 volume ceiling. If the graph can't be built the
+   * element still plays directly, just un-boosted.
+   */
+  routeThroughGain(audio, gain) {
+    try {
+      const context = audioContext();
+      const source = context.createMediaElementSource(audio);
+      const gainNode = context.createGain();
+      gainNode.gain.value = gain;
+      source.connect(gainNode);
+      gainNode.connect(context.destination);
+      this.graph = { source, gainNode };
+    } catch {
+      this.graph = null;
+    }
   }
 
   /** Model then attempt, back to back — the most useful comparison there is. */
@@ -159,10 +222,16 @@ export class Player {
   }
 
   stop() {
+    this.playToken++;
     if (this.element) {
       this.element.pause();
       this.element.onended = null;
       this.element = null;
+    }
+    if (this.graph) {
+      this.graph.source.disconnect();
+      this.graph.gainNode.disconnect();
+      this.graph = null;
     }
     if (this.url) {
       URL.revokeObjectURL(this.url);
