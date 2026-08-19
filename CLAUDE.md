@@ -15,7 +15,7 @@ a Catalan trainer). Division of labour:
 
 | File | Relationship to Xerra |
 |---|---|
-| `docs/js/audio.js` | **Verbatim copy.** Waveform + pitch analysis, verified against a 150 Hz tone. If you change the algorithm in either repo, change it in the other and re-verify against a known tone. |
+| `docs/js/audio.js` | Waveform + pitch analysis are a **verbatim copy**, verified against a 150 Hz tone — if you change the algorithm in either repo, change it in the other and re-verify against a known tone. The playback section has diverged: `comparableLoudness` boosts quiet mic recordings to TTS level before playing (Xerra would likely want the same fix). |
 | `docs/js/speech.js` | Same behaviour, comments retouched. Port bug fixes both ways. |
 | `docs/js/store.js` | Restructured: one fixed language, course content is *code* (content.js) not seeded data, plus lesson progress + streaks. |
 | `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. |
