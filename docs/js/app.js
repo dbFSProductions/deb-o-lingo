@@ -413,7 +413,7 @@ function renderDrill() {
         <span class="record-ring" id="ring"></span>
         <svg viewBox="0 0 24 24" id="record-icon"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 18v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
       </button>
-      <p class="small muted" id="record-label">Tap, say it, tap again</p>
+      <p class="small muted" id="record-label">${state.attempt ? "Recorded! Compare below, or tap to try again" : "Tap, say it, tap again"}</p>
       ${state.banner ? "" : `<button class="link muted-link" id="skip">SKIP</button>`}
     </div>
 
@@ -501,17 +501,17 @@ function renderBanner() {
     great: {
       cls: "great",
       head: "¡Genial!",
-      sub: "A native would follow you without blinking. Tap A / B above to hear the two of you back to back.",
+      sub: "A native would follow you without blinking. Tap Listen again, then You, to hear the two of you back to back.",
     },
     ok: {
       cls: "ok",
       head: "¡Bien!",
-      sub: "Solid. The tinted words above could use another listen — try A / B to compare.",
+      sub: "Solid. The tinted words above could use another listen — tap Listen again to compare.",
     },
     retry: {
       cls: "retry",
       head: "Casi…",
-      sub: "Tap A / B above to hear the model against your take, then copy the rhythm.",
+      sub: "Tap Listen again above, then You, and copy the rhythm.",
     },
     neutral: {
       cls: "neutral",
@@ -651,14 +651,13 @@ function renderComparison() {
   return `
     <hr style="border:0;border-top:2px solid var(--line);margin:20px 0">
 
-    <div class="btn-row">
-      <button class="btn" id="play-model" ${state.modelBlob ? "" : "disabled"}>Model</button>
+    <div class="btn-row" id="playback-row">
+      <button class="btn btn-primary" id="play-model" ${state.modelBlob ? "" : "disabled"}>🔊 Listen again</button>
       <button class="btn" id="play-you">You</button>
-      <button class="btn btn-primary" id="play-ab" ${state.modelBlob ? "" : "disabled"}>A / B</button>
     </div>
 
     <div class="card" style="margin-top:14px">
-      <div class="wave-label" style="color:var(--accent)">Model</div>
+      <div class="wave-label" style="color:var(--accent)">Native speaker</div>
       <canvas id="wave-model" height="56"></canvas>
       <div class="wave-label" style="color:var(--you);margin-top:12px">You</div>
       <canvas id="wave-you" height="56"></canvas>
@@ -690,9 +689,9 @@ function timingSummary() {
   const you = state.attemptAnalysis?.duration;
   if (!model || !you) return null;
   const ratio = you / model;
-  if (ratio < 0.8) return `You're about ${Math.round((1 - ratio) * 100)}% quicker than the model.`;
-  if (ratio < 1.2) return "Your timing is close to the model — nicely matched.";
-  if (ratio < 1.6) return `You're about ${Math.round((ratio - 1) * 100)}% slower than the model.`;
+  if (ratio < 0.8) return `You're about ${Math.round((1 - ratio) * 100)}% quicker than the native speaker.`;
+  if (ratio < 1.2) return "Your timing is close to the native speaker — nicely matched.";
+  if (ratio < 1.6) return `You're about ${Math.round((ratio - 1) * 100)}% slower than the native speaker.`;
   return `You're taking about ${ratio.toFixed(1)}× as long. Try running the words together more.`;
 }
 
@@ -743,15 +742,13 @@ function renderScore(attempt) {
 
 function wireComparison() {
   document.getElementById("play-model")?.addEventListener("click", () => {
+    // Bring the playback row to the top so the score and word-by-word detail
+    // below it are on screen while she listens.
+    document.getElementById("playback-row")?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (state.modelBlob) player.play(state.modelBlob);
   });
   document.getElementById("play-you")?.addEventListener("click", () => {
     if (state.attemptBlob) player.play(state.attemptBlob);
-  });
-  document.getElementById("play-ab")?.addEventListener("click", () => {
-    if (state.modelBlob && state.attemptBlob) {
-      player.playBackToBack(state.modelBlob, state.attemptBlob);
-    }
   });
   document.getElementById("pitch-details")?.addEventListener("toggle", drawCanvases);
 
