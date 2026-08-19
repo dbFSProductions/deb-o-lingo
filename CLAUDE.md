@@ -39,8 +39,9 @@ it lives only in localStorage, entered in Settings.
   learning **Castilian** Spanish — soft d's, silent h, b=v, the 'th' in
   ce/ci/z, tapped r. The notes are the pedagogy, not decoration.
 - If Deb's target ever shifts to Latin American Spanish, the focusNotes need
-  rewriting (no 'th'), not just the voice — `VOICES` in store.js already
-  lists two es-MX voices for experiments.
+  rewriting (no 'th'), not just the voice — `VOICES` in store.js is
+  deliberately es-ES only, and `settings.load()` resets any voice not in
+  that list, so add new voices there when the content is ready for them.
 
 Progress (`debolingo.progress` in localStorage): completed lessons with best
 average, and a streak counted in *local* days. Lessons unlock sequentially;
