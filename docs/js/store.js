@@ -331,6 +331,11 @@ export const settings = {
 
   load() {
     Object.assign(this, DEFAULT_SETTINGS, readJSON(KEYS.settings, {}));
+    // A saved voice that's no longer offered (the retired es-MX experiments)
+    // falls back to the default rather than lingering invisibly.
+    if (!VOICES.some((v) => v.id === this.azureVoice)) {
+      this.azureVoice = DEFAULT_SETTINGS.azureVoice;
+    }
   },
 
   save() {
@@ -343,12 +348,10 @@ export const settings = {
   },
 };
 
-// Course voices. The two Mexico voices are there for experimenting — if Deb's
-// real-world Spanish turns out to be Latin American, the focusNotes (Spain
-// 'th', vosotros-free politeness) need revisiting too, not just the voice.
+// Course voices — Castilian only, to match the focusNotes (Spain 'th',
+// soft d's, vosotros-free politeness). If Deb's target ever shifts to Latin
+// American Spanish, the content needs rewriting first; add voices then.
 export const VOICES = [
   { id: "es-ES-ElviraNeural", name: "Elvira", detail: "Spain · Female" },
   { id: "es-ES-AlvaroNeural", name: "Álvaro", detail: "Spain · Male" },
-  { id: "es-MX-DaliaNeural", name: "Dalia", detail: "Mexico · Female" },
-  { id: "es-MX-JorgeNeural", name: "Jorge", detail: "Mexico · Male" },
 ];
