@@ -69,8 +69,9 @@ body {
   padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
 }
 
-/* During a lesson the tabbar hides and the bottom banner needs room. */
-body.in-lesson { padding-bottom: 150px; }
+/* During a lesson the tabbar hides; the result banner sits in flow now, so
+   only a little breathing room is needed at the bottom. */
+body.in-lesson { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 body.in-lesson .tabbar { display: none; }
 
 .view {
@@ -509,16 +510,20 @@ canvas { width: 100%; display: block; }
 
 /* ----------------------------------------------------------------- banner */
 
+/* In normal flow at the end of the drill content, below the waveform
+   comparison — NOT fixed over it. Reaching Continue means scrolling past the
+   compare-and-listen-back section, which is how Deb discovers it; a fixed
+   overlay hid that whole feature (and fought iOS Safari's scroll on
+   re-render). */
 .banner {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 50;
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  border-top: 2px solid transparent;
   animation: banner-in 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes banner-in {
@@ -533,7 +538,7 @@ canvas { width: 100%; display: block; }
 .banner.great { background: #d7ffb8; color: #58a700; }
 .banner.ok { background: #fff5d1; color: #a67c00; }
 .banner.retry { background: #ffdfe0; color: #ea2b2b; }
-.banner.neutral { background: var(--surface-2); color: var(--text); border-top-color: var(--line); }
+.banner.neutral { background: var(--surface-2); color: var(--text); border-color: var(--line); }
 
 @media (prefers-color-scheme: dark) {
   .banner.great { background: #1a3a10; color: #8ee000; }

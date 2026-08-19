@@ -39,7 +39,6 @@ const state = {
   scoringNow: false,
   levelTimer: null,
   banner: null, // { kind: great|ok|retry|neutral, score }
-  revealComparison: false, // scroll the waveforms into view on the next render
 };
 
 // ------------------------------------------------------------------ helpers
@@ -121,7 +120,12 @@ function render() {
   syncTabs();
   const inLesson = state.tab === "learn" && state.stage !== "path";
   document.body.classList.toggle("in-lesson", inLesson);
-  window.scrollTo(0, 0);
+  // Scroll to the top only when moving to a different screen. Re-renders of
+  // the same screen (the Azure score landing, revealing the translation)
+  // must not jump the page — that was hiding the waveform comparison.
+  const screen = `${state.tab}:${state.tab === "learn" ? state.stage : ""}`;
+  if (screen !== render.lastScreen) window.scrollTo(0, 0);
+  render.lastScreen = screen;
   if (state.tab === "learn") {
     if (state.stage === "drill") return renderDrill();
     if (state.stage === "complete") return renderComplete();
@@ -359,6 +363,10 @@ function renderDrill() {
     return render();
   }
 
+  // Replacing the view's innerHTML makes iOS Safari clamp the scroll position
+  // to the top (e.g. when the Azure score lands mid-read), so put it back.
+  const scrollY = window.scrollY;
+
   const total = lesson.queue.length;
   const filled = lesson.index + (state.banner ? 1 : 0);
   const pct = Math.round((filled / total) * 100);
@@ -442,16 +450,7 @@ function renderDrill() {
   if (state.attempt) wireComparison();
   drawCanvases();
 
-  // A fresh recording pops the result banner over the bottom of the screen,
-  // and on a phone the waveforms sit below the fold — without this scroll the
-  // whole compare-and-listen-back feature is invisible unless you know to look.
-  if (state.revealComparison) {
-    state.revealComparison = false;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    document
-      .getElementById("comparison")
-      ?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-  }
+  window.scrollTo(0, scrollY);
 }
 
 function quitLesson() {
@@ -624,7 +623,6 @@ async function handleRecording({ blob, duration }) {
 
   state.scoringNow = settings.hasAzure;
   state.banner = settings.hasAzure ? { kind: "scoring", score: null } : { kind: "neutral", score: null };
-  state.revealComparison = true; // first render only — don't yank the page again when the score lands
   render();
 
   if (!settings.hasAzure) return;
