@@ -372,6 +372,16 @@ button { font: inherit; }
 }
 .btn-primary:active { box-shadow: none; }
 
+/* The "You" playback button matches the blue of the "You" waveform, the way
+   the green primary matches the native-speaker one. */
+.btn-you {
+  background: var(--you);
+  border-color: var(--you);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--blue-dark);
+}
+.btn-you:active { box-shadow: none; }
+
 .btn-ghost {
   background: transparent;
   border-color: transparent;
