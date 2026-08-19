@@ -39,6 +39,7 @@ const state = {
   scoringNow: false,
   levelTimer: null,
   banner: null, // { kind: great|ok|retry|neutral, score }
+  revealComparison: false, // scroll the waveforms into view on the next render
 };
 
 // ------------------------------------------------------------------ helpers
@@ -330,6 +331,7 @@ async function loadPhrase() {
   state.banner = null;
   state.showTranslation = settings.showTranslationUpFront;
   scoring.lastError = null;
+  window.scrollTo(0, 0);
   if (!phrase) return render();
 
   state.loadingModel = settings.hasAzure && !(await speech.isCached(phrase, settings));
@@ -429,6 +431,7 @@ function renderDrill() {
     state.attemptBlob = null;
     state.attemptAnalysis = null;
     state.banner = null;
+    window.scrollTo(0, 0);
     render();
   });
   document.getElementById("banner-continue")?.addEventListener("click", () => {
@@ -438,6 +441,17 @@ function renderDrill() {
 
   if (state.attempt) wireComparison();
   drawCanvases();
+
+  // A fresh recording pops the result banner over the bottom of the screen,
+  // and on a phone the waveforms sit below the fold — without this scroll the
+  // whole compare-and-listen-back feature is invisible unless you know to look.
+  if (state.revealComparison) {
+    state.revealComparison = false;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document
+      .getElementById("comparison")
+      ?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }
 }
 
 function quitLesson() {
@@ -488,17 +502,17 @@ function renderBanner() {
     great: {
       cls: "great",
       head: "¡Genial!",
-      sub: "A native would follow you without blinking.",
+      sub: "A native would follow you without blinking. Tap A / B above to hear the two of you back to back.",
     },
     ok: {
       cls: "ok",
       head: "¡Bien!",
-      sub: "Solid. The tinted words below could use another listen.",
+      sub: "Solid. The tinted words above could use another listen — try A / B to compare.",
     },
     retry: {
       cls: "retry",
       head: "Casi…",
-      sub: "Play the model once more and copy the rhythm.",
+      sub: "Tap A / B above to hear the model against your take, then copy the rhythm.",
     },
     neutral: {
       cls: "neutral",
@@ -610,6 +624,7 @@ async function handleRecording({ blob, duration }) {
 
   state.scoringNow = settings.hasAzure;
   state.banner = settings.hasAzure ? { kind: "scoring", score: null } : { kind: "neutral", score: null };
+  state.revealComparison = true; // first render only — don't yank the page again when the score lands
   render();
 
   if (!settings.hasAzure) return;
