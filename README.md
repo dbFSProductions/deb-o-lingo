@@ -21,19 +21,34 @@ week.
 4. Go to **Learn** and do the first lesson. That's it. One lesson a day at
    6:30 keeps the flame lit. 🔥
 
+Nothing is locked. Every lesson on the path is open from day one — start at the
+top if you like the order, or jump straight to the market if that's where
+you're going this afternoon.
+
 A few things worth knowing:
 
 - **The microphone asks permission once** — say yes, it only records when you
   tap the big button.
 - **Skip is allowed.** If a phrase won't come out at 6:30am, hit SKIP and move
   on. Tomorrow it'll be in Repaso.
-- **Repaso** (the dumbbell at the bottom of the path) mixes up everything
-  you've already learned.
-- **The Phrases tab** is your phrasebook: every phrase you've finished, with
-  your best score and every recording. Lessons you haven't done yet sit there
-  greyed out with a padlock, same as on the path — finish one in Learn and its
-  phrases open up.
-- Anything your doorman *actually* says that isn't in here — tell Fin.
+- **Repaso** (the dumbbell at the bottom of the path) mixes up everything —
+  the whole course plus your own cards.
+- **Star anything.** Tap the star on a phrase and it gathers into a Favourites
+  node next to Repaso, for the handful that keep tripping you up.
+- **The Phrases tab** is your phrasebook: every phrase in the app, with your
+  best score and every recording. Search it — it looks inside the tips and the
+  situations too, so "market" or "polite" finds things.
+- **The Add tab** builds new cards for you. Type what you're trying to say, in
+  Spanish or English or a mangled mix, and it comes back corrected with the
+  meaning, when to use it, and what to listen for. You can ask it follow-up
+  questions about any card ("why *me pone* and not *puedo tener*?"). Cards you
+  save join **Lo tuyo** on the path.
+- **Jot things down.** Leave the Spanish blank and just write the English —
+  it'll sit under "needs the Spanish" until you or the Add tab fills it in.
+- **Edit anything**, including the lessons that came with the app. If a tip
+  doesn't help you, rewrite it; there's a Reset if you change your mind.
+- Anything your doorman *actually* says that isn't in here — tell Fin, or just
+  add it yourself on the Add tab.
 - **Settings → Export** saves your progress to a file once in a while. iPhones
   sometimes clear a web app's storage if it's unused for a long time.
 

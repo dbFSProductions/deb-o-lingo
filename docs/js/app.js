@@ -3,11 +3,15 @@
 // The drill mechanics (record, analyse, compare, score) are ported from Xerra;
 // the shell around them is a Duolingo-style course: a winding path of small
 // lessons, a progress bar, result banners, streaks and a celebration screen.
+//
+// Nothing is locked. Every node is open from the first launch — the ticks and
+// the streak record what Deb has done, they don't gate what she may do next.
 
 import { library, settings, progress, audioStore, VOICES, uid } from "./store.js";
 import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById } from "./content.js";
 import { Recorder, Player, analyse, relativeSemitones, resample } from "./audio.js";
 import { speech, browserSpeech, scoring } from "./speech.js";
+import { cardAssistant } from "./card-assistant.js";
 
 const view = document.getElementById("view");
 const tabbar = document.getElementById("tabbar");
@@ -23,7 +27,7 @@ const PASS_GREAT = 80;
 const PASS_OK = 60;
 
 const state = {
-  tab: "learn", // learn | phrases | settings
+  tab: "learn", // learn | phrases | add | settings
   stage: "path", // within learn: path | drill | complete
   lesson: null, // { id, title, color, colorDark, queue, index, results, practice }
   celebration: null,
@@ -39,6 +43,7 @@ const state = {
   scoringNow: false,
   levelTimer: null,
   banner: null, // { kind: great|ok|retry|neutral, score }
+  dictation: null,
 };
 
 // ------------------------------------------------------------------ helpers
@@ -47,6 +52,42 @@ const esc = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
   );
+
+/* Text boxes grow to fit what's in them — a pasted paragraph or a dictated
+   sentence shouldn't sit in a two-line scroller. */
+function autosize(field) {
+  if (!(field instanceof HTMLTextAreaElement)) return;
+  field.style.height = "auto";
+  if (!field.scrollHeight) {
+    // Not laid out yet (a hidden section); let the CSS min-height stand.
+    field.style.height = "";
+    return;
+  }
+  // scrollHeight covers the padding box, so the borders have to be added back.
+  const borders = field.offsetHeight - field.clientHeight;
+  field.style.height = `${field.scrollHeight + borders}px`;
+}
+
+function autosizeAll(root = document) {
+  for (const field of root.querySelectorAll("textarea")) autosize(field);
+}
+
+// Typing, pasting, dictating — anything that changes the content resizes it.
+document.addEventListener("input", (event) => autosize(event.target));
+// Rotating the phone rewraps the text, which changes how tall the box must be.
+window.addEventListener("resize", () => autosizeAll());
+
+const STAR_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>`;
+
+/* A star on every phrase row. Starred phrases gather into a section at the top
+   of Phrases and into their own node on the path, so "the ones I keep getting
+   wrong" is one tap away without disturbing the course order. */
+function starButton(phrase, className = "star") {
+  const on = Boolean(phrase.favourite);
+  return `<button class="${className}" data-fav="${esc(phrase.id)}" aria-pressed="${on}"
+    title="${on ? "Remove from favourites" : "Add to favourites"}"
+    aria-label="${on ? "Remove from favourites" : "Add to favourites"}">${STAR_SVG}</button>`;
+}
 
 function toast(message, ms = 2600) {
   toastEl.textContent = message;
@@ -109,6 +150,7 @@ function syncTabs() {
 function stopEverything() {
   player.stop();
   browserSpeech.stop();
+  state.dictation?.abort();
   if (recorder.isRecording) recorder.cancel();
   clearInterval(state.levelTimer);
   state.levelTimer = null;
@@ -132,33 +174,61 @@ function render() {
     return renderPath();
   }
   if (state.tab === "phrases") return renderPhrases();
+  if (state.tab === "add") return renderAdd();
   return renderSettings();
 }
 
 // -------------------------------------------------------------------- path
 
-function unlockOrder() {
-  return LESSONS.map((l) => l.id);
+/* Deb's own cards ride the path as a unit of their own, chunked into
+   lesson-sized bites like the course units. The chunking follows creation
+   order, so adding a card extends the last lesson or starts a new one and the
+   earlier ids stay put; deleting one can reshuffle membership, which only
+   costs a completion tick on a lesson she made herself. */
+const OWN_UNIT_ID = "propias";
+const OWN_LESSON_SIZE = 5;
+
+function ownUnit() {
+  const phrases = library.ownPhrases().filter((p) => p.text.trim());
+  if (!phrases.length) return null;
+
+  const lessons = [];
+  for (let at = 0; at < phrases.length; at += OWN_LESSON_SIZE) {
+    const number = lessons.length + 1;
+    lessons.push({
+      id: `own-${number}`,
+      title: phrases.length <= OWN_LESSON_SIZE ? "Your cards" : `Your cards ${number}`,
+      phrases: phrases.slice(at, at + OWN_LESSON_SIZE),
+    });
+  }
+
+  return {
+    id: OWN_UNIT_ID,
+    title: "Lo tuyo",
+    subtitle: "The cards you made yourself",
+    color: "#ce82ff",
+    colorDark: "#a568cc",
+    lessons,
+  };
+}
+
+/** The course units plus Deb's own, in path order. */
+function allUnits() {
+  const own = ownUnit();
+  return own ? [...COURSE, own] : [...COURSE];
+}
+
+/** Lesson lookup that knows about the generated "Lo tuyo" lessons too. */
+function findLesson(id) {
+  const course = lessonById(id);
+  if (course) return course;
+  const own = ownUnit();
+  const lesson = own?.lessons.find((l) => l.id === id);
+  return lesson ? { ...lesson, unit: own } : null;
 }
 
 function firstOpenLesson() {
-  const order = unlockOrder();
-  return order.find((id) => !progress.isDone(id)) ?? null;
-}
-
-function isUnlocked(lessonId) {
-  if (settings.unlockAll) return true;
-  const order = unlockOrder();
-  const index = order.indexOf(lessonId);
-  if (index <= 0) return true;
-  return progress.isDone(order[index - 1]) || progress.isDone(lessonId);
-}
-
-/* A phrase becomes practisable once its lesson has actually been studied —
-   so Phrases and Repaso agree on what Deb has met, and she can't jump ahead
-   into a drill for words she has never seen. */
-function phrasesUnlocked(lessonId) {
-  return settings.unlockAll || progress.isDone(lessonId);
+  return LESSONS.map((l) => l.id).find((id) => !progress.isDone(id)) ?? null;
 }
 
 function renderPath() {
@@ -166,6 +236,7 @@ function renderPath() {
   const owed = progress.owedToday();
   const doneCount = LESSONS.filter((l) => progress.isDone(l.id)).length;
   const current = firstOpenLesson();
+  const favourites = library.favouritePhrases().filter((p) => p.text.trim());
 
   const greeting =
     streak > 0 && !owed
@@ -180,25 +251,23 @@ function renderPath() {
   const offsets = [0, -1, 1];
   let nodeIndex = 0;
 
-  const units = COURSE.map((unit) => {
-    const nodes = unit.lessons
-      .map((lesson) => {
-        const done = progress.isDone(lesson.id);
-        const unlocked = isUnlocked(lesson.id);
-        const isCurrent = lesson.id === current && unlocked;
-        const offset = offsets[nodeIndex++ % offsets.length];
-        const best = progress.lessons[lesson.id]?.best;
+  const units = allUnits()
+    .map((unit) => {
+      const nodes = unit.lessons
+        .map((lesson) => {
+          const done = progress.isDone(lesson.id);
+          const isCurrent = lesson.id === current;
+          const offset = offsets[nodeIndex++ % offsets.length];
+          const best = progress.lessons[lesson.id]?.best;
 
-        const icon = done
-          ? `<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-          : unlocked
-          ? `<svg viewBox="0 0 24 24"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3-5.7-3.1-5.7 3.1 1.2-6.3L2.8 9.3l6.4-.8z"/></svg>`
-          : lockSVG("");
+          const icon = done
+            ? `<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+            : `<svg viewBox="0 0 24 24"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3-5.7-3.1-5.7 3.1 1.2-6.3L2.8 9.3l6.4-.8z"/></svg>`;
 
-        return `
+          return `
           <div class="node-slot" style="--offset:${offset}">
             ${isCurrent ? `<div class="node-callout">START</div>` : ""}
-            <button class="node ${done ? "done" : unlocked ? "open" : "locked"} ${isCurrent ? "current" : ""}"
+            <button class="node ${done ? "done" : "open"} ${isCurrent ? "current" : ""}"
                     data-lesson="${esc(lesson.id)}"
                     style="--node:${done ? "var(--gold)" : unit.color};--node-dark:${done ? "var(--gold-dark)" : unit.colorDark}"
                     aria-label="${esc(lesson.title)}">
@@ -206,10 +275,10 @@ function renderPath() {
             </button>
             <div class="node-title">${esc(lesson.title)}${best != null ? ` · <strong>${best}</strong>` : ""}</div>
           </div>`;
-      })
-      .join("");
+        })
+        .join("");
 
-    return `
+      return `
       <section class="unit">
         <div class="unit-banner" style="--unit:${unit.color};--unit-dark:${unit.colorDark}">
           <div class="unit-name">${esc(unit.title)}</div>
@@ -217,9 +286,8 @@ function renderPath() {
         </div>
         <div class="path">${nodes}</div>
       </section>`;
-  }).join("");
-
-  const practiceReady = doneCount > 0 || library.customPhrases.length > 0;
+    })
+    .join("");
 
   view.innerHTML = `
     <header class="home-head">
@@ -237,14 +305,29 @@ function renderPath() {
     ${units}
 
     <section class="unit">
+      <div class="unit-banner mix-banner" style="--unit:var(--blue);--unit-dark:var(--blue-dark)">
+        <div class="unit-name">Mézclalo</div>
+        <div class="unit-sub">Practise across everything you've got</div>
+      </div>
       <div class="path">
-        <div class="node-slot" style="--offset:0">
-          <button class="node practice ${practiceReady ? "open" : "locked"}" id="practice"
-                  style="--node:var(--blue);--node-dark:var(--blue-dark)" aria-label="Practice">
+        <div class="node-slot" style="--offset:${favourites.length ? -1 : 0}">
+          <button class="node open practice" id="practice"
+                  style="--node:var(--blue);--node-dark:var(--blue-dark)" aria-label="Repaso">
             <svg viewBox="0 0 24 24"><path d="M7 8v8M4.5 9.5v5M17 8v8M19.5 9.5v5M7 12h10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
           </button>
           <div class="node-title">Repaso — mix it all up</div>
         </div>
+        ${
+          favourites.length
+            ? `<div class="node-slot" style="--offset:1">
+                 <button class="node open" id="starred"
+                         style="--node:var(--gold);--node-dark:var(--gold-dark)" aria-label="Favourites">
+                   ${STAR_SVG}
+                 </button>
+                 <div class="node-title">Favourites · <strong>${favourites.length}</strong></div>
+               </div>`
+            : ""
+        }
       </div>
     </section>
 
@@ -253,23 +336,16 @@ function renderPath() {
 
   view.querySelectorAll("[data-lesson]").forEach((button) =>
     button.addEventListener("click", () => {
-      const lesson = lessonById(button.dataset.lesson);
-      if (!lesson) return;
-      if (!isUnlocked(lesson.id)) {
-        toast("Finish the lesson above this one first ☝️");
-        return;
-      }
-      startLesson(lesson);
+      const lesson = findLesson(button.dataset.lesson);
+      if (lesson) startLesson(lesson);
     })
   );
 
-  document.getElementById("practice").onclick = () => {
-    if (!practiceReady) {
-      toast("Finish your first lesson, then come back to mix.");
-      return;
-    }
-    startPractice();
-  };
+  document.getElementById("practice").onclick = () => startPractice();
+
+  document.getElementById("starred")?.addEventListener("click", () =>
+    startPractice(shuffle([...favourites]))
+  );
 
   document.getElementById("streak").onclick = () =>
     toast(
@@ -286,7 +362,8 @@ function startLesson(lesson) {
     title: lesson.title,
     color: lesson.unit.color,
     colorDark: lesson.unit.colorDark,
-    queue: lesson.phrases.map((p) => ({ ...p, language: COURSE_LANGUAGE })),
+    // Through decorate() so an edited course phrase drills as edited.
+    queue: lesson.phrases.map((p) => library.decorate({ language: COURSE_LANGUAGE, ...p })),
     index: 0,
     results: [],
     practice: false,
@@ -295,12 +372,12 @@ function startLesson(lesson) {
   loadPhrase();
 }
 
+/* Repaso draws from everything drillable — the whole course and Deb's own
+   cards. It used to be limited to lessons already completed; with nothing
+   locked there is nothing to hold back. */
 function startPractice(queueOverride = null) {
   stopEverything();
-  const donePhrases = LESSONS.filter((l) => progress.isDone(l.id)).flatMap((l) =>
-    l.phrases.map((p) => ({ ...p, language: COURSE_LANGUAGE }))
-  );
-  const pool = queueOverride ?? shuffle([...donePhrases, ...library.customPhrases]).slice(0, 7);
+  const pool = queueOverride ?? shuffle(library.drillable()).slice(0, 7);
   if (!pool.length) {
     toast("Nothing to practise yet.");
     return;
@@ -937,8 +1014,13 @@ function drawContour(ctx, contour, width, y, colour) {
 // ----------------------------------------------------------------- phrases
 
 function renderPhrases() {
+  const all = library.allPhrases();
+  const captures = library.captures();
+
   view.innerHTML = `
     <h1>Phrases</h1>
+    <p class="muted list-intro">${all.length} card${all.length === 1 ? "" : "s"} — the whole course plus your own,
+      all of it open.</p>
     <label class="field"><input type="search" id="search" placeholder="Search"></label>
     <div id="phrase-list"></div>`;
 
@@ -950,72 +1032,120 @@ function renderPhrases() {
     const match = (phrase) =>
       !query ||
       phrase.text.toLowerCase().includes(query) ||
-      phrase.translation.toLowerCase().includes(query);
+      phrase.translation.toLowerCase().includes(query) ||
+      (phrase.situation ?? "").toLowerCase().includes(query) ||
+      (phrase.usageNote ?? "").toLowerCase().includes(query) ||
+      (phrase.focusNote ?? "").toLowerCase().includes(query);
 
     const sections = [];
 
-    const customs = library.customPhrases.filter(match);
-    if (customs.length) {
+    // Order: what she starred, then what still needs finishing, then her own
+    // cards, then the course in its own order.
+    const starred = library.favouritePhrases().filter(match);
+    if (starred.length) {
+      sections.push(`<div class="section-label">Favourites</div>
+        <div class="rows">${starred.map((p) => rowFor(p)).join("")}</div>`);
+    }
+
+    const pending = captures.filter(match);
+    if (pending.length) {
+      sections.push(`<div class="section-label">Jotted down — needs the Spanish</div>
+        <div class="rows">${pending.map((p) => rowFor(p)).join("")}</div>`);
+    }
+
+    const own = library.ownPhrases().filter((p) => p.text.trim()).filter(match);
+    if (own.length) {
       sections.push(`<div class="section-label">Deb's own phrases</div>
-        <div class="rows">${customs.map((p) => rowFor(p)).join("")}</div>`);
+        <div class="rows">${own.map((p) => rowFor(p)).join("")}</div>`);
     }
 
     for (const unit of COURSE) {
       for (const lesson of unit.lessons) {
         const inLesson = lesson.phrases
-          .map((p) => ({ ...p, language: COURSE_LANGUAGE }))
+          .map((p) => library.decorate({ ...p, language: COURSE_LANGUAGE }))
           .filter(match);
         if (!inLesson.length) continue;
-        const locked = !phrasesUnlocked(lesson.id);
-        sections.push(`<div class="section-label ${locked ? "locked" : ""}">${esc(unit.title)} · ${esc(
-          lesson.title
-        )}${locked ? lockSVG() : ""}</div>
-          <div class="rows">${inLesson.map((p) => rowFor(p, locked)).join("")}</div>`);
+        sections.push(`<div class="section-label">${esc(unit.title)} · ${esc(lesson.title)}</div>
+          <div class="rows">${inLesson.map((p) => rowFor(p)).join("")}</div>`);
       }
     }
 
-    document.getElementById("phrase-list").innerHTML =
-      sections.join("") || `<div class="empty"><p>Nothing matches.</p></div>`;
+    const list = document.getElementById("phrase-list");
+    list.innerHTML = sections.join("") || `<div class="empty"><p>Nothing matches.</p></div>`;
 
-    document.querySelectorAll("[data-phrase]").forEach((button) =>
+    list.querySelectorAll("[data-phrase]").forEach((button) =>
       button.addEventListener("click", () => {
         const phrase = library.phraseById(button.dataset.phrase);
         if (phrase) showPhrase(phrase);
       })
     );
 
-    document.querySelectorAll("[data-locked]").forEach((button) =>
-      button.addEventListener("click", () => toast("Do this lesson in Learn first, then practise it here 🔒"))
+    // A capture has nothing to say yet, so it opens straight into the editor.
+    list.querySelectorAll("[data-edit]").forEach((button) =>
+      button.addEventListener("click", () => editPhrase(library.phraseById(button.dataset.edit)))
+    );
+
+    // Repaint rather than flipping the one button: a starred phrase shows in
+    // the Favourites section as well as its lesson, and both stars must agree.
+    list.querySelectorAll("[data-fav]").forEach((button) =>
+      button.addEventListener("click", () => {
+        library.toggleFavourite(button.dataset.fav);
+        paint(query);
+      })
     );
   }
 
-  function rowFor(phrase, locked = false) {
+  function rowFor(phrase) {
+    const capture = !phrase.text.trim();
     const best = library.bestScore(phrase.id);
     return `
-      <button class="row ${locked ? "locked" : ""}"
-              ${locked ? `data-locked="1"` : `data-phrase="${esc(phrase.id)}"`}>
-        <span class="row-main">
-          <span class="row-title">${esc(phrase.text)}</span><br>
-          <span class="row-sub">${esc(phrase.translation)}</span>
-        </span>
-        ${best != null && !locked ? `<strong style="color:${scoreColour(best)};font-variant-numeric:tabular-nums">${Math.round(best)}</strong>` : ""}
-        ${locked ? lockSVG() : `<span class="chev">›</span>`}
-      </button>`;
+      <div class="row">
+        ${starButton(phrase)}
+        <button class="row-open"
+                ${capture ? `data-edit="${esc(phrase.id)}"` : `data-phrase="${esc(phrase.id)}"`}>
+          <span class="row-main">
+            <span class="row-title">${esc(phrase.text || phrase.translation || "Untitled")}</span><br>
+            <span class="row-sub">${esc(phrase.text ? phrase.translation : "Tap to add the Spanish")}</span>
+          </span>
+          ${best != null ? `<strong style="color:${scoreColour(best)};font-variant-numeric:tabular-nums">${Math.round(best)}</strong>` : ""}
+          <span class="chev">›</span>
+        </button>
+      </div>`;
   }
 }
 
 function showPhrase(phrase) {
   const attempts = library.attemptsFor(phrase.id);
-  const custom = library.customPhrases.some((p) => p.id === phrase.id);
+  const scores = [...attempts].reverse().map((a) => a.overall).filter((score) => score != null);
+
+  // A running read on the attempts, so the list says something rather than
+  // just listing dates.
+  let trend = "";
+  if (scores.length >= 2) {
+    const change = scores[scores.length - 1] - scores[0];
+    trend =
+      change >= 5
+        ? `Up ${Math.round(change)} points since your first go. ¡Bien!`
+        : change <= -5
+        ? `Down ${Math.round(Math.abs(change))} points — worth slowing it back down.`
+        : `Holding steady around ${Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)}.`;
+  }
 
   openSheet(
     phrase.text,
-    `<p class="muted" style="margin-bottom:10px">${esc(phrase.translation)}</p>
-     ${phrase.focusNote ? `<div class="focus-note" style="margin-bottom:14px"><strong>Tip</strong><span>${esc(phrase.focusNote)}</span></div>` : ""}
+    `<div class="sheet-lede">
+       <p class="muted">${esc(phrase.translation)}</p>
+       ${starButton(phrase)}
+     </div>
+     ${phrase.situation ? `<div class="phrase-context"><strong>Situation</strong><span>${esc(phrase.situation)}</span></div>` : ""}
+     ${phrase.usageNote ? `<div class="phrase-context"><strong>How it's used</strong><span>${esc(phrase.usageNote)}</span></div>` : ""}
+     ${phrase.focusNote ? `<div class="focus-note" style="margin:12px 0 14px"><strong>Tip</strong><span>${esc(phrase.focusNote)}</span></div>` : ""}
      <div class="btn-row" style="margin-bottom:14px">
        <button class="btn btn-primary" id="p-practise">Practise now</button>
-       ${custom ? `<button class="btn" id="p-edit">Edit</button>` : ""}
+       <button class="btn" id="p-edit">Edit</button>
      </div>
+     <section id="p-chat" hidden style="margin-bottom:14px"></section>
+     ${trend ? `<div class="notice good" style="margin-bottom:12px">${esc(trend)}</div>` : ""}
      ${
        attempts.length
          ? `<div class="section-label">Attempts</div>
@@ -1045,10 +1175,32 @@ function showPhrase(phrase) {
     state.tab = "learn";
     startPractice([phrase]);
   };
-  document.getElementById("p-edit")?.addEventListener("click", () => {
+
+  document.getElementById("p-edit").onclick = () => {
     closeSheet();
-    editCustomPhrase(phrase);
+    editPhrase(phrase);
+  };
+
+  sheetBody.querySelector("[data-fav]")?.addEventListener("click", () => {
+    library.toggleFavourite(phrase.id);
+    showPhrase(library.phraseById(phrase.id) ?? phrase);
+    render();
   });
+
+  if (settings.hasAssistant) {
+    cardChatPanel(document.getElementById("p-chat"), "Ask about this card", () => ({
+      languageCode: COURSE_LANGUAGE,
+      languageName: "Spanish",
+      deck: "Deb-o-lingo",
+      card: {
+        text: phrase.text,
+        translation: phrase.translation,
+        situation: phrase.situation ?? "",
+        usageNote: phrase.usageNote ?? "",
+        focusNote: phrase.focusNote ?? "",
+      },
+    }));
+  }
 
   sheetBody.querySelectorAll("[data-play]").forEach((button) =>
     button.addEventListener("click", async () => {
@@ -1065,45 +1217,417 @@ function showPhrase(phrase) {
   );
 }
 
-function editCustomPhrase(phrase) {
+/* One editor for every phrase. Deb's own cards are rewritten in place; a
+   course card is stored as an override, so Reset puts content.js back. */
+function editPhrase(phrase) {
+  const course = phrase ? library.isCourse(phrase.id) : false;
+
   openSheet(
     phrase ? "Edit phrase" : "New phrase",
-    `<label class="field"><span>Spanish</span>
+    `<label class="field"><span>Spanish — leave empty to jot the English down for later</span>
        <textarea id="f-text">${esc(phrase?.text ?? "")}</textarea></label>
      <label class="field"><span>English</span>
        <textarea id="f-translation">${esc(phrase?.translation ?? "")}</textarea></label>
+     <label class="field"><span>Situation (optional)</span>
+       <textarea id="f-situation">${esc(phrase?.situation ?? "")}</textarea></label>
+     <label class="field"><span>How it's used (optional)</span>
+       <textarea id="f-usage">${esc(phrase?.usageNote ?? "")}</textarea></label>
      <label class="field"><span>Tip (optional)</span>
        <textarea id="f-note" placeholder="What to listen for">${esc(phrase?.focusNote ?? "")}</textarea></label>
      <div class="btn-row">
        <button class="btn" data-close-sheet>Cancel</button>
        <button class="btn btn-primary" id="f-save">Save</button>
      </div>
-     ${phrase ? `<button class="btn btn-danger" id="f-delete" style="width:100%;margin-top:10px">Delete phrase</button>` : ""}`
+     ${
+       course
+         ? library.isEdited(phrase.id)
+           ? `<button class="btn" id="f-reset" style="width:100%;margin-top:10px">Reset to the original</button>
+              <p class="tiny muted" style="margin:10px 0 0">This is a course card — your version is saved over it,
+                and Reset brings the original back.</p>`
+           : `<p class="tiny muted" style="margin:12px 0 0">This is a course card. Your edit is saved over it and
+                can be reset later.</p>`
+         : phrase
+         ? `<button class="btn btn-danger" id="f-delete" style="width:100%;margin-top:10px">Delete phrase</button>`
+         : ""
+     }`
   );
+
+  autosizeAll(sheetBody);
 
   document.getElementById("f-save").onclick = () => {
     const text = document.getElementById("f-text").value.trim();
     const translation = document.getElementById("f-translation").value.trim();
-    if (!text) {
-      toast("It needs the Spanish, at least.");
+    if (!text && !translation) {
+      toast("Add the Spanish or the English — either will do.");
       return;
     }
     const data = {
       text,
       translation,
+      situation: document.getElementById("f-situation").value.trim() || null,
+      usageNote: document.getElementById("f-usage").value.trim() || null,
       focusNote: document.getElementById("f-note").value.trim() || null,
     };
-    if (phrase) library.updateCustom({ ...phrase, ...data });
-    else library.addCustom(data);
+    if (phrase) library.updatePhrase({ ...phrase, ...data });
+    else library.addPhrase(data);
     closeSheet();
     render();
   };
 
-  document.getElementById("f-delete")?.addEventListener("click", async () => {
-    await library.removeCustom(phrase.id);
+  document.getElementById("f-reset")?.addEventListener("click", () => {
+    library.resetPhrase(phrase.id);
     closeSheet();
     render();
   });
+
+  document.getElementById("f-delete")?.addEventListener("click", async () => {
+    await library.removePhrase(phrase.id);
+    closeSheet();
+    render();
+  });
+}
+
+// --------------------------------------------------------------------- add
+//
+// The AI card builder, ported from Xerra. Deb types whatever she can remember
+// — in Spanish, in English, or a mangled mix — and the Worker returns a
+// corrected card with the meaning, the setting and a pronunciation tip. The
+// Gemini key never leaves Cloudflare; this app only holds the shared passcode.
+
+const ADD_SETTINGS = [
+  ...COURSE.map((unit) => `${unit.title} — ${unit.subtitle.toLowerCase()}`),
+  "Anywhere at all",
+];
+
+function renderAdd() {
+  view.innerHTML = `
+    <h1>Add a card</h1>
+    <p class="muted add-intro">Write whatever you remember, in Spanish or English. Perico's clever cousin
+      will fix it up and build the rest of the card.</p>
+
+    ${
+      settings.hasAssistant
+        ? ""
+        : `<div class="notice add-setup">The card builder needs its address and passcode.
+             <button class="link" id="open-assistant-settings">Set it up</button></div>`
+    }
+
+    <div class="card add-card">
+      ${composerField("add-target", "Spanish", COURSE_LANGUAGE, true)}
+      <div class="language-divider"><span>or</span></div>
+      ${composerField("add-english", "English", "en-US", true)}
+
+      <div class="field">
+        <div class="field-head">
+          <label for="add-situation">What's going on? <span class="muted">(optional)</span></label>
+          <button class="dictate" type="button" data-dictate="add-situation" data-locale="en-US" aria-label="Dictate the situation">${micIcon()}</button>
+        </div>
+        <textarea id="add-situation" rows="2"></textarea>
+      </div>
+
+      <label class="field"><span>Where would you say it?</span>
+        <select id="add-setting">
+          ${ADD_SETTINGS.map((option) => `<option value="${esc(option)}">${esc(option)}</option>`).join("")}
+        </select>
+      </label>
+
+      <button class="btn btn-primary btn-big add-complete" id="complete-card">Build the card</button>
+      <div id="add-error" class="notice bad" hidden></div>
+    </div>
+
+    <section id="card-preview" hidden>
+      <div class="section-label">Check it over</div>
+      <div class="card add-card">
+        <div id="review-note" class="notice" hidden></div>
+        <label class="field"><span>How it's used</span>
+          <textarea id="result-usage" rows="3"></textarea></label>
+        <label class="field"><span>Pronunciation tip</span>
+          <textarea id="result-focus" rows="3"></textarea></label>
+        <div class="btn-row">
+          <button class="btn" id="try-again">Try again</button>
+          <button class="btn btn-primary" id="save-card">Save it</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="add-chat" hidden></section>
+
+    <div class="section-label">By hand</div>
+    <div class="card">
+      <button class="btn" id="add-manual" style="width:100%">Write a card myself</button>
+      <p class="tiny muted" style="margin:10px 0 0">
+        Saved cards join <strong>Lo tuyo</strong> on the path, five to a lesson, and show up in Repaso.
+        Leave the Spanish blank to jot an English note down for later.
+      </p>
+    </div>`;
+
+  autosizeAll(view);
+
+  document.getElementById("open-assistant-settings")?.addEventListener("click", () => {
+    state.tab = "settings";
+    render();
+  });
+
+  document.getElementById("add-manual").onclick = () => editPhrase(null);
+
+  view.querySelectorAll("[data-dictate]").forEach((button) => {
+    button.addEventListener("click", () =>
+      startDictation(button.dataset.dictate, button.dataset.locale, button)
+    );
+  });
+
+  const completeButton = document.getElementById("complete-card");
+  const tryAgain = document.getElementById("try-again");
+  completeButton.addEventListener("click", completeCard);
+  tryAgain.addEventListener("click", completeCard);
+  document.getElementById("save-card").addEventListener("click", saveCard);
+
+  async function completeCard() {
+    const target = document.getElementById("add-target").value.trim();
+    const english = document.getElementById("add-english").value.trim();
+    if (!target && !english) {
+      toast("Write something in Spanish or English first.");
+      return;
+    }
+    if (!settings.hasAssistant) {
+      toast("Set the card builder up in Settings first.");
+      return;
+    }
+
+    setAddBusy(true);
+    const errorBox = document.getElementById("add-error");
+    errorBox.hidden = true;
+    try {
+      const result = await cardAssistant.complete(
+        {
+          target,
+          english,
+          situation: document.getElementById("add-situation").value.trim(),
+          deck: document.getElementById("add-setting").value,
+          languageCode: COURSE_LANGUAGE,
+          languageName: "Spanish (Spain)",
+        },
+        settings
+      );
+      // She may have wandered off to another tab while it thought.
+      if (state.tab !== "add") return;
+
+      document.getElementById("add-target").value = result.text;
+      document.getElementById("add-english").value = result.translation;
+      document.getElementById("add-situation").value = result.situation;
+      document.getElementById("result-usage").value = result.usageNote;
+      document.getElementById("result-focus").value = result.focusNote;
+
+      const review = document.getElementById("review-note");
+      review.textContent = result.reviewNote;
+      review.hidden = !result.reviewNote;
+      document.getElementById("card-preview").hidden = false;
+      // Sized after unhiding — a display:none box has no height to measure.
+      autosizeAll(view);
+
+      // A fresh panel per card: a new card means a new conversation.
+      cardChatPanel(document.getElementById("add-chat"), "Ask about this card", () => ({
+        languageCode: COURSE_LANGUAGE,
+        languageName: "Spanish (Spain)",
+        deck: document.getElementById("add-setting").value,
+        card: {
+          text: document.getElementById("add-target").value.trim(),
+          translation: document.getElementById("add-english").value.trim(),
+          situation: document.getElementById("add-situation").value.trim(),
+          usageNote: document.getElementById("result-usage").value.trim(),
+          focusNote: document.getElementById("result-focus").value.trim(),
+        },
+      }));
+    } catch (error) {
+      errorBox.textContent = error.message;
+      errorBox.hidden = false;
+    } finally {
+      setAddBusy(false);
+    }
+  }
+
+  function saveCard() {
+    const text = document.getElementById("add-target").value.trim();
+    const translation = document.getElementById("add-english").value.trim();
+    if (!text || !translation) {
+      toast("It needs the Spanish and the English before saving.");
+      return;
+    }
+    const duplicate = library
+      .allPhrases()
+      .some((phrase) => normaliseSentence(phrase.text) === normaliseSentence(text));
+    if (duplicate) {
+      toast("That one's already in Phrases.");
+      return;
+    }
+
+    library.addPhrase({
+      text,
+      translation,
+      situation: document.getElementById("add-situation").value.trim() || null,
+      usageNote: document.getElementById("result-usage").value.trim() || null,
+      focusNote: document.getElementById("result-focus").value.trim() || null,
+    });
+    renderAdd();
+    toast("Saved to Lo tuyo. ¡Olé!");
+  }
+
+  function setAddBusy(busy) {
+    completeButton.disabled = busy;
+    tryAgain.disabled = busy;
+    completeButton.innerHTML = busy ? `<span class="spinner"></span> Building…` : "Build the card";
+  }
+}
+
+/* Compare sentences the way a person would: ignoring case, accents and the
+   punctuation Spanish sprinkles around questions. */
+function normaliseSentence(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9ñ ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/* Chat about a card, shown under a finished card on Add and on the phrase
+   sheet. History lives only as long as the panel does — it's a study aside,
+   not a stored transcript. getContext runs per question, so edits count. */
+function cardChatPanel(host, title, getContext) {
+  const history = [];
+  let busy = false;
+
+  host.innerHTML = `
+    <div class="section-label">${esc(title)}</div>
+    <div class="card chat-card">
+      <div class="chat-log" hidden></div>
+      <form class="chat-form">
+        <textarea rows="1" aria-label="${esc(title)}" placeholder="Why 'me pone' and not 'puedo tener'?"></textarea>
+        <button class="btn btn-primary" type="submit">Ask</button>
+      </form>
+      <div class="notice bad chat-error" hidden></div>
+    </div>`;
+  host.hidden = false;
+
+  const log = host.querySelector(".chat-log");
+  const form = host.querySelector(".chat-form");
+  const input = form.querySelector("textarea");
+  const send = form.querySelector("button");
+  const errorBox = host.querySelector(".chat-error");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    ask();
+  });
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      ask();
+    }
+  });
+
+  async function ask() {
+    const question = input.value.trim();
+    if (!question || busy) return;
+    if (!settings.hasAssistant) {
+      toast("Set the card builder up in Settings first.");
+      return;
+    }
+
+    history.push({ role: "user", text: question });
+    input.value = "";
+    autosize(input);
+    errorBox.hidden = true;
+    setBusy(true);
+    renderLog();
+    try {
+      const result = await cardAssistant.chat({ ...getContext(), history }, settings);
+      history.push({ role: "assistant", text: result.reply });
+    } catch (error) {
+      // Put the question back so a retry is one tap, not a retype.
+      history.pop();
+      input.value = question;
+      autosize(input);
+      errorBox.textContent = error.message;
+      errorBox.hidden = false;
+    } finally {
+      setBusy(false);
+      renderLog();
+    }
+  }
+
+  function setBusy(value) {
+    busy = value;
+    send.disabled = value;
+  }
+
+  function renderLog() {
+    log.hidden = !history.length && !busy;
+    log.innerHTML =
+      history
+        .map((turn) => `<div class="chat-msg ${turn.role === "user" ? "user" : "assistant"}">${esc(turn.text)}</div>`)
+        .join("") +
+      (busy ? `<div class="chat-msg assistant chat-thinking"><span class="spinner"></span></div>` : "");
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+function composerField(id, label, locale, required = false) {
+  return `<div class="field">
+    <div class="field-head">
+      <label for="${id}">${esc(label)}${required ? "" : ` <span class="muted">(optional)</span>`}</label>
+      <button class="dictate" type="button" data-dictate="${id}" data-locale="${locale}" aria-label="Dictate in ${esc(label)}">${micIcon()}</button>
+    </div>
+    <textarea id="${id}" rows="3" lang="${locale}" autocapitalize="sentences"></textarea>
+  </div>`;
+}
+
+function micIcon() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/></svg>`;
+}
+
+/* Speaking into the card instead of typing. Safari doesn't implement the Web
+   Speech API for recognition, so on Deb's phone this falls back to a nudge
+   towards the keyboard's own microphone — which does the same job. */
+function startDictation(fieldID, locale, button) {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    toast("Use the microphone on the keyboard to dictate here.");
+    document.getElementById(fieldID)?.focus();
+    return;
+  }
+
+  state.dictation?.abort();
+  const recognition = new Recognition();
+  state.dictation = recognition;
+  recognition.lang = locale;
+  recognition.interimResults = false;
+  recognition.continuous = false;
+  recognition.onstart = () => {
+    button.classList.add("listening");
+    button.setAttribute("aria-pressed", "true");
+  };
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results)
+      .map((result) => result[0]?.transcript ?? "")
+      .join(" ")
+      .trim();
+    const field = document.getElementById(fieldID);
+    if (field && transcript) {
+      field.value = [field.value.trim(), transcript].filter(Boolean).join(" ");
+      autosize(field);
+    }
+  };
+  recognition.onerror = (event) => {
+    if (event.error !== "aborted") toast("Dictation didn't catch that. The keyboard microphone works too.");
+  };
+  recognition.onend = () => {
+    if (state.dictation === recognition) state.dictation = null;
+    button.classList.remove("listening");
+    button.setAttribute("aria-pressed", "false");
+  };
+  recognition.start();
 }
 
 // ---------------------------------------------------------------- settings
@@ -1113,6 +1637,20 @@ function renderSettings() {
 
   view.innerHTML = `
     <h1>Settings</h1>
+
+    <div class="section-label">Card builder</div>
+    <div class="card">
+      <label class="field"><span>Address</span>
+        <input type="text" id="s-assistant-url" value="${esc(settings.assistantEndpoint)}" autocomplete="off"
+               placeholder="The address Fin sent you"></label>
+      <label class="field"><span>Shared passcode</span>
+        <input type="password" id="s-assistant-passcode" value="${esc(settings.assistantPasscode)}" autocomplete="off"></label>
+      <button class="btn btn-primary" id="s-assistant-test" style="width:100%">Save and test</button>
+      <div id="s-assistant-result" style="margin-top:10px"></div>
+      <p class="tiny muted" style="margin:12px 0 0">
+        This is what powers the Add tab. The passcode is the shared app one — not a key of your own.
+      </p>
+    </div>
 
     <div class="section-label">Azure voice and scoring</div>
     <div class="card">
@@ -1142,10 +1680,6 @@ function renderSettings() {
         <span>Show meaning up front</span>
         <input type="checkbox" id="s-translation" ${settings.showTranslationUpFront ? "checked" : ""}>
       </div>
-      <div class="switch-row">
-        <span>Unlock all lessons</span>
-        <input type="checkbox" id="s-unlock" ${settings.unlockAll ? "checked" : ""}>
-      </div>
     </div>
 
     <div class="section-label">Audio</div>
@@ -1164,7 +1698,10 @@ function renderSettings() {
         <input type="file" id="s-import" accept="application/json" hidden>
       </label>
       <p class="tiny muted" style="margin:10px 0 0">
-        ${doneCount} of ${LESSONS.length} lessons done · ${library.customPhrases.length} own phrases ·
+        ${doneCount} of ${LESSONS.length} lessons done · ${library.customPhrases.length} own phrase${
+          library.customPhrases.length === 1 ? "" : "s"
+        } ·
+        ${library.favourites.length} favourite${library.favourites.length === 1 ? "" : "s"} ·
         ${library.attempts.length} recordings. iOS can clear a web app's storage if it
         goes unused for a long time, so export once in a while.
       </p>
@@ -1183,9 +1720,23 @@ function renderSettings() {
     settings.save();
   };
 
-  document.getElementById("s-unlock").onchange = (event) => {
-    settings.unlockAll = event.target.checked;
+  document.getElementById("s-assistant-test").onclick = async () => {
+    settings.assistantEndpoint = document.getElementById("s-assistant-url").value.trim();
+    settings.assistantPasscode = document.getElementById("s-assistant-passcode").value.trim();
     settings.save();
+
+    const box = document.getElementById("s-assistant-result");
+    if (!settings.hasAssistant) {
+      box.innerHTML = `<div class="notice">Enter the address and the shared passcode.</div>`;
+      return;
+    }
+    box.innerHTML = `<p class="small muted"><span class="spinner"></span> Testing…</p>`;
+    try {
+      const result = await cardAssistant.test(settings);
+      box.innerHTML = `<div class="notice good">Card builder connected${result.model ? ` · ${esc(result.model)}` : ""}.</div>`;
+    } catch (error) {
+      box.innerHTML = `<div class="notice bad">${esc(error.message)}</div>`;
+    }
   };
 
   document.getElementById("s-voice").onchange = (event) => {
@@ -1219,7 +1770,7 @@ function renderSettings() {
       status.textContent = "Needs an Azure key.";
       return;
     }
-    await speech.prefetch(library.allPhrases(), settings, (done, total) => {
+    await speech.prefetch(library.drillable(), settings, (done, total) => {
       status.textContent = `${done} / ${total}`;
     });
     status.textContent = "Done — every lesson now works offline.";
@@ -1289,10 +1840,6 @@ function parrotSVG(size = 80) {
     <path d="M73 55 Q82 66 74 80 Q68 72 66 62z" fill="#1cb0f6"/>
     <path d="M44 90 L44 96 M50 90 L50 97 M56 90 L56 96" stroke="#e0a500" stroke-width="3" stroke-linecap="round"/>
   </svg>`;
-}
-
-function lockSVG(cls = "lock-icon") {
-  return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9" rx="2.4"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>`;
 }
 
 function flameSVG() {
