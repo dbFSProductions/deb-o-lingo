@@ -5,8 +5,9 @@
 // Safari will hold binary data of any size.
 //
 // Course phrases are NOT stored here — they live in content.js as code, with
-// stable ids that attempts reference. Only Deb's own added phrases and her
-// results are data. That removes Xerra's whole seeding/versioning machinery.
+// stable ids that attempts reference. Only Deb's own added phrases, her edits
+// to course phrases (as overrides), her stars and her results are data. That
+// removes Xerra's whole seeding/versioning machinery.
 //
 // iOS can evict a web app's storage after long disuse. Anything you'd be sad
 // to lose should be exported from Settings.
@@ -18,7 +19,15 @@ const KEYS = {
   attempts: "debolingo.attempts",
   progress: "debolingo.progress",
   settings: "debolingo.settings",
+  favourites: "debolingo.favourites",
+  overrides: "debolingo.overrides",
 };
+
+// The fields an edit can touch. Course phrases are code, so editing one is
+// stored as an override keyed by phrase id rather than as a copy — content.js
+// stays the source of truth, and a later course revision still reaches every
+// phrase Deb hasn't personally changed.
+const EDITABLE = ["text", "translation", "focusNote", "situation", "usageNote"];
 
 const DB_NAME = "debolingo";
 const DB_VERSION = 1;
@@ -138,10 +147,14 @@ function localDay(date = new Date()) {
 export const library = {
   customPhrases: [],
   attempts: [],
+  favourites: [], // phrase ids — course and custom alike
+  overrides: {}, // course phrase id -> the fields Deb has changed
 
   load() {
     this.customPhrases = readJSON(KEYS.phrases, []);
     this.attempts = readJSON(KEYS.attempts, []);
+    this.favourites = readJSON(KEYS.favourites, []);
+    this.overrides = readJSON(KEYS.overrides, {});
   },
 
   saveCustom() {
@@ -150,41 +163,129 @@ export const library = {
   saveAttempts() {
     writeJSON(KEYS.attempts, this.attempts);
   },
+  saveFavourites() {
+    writeJSON(KEYS.favourites, this.favourites);
+  },
+  saveOverrides() {
+    writeJSON(KEYS.overrides, this.overrides);
+  },
 
-  /** Every drillable phrase — course first, then Deb's own. */
+  /** A stored phrase as the app should see it: edits applied, star attached. */
+  decorate(phrase) {
+    return {
+      ...phrase,
+      ...(this.overrides[phrase.id] ?? {}),
+      favourite: this.favourites.includes(phrase.id),
+    };
+  },
+
+  coursePhrases() {
+    return COURSE_PHRASES.map((p) => this.decorate(p));
+  },
+
+  ownPhrases() {
+    return this.customPhrases.map((p) => this.decorate(p));
+  },
+
+  /** Every phrase — course first, then Deb's own. */
   allPhrases() {
-    return [...COURSE_PHRASES, ...this.customPhrases];
+    return [...this.coursePhrases(), ...this.ownPhrases()];
+  },
+
+  /** Only the ones there's actually something to say — see captures below. */
+  drillable() {
+    return this.allPhrases().filter((p) => p.text.trim());
+  },
+
+  /* A card can be jotted down in English with the Spanish left blank, to be
+     filled in later. It's a real phrase in every other way, but there's
+     nothing to speak yet, so it stays out of every drill queue. */
+  captures() {
+    return this.ownPhrases().filter((p) => !p.text.trim());
+  },
+
+  favouritePhrases() {
+    return this.allPhrases().filter((p) => p.favourite);
   },
 
   phraseById(id) {
     return this.allPhrases().find((p) => p.id === id) ?? null;
   },
 
-  addCustom(phrase) {
-    this.customPhrases.push({
+  isCourse(phraseID) {
+    return COURSE_PHRASES.some((p) => p.id === phraseID);
+  },
+
+  isEdited(phraseID) {
+    return Boolean(this.overrides[phraseID]);
+  },
+
+  toggleFavourite(phraseID) {
+    const at = this.favourites.indexOf(phraseID);
+    if (at === -1) this.favourites.push(phraseID);
+    else this.favourites.splice(at, 1);
+    this.saveFavourites();
+    return at === -1;
+  },
+
+  addPhrase(phrase) {
+    const saved = {
       id: uid(),
       language: COURSE_LANGUAGE,
       createdAt: new Date().toISOString(),
+      text: "",
+      translation: "",
+      situation: null,
+      usageNote: null,
+      focusNote: null,
       ...phrase,
-    });
+    };
+    this.customPhrases.push(saved);
     this.saveCustom();
+    return saved;
   },
 
-  updateCustom(phrase) {
+  /* One save path for both kinds of phrase. A custom one is rewritten in
+     place; a course one becomes an override holding just the changed fields,
+     so "reset" is a delete and an untouched phrase carries no storage at all. */
+  updatePhrase(phrase) {
+    if (this.isCourse(phrase.id)) {
+      const original = COURSE_PHRASES.find((p) => p.id === phrase.id);
+      const changed = {};
+      for (const field of EDITABLE) {
+        const value = phrase[field] ?? null;
+        if (value !== (original[field] ?? null)) changed[field] = value;
+      }
+      if (Object.keys(changed).length) this.overrides[phrase.id] = changed;
+      else delete this.overrides[phrase.id];
+      this.saveOverrides();
+      return;
+    }
+
     const index = this.customPhrases.findIndex((p) => p.id === phrase.id);
     if (index === -1) return;
-    this.customPhrases[index] = phrase;
+    // favourite lives in its own list, not on the record.
+    const { favourite, ...record } = phrase;
+    this.customPhrases[index] = record;
     this.saveCustom();
   },
 
-  async removeCustom(phraseID) {
+  /** Drop an edit and go back to what content.js says. */
+  resetPhrase(phraseID) {
+    delete this.overrides[phraseID];
+    this.saveOverrides();
+  },
+
+  async removePhrase(phraseID) {
     for (const attempt of this.attemptsFor(phraseID)) {
       await audioStore.deleteRecording(attempt.id);
     }
     this.attempts = this.attempts.filter((a) => a.phraseID !== phraseID);
     this.customPhrases = this.customPhrases.filter((p) => p.id !== phraseID);
+    this.favourites = this.favourites.filter((id) => id !== phraseID);
     this.saveCustom();
     this.saveAttempts();
+    this.saveFavourites();
   },
 
   attemptsFor(phraseID) {
@@ -224,6 +325,8 @@ export const library = {
         exportedAt: new Date().toISOString(),
         customPhrases: this.customPhrases,
         attempts: this.attempts,
+        favourites: this.favourites,
+        overrides: this.overrides,
         progress: { lessons: progress.lessons, streak: progress.streak },
       },
       null,
@@ -238,8 +341,13 @@ export const library = {
     }
     this.customPhrases = Array.isArray(parsed.customPhrases) ? parsed.customPhrases : [];
     this.attempts = Array.isArray(parsed.attempts) ? parsed.attempts : [];
+    // Older backups predate stars and edits; absent is empty, not an error.
+    this.favourites = Array.isArray(parsed.favourites) ? parsed.favourites : [];
+    this.overrides = parsed.overrides && typeof parsed.overrides === "object" ? parsed.overrides : {};
     this.saveCustom();
     this.saveAttempts();
+    this.saveFavourites();
+    this.saveOverrides();
     if (parsed.progress) {
       progress.lessons = parsed.progress.lessons ?? {};
       progress.streak = parsed.progress.streak ?? { count: 0, lastDay: null };
@@ -321,9 +429,10 @@ const DEFAULT_SETTINGS = {
   azureKey: "",
   azureRegion: "northeurope",
   azureVoice: "es-ES-ElviraNeural",
+  assistantEndpoint: "",
+  assistantPasscode: "",
   slowRate: 0.65,
   showTranslationUpFront: true,
-  unlockAll: false,
 };
 
 export const settings = {
@@ -339,12 +448,16 @@ export const settings = {
   },
 
   save() {
-    const { load, save, hasAzure, ...data } = this;
+    const { load, save, hasAzure, hasAssistant, ...data } = this;
     writeJSON(KEYS.settings, data);
   },
 
   get hasAzure() {
     return Boolean(this.azureKey?.trim() && this.azureRegion?.trim());
+  },
+
+  get hasAssistant() {
+    return Boolean(this.assistantEndpoint?.trim() && this.assistantPasscode?.trim());
   },
 };
 
