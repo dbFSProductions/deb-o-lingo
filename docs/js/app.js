@@ -61,11 +61,17 @@ function autosize(field) {
   if (!field.scrollHeight) {
     // Not laid out yet (a hidden section); let the CSS min-height stand.
     field.style.height = "";
+    field.style.overflowY = "";
     return;
   }
   // scrollHeight covers the padding box, so the borders have to be added back.
   const borders = field.offsetHeight - field.clientHeight;
-  field.style.height = `${field.scrollHeight + borders}px`;
+  const wanted = field.scrollHeight + borders;
+  // Measuring with the scrollbar hidden, so a box that fits its text never
+  // shows one; if a max-height still cuts the text off, hand it back.
+  field.style.overflowY = "hidden";
+  field.style.height = `${wanted}px`;
+  if (field.offsetHeight < wanted) field.style.overflowY = "auto";
 }
 
 function autosizeAll(root = document) {
@@ -1294,11 +1300,6 @@ function editPhrase(phrase) {
 // corrected card with the meaning, the setting and a pronunciation tip. The
 // Gemini key never leaves Cloudflare; this app only holds the shared passcode.
 
-const ADD_SETTINGS = [
-  ...COURSE.map((unit) => `${unit.title} — ${unit.subtitle.toLowerCase()}`),
-  "Anywhere at all",
-];
-
 function renderAdd() {
   view.innerHTML = `
     <h1>Add a card</h1>
@@ -1319,17 +1320,11 @@ function renderAdd() {
 
       <div class="field">
         <div class="field-head">
-          <label for="add-situation">What's going on? <span class="muted">(optional)</span></label>
+          <label for="add-situation">Situation <span class="muted">(optional)</span></label>
           <button class="dictate" type="button" data-dictate="add-situation" data-locale="en-US" aria-label="Dictate the situation">${micIcon()}</button>
         </div>
         <textarea id="add-situation" rows="2"></textarea>
       </div>
-
-      <label class="field"><span>Where would you say it?</span>
-        <select id="add-setting">
-          ${ADD_SETTINGS.map((option) => `<option value="${esc(option)}">${esc(option)}</option>`).join("")}
-        </select>
-      </label>
 
       <button class="btn btn-primary btn-big add-complete" id="complete-card">Build the card</button>
       <div id="add-error" class="notice bad" hidden></div>
@@ -1352,12 +1347,9 @@ function renderAdd() {
 
     <section id="add-chat" hidden></section>
 
-    <div class="section-label">By hand</div>
     <div class="card">
-      <button class="btn" id="add-manual" style="width:100%">Write a card myself</button>
-      <p class="tiny muted" style="margin:10px 0 0">
+      <p class="tiny muted" style="margin:0">
         Saved cards join <strong>Lo tuyo</strong> on the path, five to a lesson, and show up in Repaso.
-        Leave the Spanish blank to jot an English note down for later.
       </p>
     </div>`;
 
@@ -1367,8 +1359,6 @@ function renderAdd() {
     state.tab = "settings";
     render();
   });
-
-  document.getElementById("add-manual").onclick = () => editPhrase(null);
 
   view.querySelectorAll("[data-dictate]").forEach((button) => {
     button.addEventListener("click", () =>
@@ -1403,7 +1393,7 @@ function renderAdd() {
           target,
           english,
           situation: document.getElementById("add-situation").value.trim(),
-          deck: document.getElementById("add-setting").value,
+          deck: "Deb-o-lingo",
           languageCode: COURSE_LANGUAGE,
           languageName: "Spanish (Spain)",
         },
@@ -1429,7 +1419,7 @@ function renderAdd() {
       cardChatPanel(document.getElementById("add-chat"), "Ask about this card", () => ({
         languageCode: COURSE_LANGUAGE,
         languageName: "Spanish (Spain)",
-        deck: document.getElementById("add-setting").value,
+        deck: "Deb-o-lingo",
         card: {
           text: document.getElementById("add-target").value.trim(),
           translation: document.getElementById("add-english").value.trim(),
@@ -1503,7 +1493,7 @@ function cardChatPanel(host, title, getContext) {
     <div class="card chat-card">
       <div class="chat-log" hidden></div>
       <form class="chat-form">
-        <textarea rows="1" aria-label="${esc(title)}" placeholder="Why 'me pone' and not 'puedo tener'?"></textarea>
+        <textarea rows="1" aria-label="${esc(title)}"></textarea>
         <button class="btn btn-primary" type="submit">Ask</button>
       </form>
       <div class="notice bad chat-error" hidden></div>
@@ -1513,6 +1503,7 @@ function cardChatPanel(host, title, getContext) {
   const log = host.querySelector(".chat-log");
   const form = host.querySelector(".chat-form");
   const input = form.querySelector("textarea");
+  autosize(input);
   const send = form.querySelector("button");
   const errorBox = host.querySelector(".chat-error");
 
