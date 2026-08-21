@@ -845,5 +845,8 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 .chat-msg.assistant { align-self: flex-start; background: var(--surface-2); color: var(--text); border-bottom-left-radius: 5px; }
 .chat-thinking { display: flex; align-items: center; }
 .chat-form { display: flex; align-items: flex-end; gap: 8px; }
-.chat-form textarea { min-height: 46px; max-height: 40vh; }
+/* The ask box and the card's detail boxes grow with what's typed in them —
+   autosize() drives the height, so no inner scrolling and no resize handle. */
+.chat-form textarea { min-height: 46px; }
+.chat-form textarea, .add-card textarea, .sheet-panel textarea { resize: none; }
 .chat-form .btn { flex: none; }
