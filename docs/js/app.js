@@ -127,6 +127,30 @@ sheet.addEventListener("click", (event) => {
   if (event.target.hasAttribute("data-close-sheet")) closeSheet();
 });
 
+/* Deleting a card takes its recordings and scores with it and there's no undo,
+   so every delete button asks for a second tap first. Arming is on the button
+   itself rather than a confirm dialog: one thumb, no modal on top of a modal,
+   and tapping anything else leaves it armed but harmless. */
+function armDelete(button, armedLabel, onConfirm) {
+  if (!button) return;
+  const restLabel = button.textContent;
+  button.addEventListener("click", async () => {
+    if (button.dataset.armed !== "1") {
+      button.dataset.armed = "1";
+      button.textContent = armedLabel;
+      // Second thoughts are the common case — let it settle back down.
+      setTimeout(() => {
+        if (!button.isConnected || button.dataset.armed !== "1") return;
+        delete button.dataset.armed;
+        button.textContent = restLabel;
+      }, 5000);
+      return;
+    }
+    button.disabled = true;
+    await onConfirm();
+  });
+}
+
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -1173,8 +1197,21 @@ function showPhrase(phrase) {
               )
               .join("")}</div>`
          : `<p class="tiny muted">No attempts yet.</p>`
+     }
+     ${
+       library.isCourse(phrase.id)
+         ? `<p class="tiny muted center" style="margin:16px 0 0">This one's part of the course, so it stays put.
+              You can edit it, or reset your edit, from Edit above.</p>`
+         : `<button class="btn btn-danger" id="p-delete" style="width:100%;margin-top:16px">Delete card</button>`
      }`
   );
+
+  armDelete(document.getElementById("p-delete"), "Tap again to delete for good", async () => {
+    await library.removePhrase(phrase.id);
+    closeSheet();
+    toast("Card deleted.");
+    render();
+  });
 
   document.getElementById("p-practise").onclick = () => {
     closeSheet();
@@ -1253,7 +1290,7 @@ function editPhrase(phrase) {
            : `<p class="tiny muted" style="margin:12px 0 0">This is a course card. Your edit is saved over it and
                 can be reset later.</p>`
          : phrase
-         ? `<button class="btn btn-danger" id="f-delete" style="width:100%;margin-top:10px">Delete phrase</button>`
+         ? `<button class="btn btn-danger" id="f-delete" style="width:100%;margin-top:10px">Delete card</button>`
          : ""
      }`
   );
@@ -1286,9 +1323,10 @@ function editPhrase(phrase) {
     render();
   });
 
-  document.getElementById("f-delete")?.addEventListener("click", async () => {
+  armDelete(document.getElementById("f-delete"), "Tap again to delete for good", async () => {
     await library.removePhrase(phrase.id);
     closeSheet();
+    toast("Card deleted.");
     render();
   });
 }

@@ -21,6 +21,7 @@ a Catalan trainer). Division of labour:
 | `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, dictation, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. |
 | `docs/js/card-assistant.js` | **Verbatim copy**, and it talks to the *same deployed Worker* as Xerra: the Worker takes the language per request, and Pages serves both apps from the one `github.io` origin its CORS list allows. There is no `worker/` directory here — the code lives in Xerra's repo. |
 | `docs/js/content.js` | **Hand-written here.** No Swift twin, no generator — unlike Xerra, editing it directly is correct. |
+| `docs/app.css` | Was the divergent one; Xerra has now taken this palette on. The two are meant to stay in step — change a colour here and change it there. Xerra keeps its own structure (section accents, page-head banners, deck meters), so port the *values*, not the rules. |
 
 Xerra gotchas that still apply here: the `.sheet` `display:flex` vs `hidden`
 trap (comment preserved in app.css), service-worker staleness (bump `VERSION`
@@ -70,6 +71,14 @@ is stored beside it, keyed by phrase id:
 phrase — anything that reads a phrase for display or for drilling must go
 through it, or Deb's edit will be invisible in that one place. Export/import
 carries all five.
+
+**Only Deb's own cards can be deleted.** `library.removePhrase()` takes the
+card, its attempts and its recordings, and the phrase sheet offers it — armed,
+so it takes two taps (`armDelete()`, shared with the editor's copy). A course
+card has no delete: it's code, and deleting one would mean inventing a
+sixth "hidden ids" store. The sheet says so rather than leaving Deb hunting
+for a button that isn't there. If hiding course cards is ever wanted, that's
+the design to have, not a `removePhrase` that silently does nothing.
 
 Her own cards ride the path as a generated unit, **Lo tuyo**, chunked five to a
 lesson in creation order (`own-1`, `own-2`, …). The ids are stable as cards are
