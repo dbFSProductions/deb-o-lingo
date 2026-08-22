@@ -18,7 +18,7 @@ a Catalan trainer). Division of labour:
 | `docs/js/audio.js` | Waveform + pitch analysis are a **verbatim copy**, verified against a 150 Hz tone — if you change the algorithm in either repo, change it in the other and re-verify against a known tone. The playback section has diverged: `comparableLoudness` boosts quiet mic recordings to TTS level before playing (Xerra would likely want the same fix). |
 | `docs/js/speech.js` | Same behaviour, comments retouched. Port bug fixes both ways. |
 | `docs/js/store.js` | Restructured: one fixed language, course content is *code* (content.js) not seeded data, plus lesson progress + streaks. |
-| `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, dictation, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. |
+| `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. The in-page dictation buttons were in that list and have been removed from both (below). |
 | `docs/js/card-assistant.js` | **Verbatim copy**, and it talks to the *same deployed Worker* as Xerra: the Worker takes the language per request, and Pages serves both apps from the one `github.io` origin its CORS list allows. There is no `worker/` directory here — the code lives in Xerra's repo. |
 | `docs/js/content.js` | **Hand-written here.** No Swift twin, no generator — unlike Xerra, editing it directly is correct. Xerra now carries a Catalan rewrite of this course (its Salutacions, Tapes, El mercat and most of Cafès i sortir); the situations are shared, the focusNotes deliberately are not — hers teach Castilian, Xerra's teach Catalan. Add a unit here and it's worth offering there. |
 | `docs/app.css` | Was the divergent one; Xerra has now taken this palette on. The two are meant to stay in step — change a colour here and change it there. Xerra keeps its own structure (section accents, page-head banners, deck meters), so port the *values*, not the rules. |
@@ -27,6 +27,34 @@ Xerra gotchas that still apply here: the `.sheet` `display:flex` vs `hidden`
 trap (comment preserved in app.css), service-worker staleness (bump `VERSION`
 in `sw.js` when shipping changed assets), and never commit an Azure key —
 it lives only in localStorage, entered in Settings.
+
+### The in-page dictation buttons are gone, deliberately
+
+Every composer field carried a mic button driving `webkitSpeechRecognition`.
+Safari doesn't implement recognition, and Deb's phone is the only device this
+runs on, so the button never did anything but show the fallback toast — it was
+decoration. What does work is the dictation key on the keyboard itself, and the
+textareas still carry `lang="es-ES"` / `lang="en-US"` so it types the right
+language into the right box. Don't re-add them; Xerra removed its copies at the
+same time. If dictation is ever worth another go, the thing to test on the
+actual phone first is whether `SpeechRecognition` fires `onresult` at all.
+
+### Bumping VERSION was not, on its own, enough
+
+The install handler precached with `cache.add(url)`, whose fetch goes through
+the browser's own HTTP cache — and Pages serves everything `max-age=600`. So
+for ten minutes after a deploy, a brand-new version's cache could be filled
+with pre-deploy copies of some files and post-deploy copies of others, and
+cache-first then served that mix until the *next* version bump. It took Xerra
+down for real: a new `index.html` next to an old `app.js`, and no amount of
+reloading fixed it. Precaching now uses `new Request(url, { cache: "reload" })`
+so a version's cache is all of one version, and navigations are network-first
+(cache only as the offline fallback) so the HTML can never be staler than the
+scripts it names. Don't undo either one for "fewer requests".
+
+The way to test a deploy is not a fresh browser profile — that can't show you
+any of this. Serve the *old* tree, let the worker install, swap the directory
+for the new tree and reload.
 
 ---
 
