@@ -29,6 +29,13 @@ const KEYS = {
 // phrase Deb hasn't personally changed.
 const EDITABLE = ["text", "translation", "focusNote", "situation", "usageNote"];
 
+// Level two. A card is read aloud until it has been said well twice; after
+// that the drill shows only the English and Deb has to produce the Spanish
+// from memory. Trying to remember is the part that makes it stick — reading
+// it off the screen a hundredth time doesn't.
+export const RECALL_AFTER = 2;
+const RECALL_PASS = 60; // the same "understandable" line the drill banner uses
+
 const DB_NAME = "debolingo";
 const DB_VERSION = 1;
 const STORE_MODEL = "modelAudio";
@@ -301,6 +308,25 @@ export const library = {
     return scores.length ? Math.max(...scores) : null;
   },
 
+  /* Attempts that counted. A scored attempt counts if it passed; an unscored
+     one counts on its own, because with no Azure key there is no score to
+     judge it by and a card would otherwise never leave level one. */
+  goodAttempts(phraseID) {
+    return this.attemptsFor(phraseID).filter(
+      (a) => a.overall == null || a.overall >= RECALL_PASS
+    ).length;
+  },
+
+  /** True once the card should be drilled from memory instead of read aloud. */
+  recallReady(phraseID) {
+    return this.goodAttempts(phraseID) >= RECALL_AFTER;
+  },
+
+  /** Good goes still owed before the card turns into a memory question. */
+  toRecall(phraseID) {
+    return Math.max(0, RECALL_AFTER - this.goodAttempts(phraseID));
+  },
+
   recordAttempt(attempt) {
     this.attempts.push(attempt);
     this.saveAttempts();
@@ -433,6 +459,7 @@ const DEFAULT_SETTINGS = {
   assistantPasscode: "",
   slowRate: 0.65,
   showTranslationUpFront: true,
+  recallMode: true,
 };
 
 export const settings = {

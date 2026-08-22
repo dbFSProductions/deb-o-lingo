@@ -21,6 +21,7 @@ a Catalan trainer). Division of labour:
 | `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, dictation, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. |
 | `docs/js/card-assistant.js` | **Verbatim copy**, and it talks to the *same deployed Worker* as Xerra: the Worker takes the language per request, and Pages serves both apps from the one `github.io` origin its CORS list allows. There is no `worker/` directory here — the code lives in Xerra's repo. |
 | `docs/js/content.js` | **Hand-written here.** No Swift twin, no generator — unlike Xerra, editing it directly is correct. |
+| `docs/app.css` | Was the divergent one; Xerra has now taken this palette on. The two are meant to stay in step — change a colour here and change it there. Xerra keeps its own structure (section accents, page-head banners, deck meters), so port the *values*, not the rules. |
 
 Xerra gotchas that still apply here: the `.sheet` `display:flex` vs `hidden`
 trap (comment preserved in app.css), service-worker staleness (bump `VERSION`
@@ -71,10 +72,46 @@ phrase — anything that reads a phrase for display or for drilling must go
 through it, or Deb's edit will be invisible in that one place. Export/import
 carries all five.
 
+**Only Deb's own cards can be deleted.** `library.removePhrase()` takes the
+card, its attempts and its recordings, and the phrase sheet offers it — armed,
+so it takes two taps (`armDelete()`, shared with the editor's copy). A course
+card has no delete: it's code, and deleting one would mean inventing a
+sixth "hidden ids" store. The sheet says so rather than leaving Deb hunting
+for a button that isn't there. If hiding course cards is ever wanted, that's
+the design to have, not a `removePhrase` that silently does nothing.
+
 Her own cards ride the path as a generated unit, **Lo tuyo**, chunked five to a
 lesson in creation order (`own-1`, `own-2`, …). The ids are stable as cards are
 appended; deleting one can reshuffle membership, which costs at most a
 completion tick on a lesson she made herself.
+
+---
+
+## Level two: drilling from memory
+
+A card is read aloud until `library.goodAttempts()` reaches `RECALL_AFTER` (2),
+then `library.recallReady()` flips it to a memory question: the drill prints
+the *English* where the Spanish normally goes and withholds three things, all
+of which would answer it — the Spanish text, the `focusNote`, and the
+Listen/Slow buttons (the model audio says it out loud). **If you add anything
+to the drill card, decide which side of that line it falls on.**
+
+Three flags in `state` carry it: `recall` (this card is a question), `revealed`
+(the answer is on screen — always true at level one) and `peeked` (Show me was
+used rather than remembering). Recording reveals; so does Show me. Attempts now
+carry `mode` — `"listen"`, `"recall"` or `"recall-shown"`. Older attempts have
+no `mode`, which reads as `"listen"`, because that is what they were.
+
+An attempt counts toward the two if it scored a pass **or wasn't scored at
+all** — with no Azure key there is no score to judge by, and the alternative is
+that nothing ever leaves level one on the degraded path.
+
+Deliberately *not* done: peeking doesn't demote a card, and nothing ever comes
+back down. Spaced repetition is still the unbuilt feature below, and a decay
+rule is the shape it should take, not a special case bolted onto this.
+
+Xerra has the same feature in the same shape — same constants, same flags, same
+`mode` values. Keep them in step.
 
 ---
 
@@ -90,7 +127,14 @@ locked** (`.node.locked` should never match), the deepest lesson opens straight
 away with `.drill-text` populated, an edit to a course phrase drills as edited
 and Reset puts it back, a starred phrase raises the Favourites node, a saved
 card appears in Phrases *and* in Lo tuyo, and completion writes progress +
-lights the streak. Anything touching Azure or the card assistant can't be
+lights the streak.
+
+For level two, seed `debolingo.attempts` with two passing attempts on a known
+phrase id and assert the drill shows the *English* in `.drill-text`, carries a
+`.level-badge`, and has no `#listen` and no `.focus-note`; then that `#show-me`
+brings all three back. Recording can be driven headlessly with Chromium's
+`--use-fake-device-for-media-stream` (plus `--use-fake-ui-for-media-stream`),
+which is enough to check the reveal-on-record and the stored `mode`. Anything touching Azure or the card assistant can't be
 covered — no key and no passcode in the repo, ever.
 
 Deployment is GitHub Pages from `main`/`docs`. All paths are relative, so it
@@ -109,7 +153,11 @@ phone will keep the old build.
   design: probably free-recording against a *situation* prompt rather than a
   fixed phrase, plus a small rules/examples table for common EN→ES transfer
   errors.
-- Spaced repetition beyond the simple Repaso shuffle.
+- Spaced repetition beyond the simple Repaso shuffle. Level two is the first
+  half of it — cards get harder once known — but nothing decays, so a card
+  learned in March is still "level 2, done" in August. A decay rule (and a
+  demotion when a level-2 card is peeked at or failed) is the next step, and it
+  belongs here rather than as a special case inside the drill.
 - Xerra's Practice tab groups a deck's rows with a progress meter and an
   average. Deb's path shows per-lesson bests instead; if free-practice ever
   needs more shape than Repaso + Favourites, that's the pattern to port.

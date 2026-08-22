@@ -7,7 +7,7 @@
 // Nothing is locked. Every node is open from the first launch — the ticks and
 // the streak record what Deb has done, they don't gate what she may do next.
 
-import { library, settings, progress, audioStore, VOICES, uid } from "./store.js";
+import { library, settings, progress, audioStore, VOICES, uid, RECALL_AFTER } from "./store.js";
 import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById } from "./content.js";
 import { Recorder, Player, analyse, relativeSemitones, resample } from "./audio.js";
 import { speech, browserSpeech, scoring } from "./speech.js";
@@ -39,6 +39,12 @@ const state = {
   attemptBlob: null,
   attemptAnalysis: null,
   showTranslation: true,
+  // Level two. `recall` says this card is a memory question; `revealed` says
+  // the answer is on screen (always true at level one); `peeked` says she
+  // asked to be shown it rather than remembering.
+  recall: false,
+  revealed: true,
+  peeked: false,
   loadingModel: false,
   scoringNow: false,
   levelTimer: null,
@@ -126,6 +132,30 @@ function closeSheet() {
 sheet.addEventListener("click", (event) => {
   if (event.target.hasAttribute("data-close-sheet")) closeSheet();
 });
+
+/* Deleting a card takes its recordings and scores with it and there's no undo,
+   so every delete button asks for a second tap first. Arming is on the button
+   itself rather than a confirm dialog: one thumb, no modal on top of a modal,
+   and tapping anything else leaves it armed but harmless. */
+function armDelete(button, armedLabel, onConfirm) {
+  if (!button) return;
+  const restLabel = button.textContent;
+  button.addEventListener("click", async () => {
+    if (button.dataset.armed !== "1") {
+      button.dataset.armed = "1";
+      button.textContent = armedLabel;
+      // Second thoughts are the common case — let it settle back down.
+      setTimeout(() => {
+        if (!button.isConnected || button.dataset.armed !== "1") return;
+        delete button.dataset.armed;
+        button.textContent = restLabel;
+      }, 5000);
+      return;
+    }
+    button.disabled = true;
+    await onConfirm();
+  });
+}
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -417,6 +447,9 @@ async function loadPhrase() {
   state.attemptAnalysis = null;
   state.banner = null;
   state.showTranslation = settings.showTranslationUpFront;
+  state.recall = Boolean(settings.recallMode && phrase && library.recallReady(phrase.id));
+  state.revealed = !state.recall;
+  state.peeked = false;
   scoring.lastError = null;
   window.scrollTo(0, 0);
   if (!phrase) return render();
@@ -454,6 +487,9 @@ function renderDrill() {
   const filled = lesson.index + (state.banner ? 1 : 0);
   const pct = Math.round((filled / total) * 100);
   const hasModel = Boolean(state.modelBlob);
+  // Still being asked: the Spanish, the tip and the model audio are all
+  // withheld, because any of the three answers the question.
+  const asking = state.recall && !state.revealed;
 
   view.innerHTML = `
     <div class="lesson-top">
@@ -461,28 +497,52 @@ function renderDrill() {
       <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
     </div>
 
-    <p class="instruction">Listen, then say it out loud</p>
+    <p class="instruction">${
+      asking
+        ? "From memory — how do you say this?"
+        : state.recall && state.attempt
+        ? "Here's the phrase — how close were you?"
+        : "Listen, then say it out loud"
+    }</p>
 
     <div class="card drill-card">
-      <p class="drill-text">${esc(phrase.text)}</p>
+      ${state.recall ? `<div class="level-badge">Level 2 · from memory</div>` : ""}
       ${
-        state.showTranslation
-          ? `<p class="drill-translation">${esc(phrase.translation)}</p>`
-          : `<button class="link" id="reveal" style="padding-left:0">Show meaning</button>`
-      }
-      ${
-        phrase.focusNote
-          ? `<div class="focus-note"><strong>Tip</strong><span>${esc(phrase.focusNote)}</span></div>`
-          : ""
+        asking
+          ? `<p class="drill-text recall-prompt">${esc(phrase.translation)}</p>
+             ${phrase.situation ? `<p class="drill-translation">${esc(phrase.situation)}</p>` : ""}
+             <p class="tiny muted" style="margin:10px 0 0">Say it in Spanish, then you'll see it.</p>`
+          : `<p class="drill-text">${esc(phrase.text)}</p>
+             ${
+               state.showTranslation
+                 ? `<p class="drill-translation">${esc(phrase.translation)}</p>`
+                 : `<button class="link" id="reveal" style="padding-left:0">Show meaning</button>`
+             }
+             ${
+               phrase.focusNote
+                 ? `<div class="focus-note"><strong>Tip</strong><span>${esc(phrase.focusNote)}</span></div>`
+                 : ""
+             }
+             ${
+               state.peeked
+                 ? `<p class="tiny muted" style="margin:10px 0 0">Shown, not remembered — it'll come round again.</p>`
+                 : ""
+             }`
       }
     </div>
 
-    <div class="btn-row">
-      <button class="btn btn-primary" id="listen">🔊 Listen</button>
-      <button class="btn" id="slow">🐢 Slow</button>
-    </div>
     ${
-      state.loadingModel
+      asking
+        ? `<button class="btn btn-big" id="show-me" style="margin-top:0">👀 Show me</button>`
+        : `<div class="btn-row">
+             <button class="btn btn-primary" id="listen">🔊 Listen</button>
+             <button class="btn" id="slow">🐢 Slow</button>
+           </div>`
+    }
+    ${
+      asking
+        ? ""
+        : state.loadingModel
         ? `<p class="small muted" style="margin-top:10px"><span class="spinner"></span> Generating audio…</p>`
         : !hasModel && settings.hasAzure && speech.lastError
         ? `<div class="notice bad" style="margin-top:10px">${esc(speech.lastError)}</div>`
@@ -496,7 +556,13 @@ function renderDrill() {
         <span class="record-ring" id="ring"></span>
         <svg viewBox="0 0 24 24" id="record-icon"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 18v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
       </button>
-      <p class="small muted" id="record-label">${state.attempt ? "Recorded! Compare below, or tap to try again" : "Tap, say it, tap again"}</p>
+      <p class="small muted" id="record-label">${
+        state.attempt
+          ? "Recorded! Compare below, or tap to try again"
+          : asking
+          ? "Tap, say it in Spanish, tap again"
+          : "Tap, say it, tap again"
+      }</p>
       ${state.banner ? "" : `<button class="link muted-link" id="skip">SKIP</button>`}
     </div>
 
@@ -509,9 +575,15 @@ function renderDrill() {
     state.showTranslation = true;
     render();
   });
-  document.getElementById("listen").onclick = () => playModel(1);
-  document.getElementById("slow").onclick = () => playModel(settings.slowRate);
+  document.getElementById("listen")?.addEventListener("click", () => playModel(1));
+  document.getElementById("slow")?.addEventListener("click", () => playModel(settings.slowRate));
   document.getElementById("record").onclick = toggleRecording;
+  document.getElementById("show-me")?.addEventListener("click", () => {
+    state.revealed = true;
+    state.peeked = true;
+    render();
+    playModel(1);
+  });
   document.getElementById("skip")?.addEventListener("click", () => {
     stopEverything();
     advance({ skipped: true, score: null });
@@ -609,11 +681,26 @@ function renderBanner() {
   };
   const k = kinds[banner.kind] ?? kinds.neutral;
 
+  /* From memory, the news isn't "your accent was close" — it's whether she
+     produced the right words at all, which is what the score and the "Heard:"
+     line below actually answer. */
+  const recalled = state.recall && banner.kind !== "scoring";
+  const head = recalled && !state.peeked && banner.kind === "great" ? "¡De memoria!" : k.head;
+  const sub = !recalled
+    ? k.sub
+    : state.peeked
+    ? "You had a look at this one, so it'll come round again. Listen and copy it now."
+    : banner.kind === "retry"
+    ? "Check the phrase above against what you said — Heard: below tells you what came out."
+    : banner.kind === "neutral"
+    ? "The phrase is above now. Tap Listen again, then You, and see whether you had it."
+    : "Remembered it. Tap Listen again, then You, to check the two against each other.";
+
   return `
     <div class="banner ${k.cls}">
       <div class="banner-text">
-        <div class="banner-head">${k.head}${banner.score != null ? ` · ${Math.round(banner.score)}` : ""}</div>
-        <div class="banner-sub">${k.sub}</div>
+        <div class="banner-head">${head}${banner.score != null ? ` · ${Math.round(banner.score)}` : ""}</div>
+        <div class="banner-sub">${sub}</div>
       </div>
       <div class="banner-buttons">
         ${banner.kind === "scoring" ? `<span class="spinner"></span>` : `
@@ -679,11 +766,20 @@ async function handleRecording({ blob, duration }) {
   const phrase = currentPhrase();
   if (!phrase) return;
 
+  // The question is over the moment she has answered it — the phrase, the tip
+  // and Listen all come back now so she can check herself against the model.
+  const wasAsked = state.recall;
+  const peeked = state.peeked;
+  state.revealed = true;
+
   const attempt = {
     id: uid(),
     phraseID: phrase.id,
     recordedAt: new Date().toISOString(),
     duration,
+    // How it was drilled. Older attempts have no mode; they were all read
+    // off the screen, which is what "listen" means.
+    mode: !wasAsked ? "listen" : peeked ? "recall-shown" : "recall",
     overall: null,
     accuracy: null,
     fluency: null,
@@ -708,7 +804,10 @@ async function handleRecording({ blob, duration }) {
   state.banner = settings.hasAzure ? { kind: "scoring", score: null } : { kind: "neutral", score: null };
   render();
 
-  if (!settings.hasAzure) return;
+  if (!settings.hasAzure) {
+    announceLevelUp(phrase);
+    return;
+  }
 
   const result = await scoring.score(blob, phrase, settings);
   state.scoringNow = false;
@@ -725,6 +824,15 @@ async function handleRecording({ blob, duration }) {
     state.banner = { kind: "neutral", score: null };
   }
   render();
+  announceLevelUp(phrase);
+}
+
+/* Say so the once, on the go that tips a card over. Silent if the card was
+   already a memory question, or if recall is switched off in Settings. */
+function announceLevelUp(phrase) {
+  if (state.recall || !settings.recallMode) return;
+  if (library.goodAttempts(phrase.id) !== RECALL_AFTER) return;
+  toast("¡Nivel 2! Next time you'll say this one from memory.", 3600);
 }
 
 function renderComparison() {
@@ -1143,6 +1251,16 @@ function showPhrase(phrase) {
        <p class="muted">${esc(phrase.translation)}</p>
        ${starButton(phrase)}
      </div>
+     <div class="level-line">
+       <span class="level-badge">Level ${library.recallReady(phrase.id) ? "2" : "1"}</span>
+       <span class="tiny muted">${
+         library.recallReady(phrase.id)
+           ? "Drilled from memory — you get the English and say the Spanish."
+           : `${library.toRecall(phrase.id)} more good ${
+               library.toRecall(phrase.id) === 1 ? "go" : "goes"
+             } and this one turns into a memory question.`
+       }</span>
+     </div>
      ${phrase.situation ? `<div class="phrase-context"><strong>Situation</strong><span>${esc(phrase.situation)}</span></div>` : ""}
      ${phrase.usageNote ? `<div class="phrase-context"><strong>How it's used</strong><span>${esc(phrase.usageNote)}</span></div>` : ""}
      ${phrase.focusNote ? `<div class="focus-note" style="margin:12px 0 14px"><strong>Tip</strong><span>${esc(phrase.focusNote)}</span></div>` : ""}
@@ -1173,8 +1291,21 @@ function showPhrase(phrase) {
               )
               .join("")}</div>`
          : `<p class="tiny muted">No attempts yet.</p>`
+     }
+     ${
+       library.isCourse(phrase.id)
+         ? `<p class="tiny muted center" style="margin:16px 0 0">This one's part of the course, so it stays put.
+              You can edit it, or reset your edit, from Edit above.</p>`
+         : `<button class="btn btn-danger" id="p-delete" style="width:100%;margin-top:16px">Delete card</button>`
      }`
   );
+
+  armDelete(document.getElementById("p-delete"), "Tap again to delete for good", async () => {
+    await library.removePhrase(phrase.id);
+    closeSheet();
+    toast("Card deleted.");
+    render();
+  });
 
   document.getElementById("p-practise").onclick = () => {
     closeSheet();
@@ -1253,7 +1384,7 @@ function editPhrase(phrase) {
            : `<p class="tiny muted" style="margin:12px 0 0">This is a course card. Your edit is saved over it and
                 can be reset later.</p>`
          : phrase
-         ? `<button class="btn btn-danger" id="f-delete" style="width:100%;margin-top:10px">Delete phrase</button>`
+         ? `<button class="btn btn-danger" id="f-delete" style="width:100%;margin-top:10px">Delete card</button>`
          : ""
      }`
   );
@@ -1286,9 +1417,10 @@ function editPhrase(phrase) {
     render();
   });
 
-  document.getElementById("f-delete")?.addEventListener("click", async () => {
+  armDelete(document.getElementById("f-delete"), "Tap again to delete for good", async () => {
     await library.removePhrase(phrase.id);
     closeSheet();
+    toast("Card deleted.");
     render();
   });
 }
@@ -1671,6 +1803,12 @@ function renderSettings() {
         <span>Show meaning up front</span>
         <input type="checkbox" id="s-translation" ${settings.showTranslationUpFront ? "checked" : ""}>
       </div>
+      <div class="switch-row">
+        <span>Level 2 — drill from memory</span>
+        <input type="checkbox" id="s-recall" ${settings.recallMode ? "checked" : ""}>
+      </div>
+      <p class="tiny muted" style="margin:8px 0 0">Once you've said a card well ${RECALL_AFTER} times it stops
+        showing you the Spanish — you get the English and have to remember it. There's a "Show me" if you're stuck.</p>
     </div>
 
     <div class="section-label">Audio</div>
@@ -1708,6 +1846,11 @@ function renderSettings() {
 
   document.getElementById("s-translation").onchange = (event) => {
     settings.showTranslationUpFront = event.target.checked;
+    settings.save();
+  };
+
+  document.getElementById("s-recall").onchange = (event) => {
+    settings.recallMode = event.target.checked;
     settings.save();
   };
 
