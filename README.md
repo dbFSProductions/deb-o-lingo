@@ -54,6 +54,12 @@ A few things worth knowing:
   it'll sit under "needs the Spanish" until you or the Add tab fills it in.
 - **Edit anything**, including the lessons that came with the app. If a tip
   doesn't help you, rewrite it; there's a Reset if you change your mind.
+- **Let it rebuild the card for you.** Change *un cortado* to *un café solo*
+  and tap **Rebuild the rest with AI** — the English, the situation, how it's
+  used and the tip all get rewritten to match, so you don't have to. Nothing is
+  saved until you tap Save, and there's an Undo if you don't like it.
+- **Edit mid-lesson.** There's an EDIT at the top of the lesson bar for the
+  card you've just heard and thought "I'd never say that".
 - **Delete your own cards.** Open one from the Phrases tab and there's a
   Delete at the bottom — it asks twice, because it takes the recordings with
   it. Course cards stay put; edit them instead.

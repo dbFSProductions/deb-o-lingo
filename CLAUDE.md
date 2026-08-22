@@ -85,6 +85,30 @@ lesson in creation order (`own-1`, `own-2`, …). The ids are stable as cards ar
 appended; deleting one can reshuffle membership, which costs at most a
 completion tick on a lesson she made herself.
 
+### Editing a card, and the AI rebuild
+
+The edit sheet has a **Rebuild the rest with AI** button (only when the card
+assistant is configured). It calls the same `/complete-card` the Add tab does —
+**the Worker is unchanged**, which matters because it lives in Xerra's repo and
+serves both apps.
+
+The one piece of judgement is which side gets sent. Change the Spanish but not
+the English and the two now disagree; sending both would ask the assistant to
+reconcile a contradiction. So `wireEditorAI` snapshots the fields when the
+sheet opens and sends only the side that was actually edited, dropping the
+other as if it had been left blank on the Add tab. Change both, or neither, and
+both go. Nothing is written until Save — for a course card that means no
+override is created — and the review notice carries an Undo that puts the
+snapshot back.
+
+The lesson bar has an **EDIT** button for the card she has just heard and
+realised isn't how she'd say it. `editPhrase(phrase, onSaved)` takes a callback
+for it: the lesson queue holds decorated copies and the model audio is cached
+by text, so the fixed card has to go back into `lesson.queue` and be reloaded —
+a re-render alone would keep the old text's audio.
+
+Xerra has both in the same shape. Keep them in step.
+
 ---
 
 ## Level two: drilling from memory
