@@ -87,6 +87,34 @@ completion tick on a lesson she made herself.
 
 ---
 
+## Level two: drilling from memory
+
+A card is read aloud until `library.goodAttempts()` reaches `RECALL_AFTER` (2),
+then `library.recallReady()` flips it to a memory question: the drill prints
+the *English* where the Spanish normally goes and withholds three things, all
+of which would answer it — the Spanish text, the `focusNote`, and the
+Listen/Slow buttons (the model audio says it out loud). **If you add anything
+to the drill card, decide which side of that line it falls on.**
+
+Three flags in `state` carry it: `recall` (this card is a question), `revealed`
+(the answer is on screen — always true at level one) and `peeked` (Show me was
+used rather than remembering). Recording reveals; so does Show me. Attempts now
+carry `mode` — `"listen"`, `"recall"` or `"recall-shown"`. Older attempts have
+no `mode`, which reads as `"listen"`, because that is what they were.
+
+An attempt counts toward the two if it scored a pass **or wasn't scored at
+all** — with no Azure key there is no score to judge by, and the alternative is
+that nothing ever leaves level one on the degraded path.
+
+Deliberately *not* done: peeking doesn't demote a card, and nothing ever comes
+back down. Spaced repetition is still the unbuilt feature below, and a decay
+rule is the shape it should take, not a special case bolted onto this.
+
+Xerra has the same feature in the same shape — same constants, same flags, same
+`mode` values. Keep them in step.
+
+---
+
 ## Running and checking
 
 ```bash
@@ -99,7 +127,14 @@ locked** (`.node.locked` should never match), the deepest lesson opens straight
 away with `.drill-text` populated, an edit to a course phrase drills as edited
 and Reset puts it back, a starred phrase raises the Favourites node, a saved
 card appears in Phrases *and* in Lo tuyo, and completion writes progress +
-lights the streak. Anything touching Azure or the card assistant can't be
+lights the streak.
+
+For level two, seed `debolingo.attempts` with two passing attempts on a known
+phrase id and assert the drill shows the *English* in `.drill-text`, carries a
+`.level-badge`, and has no `#listen` and no `.focus-note`; then that `#show-me`
+brings all three back. Recording can be driven headlessly with Chromium's
+`--use-fake-device-for-media-stream` (plus `--use-fake-ui-for-media-stream`),
+which is enough to check the reveal-on-record and the stored `mode`. Anything touching Azure or the card assistant can't be
 covered — no key and no passcode in the repo, ever.
 
 Deployment is GitHub Pages from `main`/`docs`. All paths are relative, so it
@@ -118,7 +153,11 @@ phone will keep the old build.
   design: probably free-recording against a *situation* prompt rather than a
   fixed phrase, plus a small rules/examples table for common EN→ES transfer
   errors.
-- Spaced repetition beyond the simple Repaso shuffle.
+- Spaced repetition beyond the simple Repaso shuffle. Level two is the first
+  half of it — cards get harder once known — but nothing decays, so a card
+  learned in March is still "level 2, done" in August. A decay rule (and a
+  demotion when a level-2 card is peeked at or failed) is the next step, and it
+  belongs here rather than as a special case inside the drill.
 - Xerra's Practice tab groups a deck's rows with a progress meter and an
   average. Deb's path shows per-lesson bests instead; if free-practice ever
   needs more shape than Repaso + Favourites, that's the pattern to port.

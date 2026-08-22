@@ -29,6 +29,13 @@ A few things worth knowing:
 
 - **The microphone asks permission once** — say yes, it only records when you
   tap the big button.
+- **Cards get harder once you know them.** Say a card well twice and it goes
+  up to **level 2**: from then on the drill shows you only the English, and
+  you have to come up with the Spanish yourself before it shows you the
+  phrase. Trying to remember is the bit that makes it stick. There's a **Show
+  me** button for when it's gone completely — no shame in it, the card just
+  comes round again. If you'd rather not, Settings → *Level 2 — drill from
+  memory* turns it off.
 - **Skip is allowed.** If a phrase won't come out at 6:30am, hit SKIP and move
   on. Tomorrow it'll be in Repaso.
 - **Repaso** (the dumbbell at the bottom of the path) mixes up everything —
@@ -47,6 +54,9 @@ A few things worth knowing:
   it'll sit under "needs the Spanish" until you or the Add tab fills it in.
 - **Edit anything**, including the lessons that came with the app. If a tip
   doesn't help you, rewrite it; there's a Reset if you change your mind.
+- **Delete your own cards.** Open one from the Phrases tab and there's a
+  Delete at the bottom — it asks twice, because it takes the recordings with
+  it. Course cards stay put; edit them instead.
 - Anything your doorman *actually* says that isn't in here — tell Fin, or just
   add it yourself on the Add tab.
 - **Settings → Export** saves your progress to a file once in a while. iPhones
