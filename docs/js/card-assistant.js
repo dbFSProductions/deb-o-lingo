@@ -67,8 +67,9 @@ export const cardAssistant = {
   /* The Sobre mí interview. Two calls, one conversation: /interview asks the
      next English question, /about-cards turns the whole transcript into cards.
      Split for the same reason replies are split off card generation — writing
-     five cards is the big slow call and asking one question is not, so they
-     have to be able to fail separately. */
+     a batch of cards is the big slow call and asking one question is not, so
+     they have to be able to fail separately. How many a batch holds is the
+     Worker's to decide; this client saves whatever comes back. */
   interview(payload, settings) {
     return request("/interview", settings, {
       method: "POST",

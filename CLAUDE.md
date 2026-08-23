@@ -289,12 +289,18 @@ and they are the answer to "AI-generated content from life context".
   something to open. With no card assistant configured the whole unit stays
   away, since it could never hold anything.
 - **Two endpoints, not one, and for the established reason.** `/interview` asks
-  the next question, `/about-cards` turns the transcript into three to five
-  cards. Writing five cards is the big slow call and asking one question is
-  not, so they have to be able to fail separately — the same argument that
-  moved replies off `/complete-card`. **Both are additive on the Worker, which
-  lives in Xerra's repo: `/complete-card`, `/chat` and `/replies` are
-  unchanged, so nothing here required a Worker edit.**
+  the next question, `/about-cards` turns the transcript into a batch of them.
+  Writing a batch is the big slow call and asking one question is not, so they
+  have to be able to fail separately — the same argument that moved replies off
+  `/complete-card`. **Both are additive on the Worker, which lives in Xerra's
+  repo: `/complete-card`, `/chat` and `/replies` were unchanged, so Sobre mí
+  required no Worker edit.**
+- **How many cards a batch holds is the Worker's business, not this app's.**
+  `makeCards` saves whatever comes back, so the number is free to change over
+  there without a line changing here — and it does: Xerra tuned it down when
+  `/about-cards` turned out to be the slowest call it makes, since the cost is
+  almost entirely the length of what it writes. Don't pin the number in this
+  file or in a test; "tell it more, get more" is the flow either way.
 - **The transcript is persisted; the card chat's history is not.** That is the
   whole difference between `aboutMe` in store.js and `cardChatPanel`'s local
   array. A card chat is a study aside that dies with the panel. This one is the
@@ -314,8 +320,9 @@ and they are the answer to "AI-generated content from life context".
   why.
 - **No review step before saving, unlike Add.** There is no half-remembered
   phrase being corrected here, so there is nothing to check the assistant's
-  reading against — and approving five cards one at a time would be the longest
-  screen in the app. A wrong one is edited or deleted from the phrase sheet.
+  reading against — and approving a batch of cards one at a time would be the
+  longest screen in the app. A wrong one is edited or deleted from the phrase
+  sheet.
 - **Duplicates are dropped client-side as well as discouraged in the prompt.**
   A model asked twice about the same life will eventually write the same
   sentence; `normaliseSentence` already ignores case, accents and punctuation,

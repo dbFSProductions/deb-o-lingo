@@ -827,8 +827,8 @@ function renderAbout() {
 
   /* The transcript, turned into cards and saved straight away. No review step,
      unlike Add: there is no half-remembered phrase being corrected here, so
-     there is nothing to check the assistant's reading against — and five cards
-     to approve one at a time would be the longest screen in the app. They land
+     there is nothing to check the assistant's reading against — and a batch of
+     cards to approve one at a time would be the longest screen in the app. They land
      as ordinary cards, so a wrong one is edited or deleted from the phrase
      sheet like any other. */
   async function makeCards() {
