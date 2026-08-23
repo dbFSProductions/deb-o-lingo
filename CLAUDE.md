@@ -454,37 +454,6 @@ is worth knowing:
   `TARGET_RMS` and end up matching each other whatever that constant is. The
   bug was never the constant — it was one of the two being silently skipped.
 
-#### And then the boost only ever went one way
-
-Fixing the knock got the recording up to `TARGET_RMS` and it was *still* the
-quieter of the two, because the sentence above was a description of the intent
-rather than of the code: `boosting = gain > 1.1` meant a clip already above the
-line was passed through at whatever level it arrived at. Only recordings are
-ever below the line, so only recordings were ever touched, and the model went
-out at Azure's loudness — measured on synthetic clips, 5.9 dB between a loud
-TTS clip and a quiet one, with the recording pinned below both.
-
-- **Levelling is now symmetric**: `gain > 1.1 || gain < 0.9`, so a loud TTS
-  clip is brought *down* to the line as well. That is what makes the constant
-  not matter, which is what the bullet above always claimed. Only a boost runs
-  through `softLimit` — turning a clip down can't clip.
-- **`TARGET_RMS` is 0.16 rather than 0.12**, chosen so the model barely moves
-  and the recording comes up to meet it, rather than the whole app getting
-  quieter to meet the recording. `MAX_BOOST` is 12 rather than 8 so a genuinely
-  faint take can still reach the new line; the boost only ever runs on quiet
-  clips, and it lifts the room with the voice, which is the accepted cost of
-  hearing yourself at all.
-- **A plosive no longer holds the gain back.** The peak cap was
-  `CEILING / headroom` — the same "one sample decides the phrase" shape as the
-  knock, just politer, and worth about a decibel on a take with a hard *p* in
-  it. It is `CEILING * OVERSHOOT / headroom` now, with `OVERSHOOT` 2: the
-  limiter was written to catch exactly this, so let it.
-- **`voiceLevels` has a floor as well as a lid.** It averaged every frame below
-  the knock line, pauses included — and a recording pauses while a TTS clip is
-  speech end to end, so the same measurement meant two different things on the
-  two halves. Frames under a fifth of the 90th-percentile frame are now out of
-  the number too, so both are read over the words.
-
 **Check this numerically, never by recording in a quiet room** — a quiet room
 is the case the old scan already handled, which is exactly why the bug survived
 so long. See *Running and checking*.
@@ -586,18 +555,13 @@ plain 150 Hz tone comes back untrimmed at 150 Hz. Reverting audio.js and
 re-running is what proves the test has teeth — the old code fails four of those
 and passes the tone.
 
-The playback levelling is checked the same way and also needs no microphone.
-Build the same quiet take twice, once with a 20 ms 0.9-amplitude burst in it,
-run both through `forPlayback`, decode, and measure the RMS over the *words*
-(frames between a fifth and four times the 90th-percentile frame — not the
-loudest window, which would measure the burst). What the numbers must say: the
-tapped take and the clean one land within a decibel of each other, a take and a
-TTS-level clip land within a decibel of *each other* (the check that matters —
-that is the complaint), three model clips 9 dB apart on the way in come out at
-the same level, a faint take still reaches the line, no sample exceeds 0.98,
-and a clip already at the line comes back as the very same blob. Before the
-fixes the tapped one came back at 1.0× gain, and after that the three model
-clips came back 5.9 dB apart.
+The playback boost is checked the same way and also needs no microphone. Build
+the same quiet take twice, once with a 20 ms 0.9-amplitude burst in it, run
+both through `forPlayback`, decode, and measure the RMS of a window *inside*
+the speech (not the loudest window — that would measure the burst). The two
+must land within a few per cent of each other and near `TARGET_RMS`, no sample
+may exceed 0.98, and an already-loud model-level clip must come back
+unchanged. Before the fix the tapped one came back at 1.0× gain.
 
 For the Add review: the preview line follows an edit to the Spanish box, a
 blank `reviewNote` still gets a notice with an Undo in it, `#edit-inputs`
