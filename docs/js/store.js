@@ -40,11 +40,18 @@ const EDITABLE = ["text", "translation", "focusNote", "situation", "usageNote"];
    `deck` at all is a Lo tuyo card, which is every card that predates this. */
 export const ABOUT_DECK = "Sobre mí";
 
-// Level two. A card is read aloud until it has been said well twice; after
-// that the drill shows only the English and Deb has to produce the Spanish
-// from memory. Trying to remember is the part that makes it stick — reading
-// it off the screen a hundredth time doesn't.
-export const RECALL_AFTER = 2;
+/* Level two. A card is read aloud until it has been said well four times;
+   after that the drill shows only the English and Deb has to produce the
+   Spanish from memory. Trying to remember is the part that makes it stick —
+   reading it off the screen a hundredth time doesn't.
+
+   Was two, which turned out to be quick: two good goes on the same morning
+   promoted a card that hadn't been away from the screen long enough to have
+   been remembered rather than just repeated. Nothing stores the level — it is
+   computed live from the attempts — so raising this demotes the cards that
+   only just cleared the old line, which is the intended effect and not a
+   migration to write. Xerra uses the same number; keep them in step. */
+export const RECALL_AFTER = 4;
 const RECALL_PASS = 75; // the same "understandable" line the lesson banner uses
 
 const DB_NAME = "debolingo";

@@ -367,7 +367,7 @@ aggregates are the fallback for an attempt that somehow has none.
 
 **Know what the bands now mean before you touch them.** `PASS_GREAT` (90) means
 *every word in the phrase* cleared 90, and `RECALL_PASS` (75) in store.js means
-every word cleared 75, twice over, before a card goes to level two. That is
+every word cleared 75, four times over, before a card goes to level two. That is
 meant to be hard, and it is a real change in difficulty rather than a bug fix —
 the old numbers were 80/60 over Azure's blend, which is roughly 72/50 of actual
 worst-word. All four aggregates stay on the card as sub-scores (Azure's own
@@ -462,7 +462,7 @@ so long. See *Running and checking*.
 
 ## Level two: drilling from memory
 
-A card is read aloud until `library.goodAttempts()` reaches `RECALL_AFTER` (2),
+A card is read aloud until `library.goodAttempts()` reaches `RECALL_AFTER` (4),
 then `library.recallReady()` flips it to a memory question: the drill prints
 the *English* where the Spanish normally goes and withholds three things, all
 of which would answer it — the Spanish text, the `focusNote`, and the
@@ -475,7 +475,7 @@ used rather than remembering). Recording reveals; so does Show me. Attempts now
 carry `mode` — `"listen"`, `"recall"` or `"recall-shown"`. Older attempts have
 no `mode`, which reads as `"listen"`, because that is what they were.
 
-An attempt counts toward the two if it scored a pass **or wasn't scored at
+An attempt counts toward the four if it scored a pass **or wasn't scored at
 all** — with no Azure key there is no score to judge by, and the alternative is
 that nothing ever leaves level one on the degraded path.
 
@@ -502,7 +502,7 @@ and Reset puts it back, a starred phrase raises the Favourites node, a saved
 card appears in Phrases *and* in Lo tuyo, and completion writes progress +
 lights the streak.
 
-For level two, seed `debolingo.attempts` with two passing attempts on a known
+For level two, seed `debolingo.attempts` with four passing attempts on a known
 phrase id and assert the drill shows the *English* in `.drill-text`, carries a
 `.level-badge`, and has no `#listen` and no `.focus-note`; then that `#show-me`
 brings all three back. Recording can be driven headlessly with Chromium's

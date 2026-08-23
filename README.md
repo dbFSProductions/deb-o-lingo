@@ -29,8 +29,8 @@ A few things worth knowing:
 
 - **The microphone asks permission once** — say yes, it only records when you
   tap the big button.
-- **Cards get harder once you know them.** Say a card well twice and it goes
-  up to **level 2**: from then on the drill shows you only the English, and
+- **Cards get harder once you know them.** Say a card well four times and it
+  goes up to **level 2**: from then on the drill shows you only the English, and
   you have to come up with the Spanish yourself before it shows you the
   phrase. Trying to remember is the bit that makes it stick. There's a **Show
   me** button for when it's gone completely — no shame in it, the card just
