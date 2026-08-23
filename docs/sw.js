@@ -4,7 +4,7 @@
 // front, so the initial load stays light. Azure API calls are never cached —
 // they're POSTs and must always go to the network.
 
-const VERSION = "debolingo-v12";
+const VERSION = "debolingo-v13";
 const SHELL = [
   "./",
   "./index.html",

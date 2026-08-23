@@ -15,13 +15,68 @@ a Catalan trainer). Division of labour:
 
 | File | Relationship to Xerra |
 |---|---|
-| `docs/js/audio.js` | Waveform + pitch analysis are a **verbatim copy**, verified against a 150 Hz tone — if you change the algorithm in either repo, change it in the other and re-verify against a known tone. The playback section has diverged: `comparableLoudness` boosts quiet mic recordings to TTS level before playing (Xerra would likely want the same fix). |
+| `docs/js/audio.js` | **Verbatim copy again**, both halves, verified against a 150 Hz tone — if you change the algorithm in either repo, change it in the other and re-verify against a known tone. `comparableLoudness` is now `forPlayback`: same boost, plus it drops the dead air before the first word. See *The silence trim* below before tuning any of it. |
 | `docs/js/speech.js` | Same behaviour, comments retouched. Port bug fixes both ways. |
 | `docs/js/store.js` | Restructured: one fixed language, course content is *code* (content.js) not seeded data, plus lesson progress + streaks. |
-| `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, dictation, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. |
+| `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. The in-page dictation buttons were removed in both, deliberately: see below. |
 | `docs/js/card-assistant.js` | **Verbatim copy**, and it talks to the *same deployed Worker* as Xerra: the Worker takes the language per request, and Pages serves both apps from the one `github.io` origin its CORS list allows. There is no `worker/` directory here — the code lives in Xerra's repo. |
 | `docs/js/content.js` | **Hand-written here.** No Swift twin, no generator — unlike Xerra, editing it directly is correct. Xerra now carries a Catalan rewrite of this course (its Salutacions, Tapes, El mercat and most of Cafès i sortir); the situations are shared, the focusNotes deliberately are not — hers teach Castilian, Xerra's teach Catalan. Add a unit here and it's worth offering there. |
 | `docs/app.css` | Was the divergent one; Xerra has now taken this palette on. The two are meant to stay in step — change a colour here and change it there. Xerra keeps its own structure (section accents, page-head banners, deck meters), so port the *values*, not the rules. |
+
+---
+
+## The silence trim
+
+`speechBounds()` finds where the speech in a clip is, and the drawn waveform,
+the playback and the pacing note all ask it. Getting this wrong is subtle, so
+know what the shape is for before tuning it:
+
+- **A fixed threshold silently stops working in a real room.** The 0.015 RMS
+  scan this file used to apply to everything is right in a quiet one.
+  `autoGainControl` is off, so a fan or traffic puts the room itself over the
+  line, the scan calls the first frame speech, and nothing is trimmed at all.
+  Measured: at 0.02 RMS of room noise it cut nothing off a 1.2 s lead-in.
+- **The waveform is the visible half; the pacing note is the costly one.** It
+  measures the trimmed clip, so an untrimmed lead-in made a take 1.07× the
+  model's length report as 2.2× as long — telling Deb to run her words
+  together because of the pause before she started talking.
+- **The room is read from the quietest frames (2nd percentile), not the quiet
+  tenth**, because a TTS clip is speech almost end to end and its tenth
+  percentile lands inside a syllable, which shortens the *model's* measured
+  length and inflates every ratio.
+- **Both ways of being wrong must be "trim less".** The threshold is capped
+  well under the voice so a loud room can't drag it up to the speech's own
+  level and start eating syllables. Where the room is within ~8 dB of the
+  voice, nothing is trimmed at all — the safe failure.
+- **The tail is padded, not cut close** (`TAIL_PAD`, 0.25 s), because a final
+  consonant is quieter than the vowel before it and the detector stops at the
+  vowel. The duration is measured *between the bounds* rather than across the
+  padded window: a TTS clip has no room to pad into, so counting the pad would
+  make every recording read a fifth slower than it is. Playback trims the front
+  only and leaves the tail alone entirely.
+- The fallback, for a clip the bounds can't judge, is the old fixed scan —
+  which is why the synthetic 150 Hz tone still passes through untouched.
+
+It can be checked without a microphone: build synthetic WAVs in the page (room
+noise, then a modulated tone, then a tail) and call `analyse()` on them through
+Playwright. The duration should be the speech alone whatever the room level, a
+1.50 s take against a 1.40 s model should read 1.07× and not 2.2×, and the
+150 Hz tone should still come back untrimmed at 150 Hz. Don't check it by
+recording in a quiet room — that is the case the old threshold already handled,
+which is exactly why the bug survived so long.
+
+## The in-page dictation buttons are gone, deliberately
+
+Every composer field used to carry a mic button driving
+`webkitSpeechRecognition`. On the iPhone, which is the only device this app
+runs on, it doesn't work — so they were removed rather than left as
+decoration. What does work is the dictation key on the iOS keyboard itself,
+and the textareas still carry `lang="es-ES"` / `lang="en-US"` so that it types
+the right language into the right box. Don't re-add the buttons; if dictation
+is ever worth another go, the thing to test on the actual phone first is
+whether `SpeechRecognition` fires `onresult` at all.
+
+---
 
 Xerra gotchas that still apply here: the `.sheet` `display:flex` vs `hidden`
 trap (comment preserved in app.css), service-worker staleness (bump `VERSION`

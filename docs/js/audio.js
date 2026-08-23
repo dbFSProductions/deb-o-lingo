@@ -122,43 +122,74 @@ export class Recorder {
 
 // ----------------------------------------------------------------- playback
 
-// Recordings are made with autoGainControl off (so the analysis sees an
-// honest signal), which leaves them far quieter than the Azure voices and
-// made the you-vs-model comparison lopsided. Before playing, measure a
-// clip's speech loudness and, if it's meaningfully below where the TTS
-// voices sit, boost it into an in-memory WAV. Peak-capped so it can't clip,
-// boost-capped so a near-silent take doesn't become amplified hiss. Clips
-// already at TTS level (the model audio) pass through untouched.
+// Two things are wrong with a stored clip as a thing to listen to, and both
+// are fixed here, at play time only. Nothing below touches the stored blob,
+// the analysis pipeline, or what goes to Azure for scoring: recordings are
+// captured with autoGainControl off on purpose, and the pitch tracker needs
+// that honest signal.
+//
+// Loudness. autoGainControl being off leaves a recording far quieter than the
+// Azure voices, which made the you-vs-model comparison lopsided. Measure the
+// speech and, if it sits meaningfully below where the TTS voices do, boost.
+// Peak-capped so it can't clip, boost-capped so a near-silent take doesn't
+// become amplified hiss. Clips already at TTS level pass through.
+//
+// Dead air at the front. You tap record, then think, then speak, so playback
+// opened with a second of nothing. It starts at speechStart() instead — the
+// same clip-derived detector trimSilence() draws and times the clip by, so the
+// picture, the sound and the pacing note all agree about where you began.
+//
+// Only the front, here. A final -s or -d is exactly the thing these lessons
+// teach you not to swallow, and a trailing trim that misjudges the threshold
+// eats it — so playback leaves the tail alone, silence and all.
 
 const TARGET_RMS = 0.12; // ≈ -18 dBFS over the speech, about the Azure level
 const MAX_BOOST = 8;
+const LEAD_IN = 0.12; // seconds of the original quiet kept, so onsets survive
+const MIN_TRIM = 0.15; // below this there's nothing worth rebuilding the clip for
+const FRAME = 256; // the analysis window, so both halves count time the same way
 
-const loudnessCache = new WeakMap();
+const playbackCache = new WeakMap();
 
-export async function comparableLoudness(blob) {
-  if (loudnessCache.has(blob)) return loudnessCache.get(blob);
+/* Where the speech starts, in samples, or 0 for "don't trim". The detector
+   itself lives with the analysis half — the drawing and the duration need the
+   same answer this does, and having two of them is what made the picture and
+   the sound disagree. */
+function speechStart(samples) {
+  return speechBounds(samples)?.start ?? 0;
+}
+
+export async function forPlayback(blob) {
+  if (playbackCache.has(blob)) return playbackCache.get(blob);
   let result = blob;
   try {
     const { samples, sampleRate } = await monoSamples(blob);
-    const speech = trimSilence(samples);
+    const speech = trimSilence(samples, sampleRate);
     const level = rms(speech, 0, speech.length);
     let peak = 0;
     for (let i = 0; i < samples.length; i++) {
       const magnitude = Math.abs(samples[i]);
       if (magnitude > peak) peak = magnitude;
     }
-    if (level > 0 && peak > 0) {
-      const gain = Math.min(TARGET_RMS / level, MAX_BOOST, 0.98 / peak);
-      if (gain > 1.1) {
-        const boosted = new Float32Array(samples.length);
-        for (let i = 0; i < samples.length; i++) boosted[i] = samples[i] * gain;
-        result = encodeWav(boosted, sampleRate);
-      }
+
+    const gain =
+      level > 0 && peak > 0 ? Math.min(TARGET_RMS / level, MAX_BOOST, 0.98 / peak) : 1;
+    const boosting = gain > 1.1;
+
+    const from = Math.max(0, speechStart(samples) - Math.round(LEAD_IN * sampleRate));
+    const trimming = from / sampleRate >= MIN_TRIM;
+
+    if (boosting || trimming) {
+      const start = trimming ? from : 0;
+      const scale = boosting ? gain : 1;
+      const prepared = new Float32Array(samples.length - start);
+      for (let i = 0; i < prepared.length; i++) prepared[i] = samples[start + i] * scale;
+      result = encodeWav(prepared, sampleRate);
     }
   } catch {
     // Undecodable blob — play it as it came.
   }
-  loudnessCache.set(blob, result);
+  playbackCache.set(blob, result);
   return result;
 }
 
@@ -170,7 +201,7 @@ export class Player {
   }
 
   async play(blob, { rate = 1, onEnded = null } = {}) {
-    const playable = await comparableLoudness(blob);
+    const playable = await forPlayback(blob);
     this.stop();
     this.url = URL.createObjectURL(playable);
     const audio = new Audio(this.url);
@@ -242,19 +273,106 @@ function rms(samples, start, end) {
   return Math.sqrt(sum / Math.max(1, end - start));
 }
 
+/* Where the speech is in a clip, in samples, or null when there is nothing to
+   judge by — too short, all room, or all voice.
+
+   The threshold is derived from the clip rather than fixed, and that is the
+   whole point of this function. A fixed 0.015 RMS works in a quiet room and
+   silently stops working in a normal one: `autoGainControl` is off, so a fan
+   or a street outside puts the room itself above the line, the scan calls the
+   first frame speech, and nothing is trimmed at all. It looks exactly like the
+   feature having been reverted, because that is what it does — the drawn
+   waveform opens with a second of dead air and the pacing note, which measures
+   the trimmed clip, reports you at twice the model's length when you were
+   close to it.
+
+   So: take the quiet tenth of the clip as the room and the loud twentieth as
+   the voice, and put the line between them. Speech has to clear it for three
+   frames running at each end, so a click or a breath doesn't count as the
+   first word or the last one. */
+function speechBounds(samples) {
+  const frames = [];
+  for (let i = 0; i + FRAME <= samples.length; i += FRAME) frames.push(rms(samples, i, i + FRAME));
+  if (frames.length < 8) return null;
+
+  const sorted = [...frames].sort((a, b) => a - b);
+  const at = (p) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
+  /* The room is read from the very quietest frames, not the quiet tenth. A TTS
+     clip is speech almost end to end — its tenth percentile lands inside a
+     syllable, which sets the line above the dips between them and shortens the
+     model's measured length by a tenth. Where there is real room noise the two
+     percentiles are within a few per cent of each other, so this costs nothing
+     on the recordings and fixes the clip being compared against. */
+  const room = at(0.02);
+  const voice = at(0.95);
+  if (voice < room * 2.5) return null; // all room, or all voice — nothing to cut
+
+  /* Comfortably above the room, and capped well below the voice. Without the
+     cap, a loud room drags `room * 3` up to the speech's own level and the
+     scan starts eating syllables — the last one first, which is the consonant
+     these lessons exist to teach. Both ways of being wrong here should be "trim
+     less", never "trim into the phrase". */
+  const threshold = Math.min(Math.max(room * 3, voice * 0.1, 0.008), voice * 0.35);
+  const RUN = 3;
+
+  let start = null;
+  let run = 0;
+  for (let i = 0; i < frames.length; i++) {
+    if (frames[i] > threshold) {
+      if (++run >= RUN) {
+        start = (i - RUN + 1) * FRAME;
+        break;
+      }
+    } else run = 0;
+  }
+  if (start === null) return null;
+
+  let end = samples.length;
+  run = 0;
+  for (let i = frames.length - 1; i >= 0; i--) {
+    if (frames[i] > threshold) {
+      if (++run >= RUN) {
+        end = (i + RUN) * FRAME;
+        break;
+      }
+    } else run = 0;
+  }
+  return { start, end: Math.min(samples.length, end) };
+}
+
+/* Kept past the last speech frame. The tail is where a final consonant lives,
+   and it is quieter than the vowel before it — the soft -d of "usted" sits
+   under the line that found the word, so the detector stops at the vowel and
+   this is what saves the consonant. A quarter-second of room on the end of the
+   picture costs nothing; a swallowed -d is the sound the phrase was chosen to
+   drill. */
+const TAIL_PAD = 0.25; // seconds
+const FIXED_THRESHOLD = 0.015; // what this file used to apply to every clip
+
 /**
  * Drops leading and trailing near-silence so two clips line up on their
- * speech, not on however long you fumbled for the stop button.
+ * speech, not on however long you fumbled for the stop button — and so the
+ * duration this reports is of the phrase, not of the room before it.
+ *
+ * The clip-derived bounds are the real answer; the fixed-threshold scan is the
+ * fallback for a clip they can't judge (a pure tone, a clip under eight
+ * frames), which is also what this function used to do to everything.
  */
-export function trimSilence(samples, threshold = 0.015) {
+export function trimSilence(samples, sampleRate = 48000) {
   if (!samples.length) return samples;
   const window = 256;
+  const speech = speechBounds(samples);
+  if (speech) {
+    const end = Math.min(samples.length, speech.end + Math.round(TAIL_PAD * sampleRate));
+    if (end > speech.start) return samples.subarray(speech.start, end);
+  }
+
   let start = 0;
-  while (start + window < samples.length && rms(samples, start, start + window) <= threshold) {
+  while (start + window < samples.length && rms(samples, start, start + window) <= FIXED_THRESHOLD) {
     start += window;
   }
   let end = samples.length - window;
-  while (end > start && rms(samples, end, end + window) <= threshold) {
+  while (end > start && rms(samples, end, end + window) <= FIXED_THRESHOLD) {
     end -= window;
   }
   if (end <= start) return samples;
@@ -360,11 +478,18 @@ export function resample(series, count) {
 /** Full analysis of one clip. */
 export async function analyse(blob) {
   const { samples, sampleRate } = await monoSamples(blob);
-  const trimmed = trimSilence(samples);
+  const trimmed = trimSilence(samples, sampleRate);
+  const speech = speechBounds(samples);
   return {
     envelope: waveform(trimmed),
     pitch: pitchContour(trimmed, sampleRate),
-    duration: trimmed.length / sampleRate,
+    /* Measured between the speech bounds, not across the drawn window: the
+       tail pad protects the picture from losing a final consonant, and a TTS
+       clip stops the moment it stops and has no room to pad into. Counting the
+       pad would make every recording read a fifth slower than it is, which is
+       the pacing note lying in the same direction the untrimmed lead-in used
+       to make it lie. */
+    duration: (speech ? speech.end - speech.start : trimmed.length) / sampleRate,
   };
 }
 
