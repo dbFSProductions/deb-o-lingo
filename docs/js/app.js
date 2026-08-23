@@ -294,6 +294,11 @@ function chatContext(phrase) {
       situation: phrase.situation ?? "",
       usageNote: phrase.usageNote ?? "",
       focusNote: phrase.focusNote ?? "",
+      /* The replies are printed under the card she is looking at, so a
+         question about one of them is a question about this card. Without
+         them the assistant was answering "what does «marchando» mean?" with
+         no idea what she was pointing at. */
+      replies: phrase.replies ?? [],
     },
   };
 }
@@ -2456,6 +2461,9 @@ function renderAdd() {
           situation: document.getElementById("add-situation").value.trim(),
           usageNote: document.getElementById("result-usage").value.trim(),
           focusNote: document.getElementById("result-focus").value.trim(),
+          // Whatever askForReplies has landed by the time she asks — the card
+          // on screen is the card the question is about.
+          replies,
         },
       }));
     } catch (error) {

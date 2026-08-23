@@ -239,6 +239,15 @@ on the card.
 - **Keeping a note repaints `#drill-notes` in place rather than
   re-rendering.** A `render()` in the drill takes the attempt you are looking
   at off the screen — and throws the conversation away with it.
+- **The panel sees the replies, and that needed a Worker change.** They are
+  printed under the card she is looking at, so "what does *marchando* mean?"
+  is a question about this card — but `validateChat` built its `card` from
+  five string fields and dropped everything else, so the tutor was answering
+  with no idea what she was pointing at. `card.replies` is now accepted
+  (optional, capped at `MAX_REPLIES`, sanitised like any other list) and the
+  prompt says what they are. Additive: a card without them sends an empty list
+  and the prompt omits the paragraph, so the old Worker and the new client are
+  compatible in both directions and the deploy order doesn't matter.
 - The sheet is where a note can be dropped again (*Forget this*). The lesson
   prints them and otherwise keeps out of the way.
 
@@ -389,6 +398,38 @@ The fallback, for a clip the bounds can't judge (under eight frames, all room,
 or all voice), is the old fixed-threshold scan, which is why a synthetic 150 Hz
 tone still passes through untouched and still reads 150 Hz.
 
+### One knock used to cancel the whole boost
+
+`forPlayback` lifts a quiet recording to roughly TTS loudness so that You and
+the model can be compared by ear. It very nearly didn't, and the way it failed
+is worth knowing:
+
+- **A 20 ms transient decided the gain for the whole clip.** The tap of a thumb
+  reaching for stop, a knock on the table, a plosive into the mic — louder than
+  anything Deb said. It set `peak`, so `0.98 / peak` pinned the gain at ~1.0,
+  `gain > 1.1` came out false, and **no boost was applied at all**. It also sat
+  inside the trimmed region, so it dragged the average level up and asked for
+  less gain to begin with. Measured on a synthetic take needing 2.9× to reach
+  TTS level: one click took it to 1.0×, and playback came out exactly as faint
+  as it was recorded while the model played at full volume.
+- **It is a cliff, not a slope**, which is why it reads as "playback seems to
+  have got quieter" rather than as a bug: the same voice in the same room is
+  boosted on the go with no knock in it and not on the go with one.
+- **`voiceLevels` reads both numbers from the frames that are plausibly
+  voice.** Anything over four times the 90th-percentile frame is a knock, not a
+  word — twelve dB above a loud vowel is not something a person does
+  mid-phrase — and it is left out of both the average and the peak.
+- **What overshoots is soft-limited, not allowed to veto.** `softLimit` bends
+  everything above a 0.7 knee towards a 0.98 ceiling with `tanh`, whose slope
+  is 1 at zero, so the curve meets the straight part cleanly and nothing below
+  the knee is touched. The rare transient saturates instead of clipping into a
+  square-edged buzz. The limiter only runs when there is a boost to catch: a
+  clip that is merely being trimmed comes through sample for sample.
+- **Both halves self-level, and that is the point.** The model goes through
+  `forPlayback` too, so recording and model are both normalised to
+  `TARGET_RMS` and end up matching each other whatever that constant is. The
+  bug was never the constant — it was one of the two being silently skipped.
+
 **Check this numerically, never by recording in a quiet room** — a quiet room
 is the case the old scan already handled, which is exactly why the bug survived
 so long. See *Running and checking*.
@@ -452,7 +493,10 @@ paints `.drill-replies` with working `[data-say]` buttons, `#p-get-replies` on
 the sheet removes itself once they land, and the Add review shows them without
 Save ever having waited. For the chat: `#drill-chat` is there at level one and
 absent while a question stands, `.chat-keep` puts a `.kept-note` under the card
-and flips to `Kept on the card ✓`, and `Forget this` on the sheet removes it.
+and flips to `Kept on the card ✓`, `Forget this` on the sheet removes it, and
+the posted `card.replies` carries whatever is on screen — from the sheet, from
+the lesson, and from the Add tab once `askForReplies` has landed — with an
+empty list for a card that has none.
 For Sobre mí: `#about-open` is on the path before the unit has cards and the
 whole unit is absent with no assistant configured, opening it fires exactly one
 `/interview` by itself, `#about-make` is disabled until a learner turn exists,
@@ -486,6 +530,14 @@ the last vowel still has energy in the last tenth of the drawn envelope; and a
 plain 150 Hz tone comes back untrimmed at 150 Hz. Reverting audio.js and
 re-running is what proves the test has teeth — the old code fails four of those
 and passes the tone.
+
+The playback boost is checked the same way and also needs no microphone. Build
+the same quiet take twice, once with a 20 ms 0.9-amplitude burst in it, run
+both through `forPlayback`, decode, and measure the RMS of a window *inside*
+the speech (not the loudest window — that would measure the burst). The two
+must land within a few per cent of each other and near `TARGET_RMS`, no sample
+may exceed 0.98, and an already-loud model-level clip must come back
+unchanged. Before the fix the tapped one came back at 1.0× gain.
 
 For the Add review: the preview line follows an edit to the Spanish box, a
 blank `reviewNote` still gets a notice with an Undo in it, `#edit-inputs`
