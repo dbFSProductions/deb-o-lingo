@@ -4,13 +4,16 @@
 // front, so the initial load stays light. Azure API calls are never cached —
 // they're POSTs and must always go to the network.
 
-const VERSION = "debolingo-v12";
+// Bumped with VERSION in js/version.js — Settings shows the two side by side,
+// so forgetting one of them shows up as two different numbers on screen.
+const VERSION = "debolingo-v13";
 const SHELL = [
   "./",
   "./index.html",
   "./app.css",
   "./manifest.webmanifest",
   "./js/app.js",
+  "./js/version.js",
   "./js/store.js",
   "./js/audio.js",
   "./js/speech.js",
@@ -22,12 +25,22 @@ const SHELL = [
   "./icons/apple-touch-icon.png",
 ];
 
+/* Precache from the network, never from the browser's own HTTP cache.
+   Pages serves every asset with `max-age=600`, so for ten minutes after a
+   deploy a plain `cache.add()` can still be handed the *previous* copy of a
+   file. That fills a brand-new cache with a mix — a new index.html sitting
+   next to the old app.js — and cache-first then serves that mix until the
+   next version bump, which no amount of reloading fixes. `reload` bypasses the
+   HTTP cache, so a version's cache is all of one version. Xerra was bitten by
+   this for real; don't undo it for "fewer requests". */
+const fromNetwork = (url) => new Request(url, { cache: "reload" });
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(VERSION)
       // Individual failures shouldn't abort the whole install.
-      .then((cache) => Promise.allSettled(SHELL.map((url) => cache.add(url))))
+      .then((cache) => Promise.allSettled(SHELL.map((url) => cache.add(fromNetwork(url)))))
       .then(() => self.skipWaiting())
   );
 });
@@ -47,6 +60,25 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== location.origin) return; // Azure et al go straight out
+
+  /* The document names the scripts the page will load, so it is the one file
+     that must never be staler than the cache behind it: network-first, with
+     the cache as the offline fallback. A deploy then lands on the first
+     reload rather than the second. */
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(VERSION).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request, { ignoreSearch: true }).then((cached) => cached || caches.match("./index.html")))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(request, { ignoreSearch: true }).then((cached) => {

@@ -53,6 +53,36 @@ export const cardAssistant = {
     });
   },
 
+  /* Replies are a separate call on purpose: card generation has to stay the
+     small fast one. Putting them in /complete-card once roughly doubled its
+     output and pushed it past the Worker's per-attempt timeout, so the Add tab
+     spun for a minute and then reported Gemini busy. */
+  replies(card, settings) {
+    return request("/replies", settings, {
+      method: "POST",
+      body: JSON.stringify(card),
+    });
+  },
+
+  /* The Sobre mí interview. Two calls, one conversation: /interview asks the
+     next English question, /about-cards turns the whole transcript into cards.
+     Split for the same reason replies are split off card generation — writing
+     five cards is the big slow call and asking one question is not, so they
+     have to be able to fail separately. */
+  interview(payload, settings) {
+    return request("/interview", settings, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  aboutCards(payload, settings) {
+    return request("/about-cards", settings, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
   chat(payload, settings) {
     return request("/chat", settings, {
       method: "POST",

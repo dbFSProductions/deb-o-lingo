@@ -7,11 +7,14 @@
 // Nothing is locked. Every node is open from the first launch — the ticks and
 // the streak record what Deb has done, they don't gate what she may do next.
 
-import { library, settings, progress, audioStore, VOICES, uid, RECALL_AFTER } from "./store.js";
+import {
+  library, settings, progress, audioStore, aboutMe, VOICES, uid, RECALL_AFTER, ABOUT_DECK,
+} from "./store.js";
 import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById } from "./content.js";
 import { Recorder, Player, analyse, relativeSemitones, resample } from "./audio.js";
 import { speech, browserSpeech, scoring } from "./speech.js";
 import { cardAssistant } from "./card-assistant.js";
+import { VERSION } from "./version.js";
 
 const view = document.getElementById("view");
 const tabbar = document.getElementById("tabbar");
@@ -28,7 +31,7 @@ const PASS_OK = 60;
 
 const state = {
   tab: "learn", // learn | phrases | add | settings
-  stage: "path", // within learn: path | drill | complete
+  stage: "path", // within learn: path | drill | complete | about
   lesson: null, // { id, title, color, colorDark, queue, index, results, practice }
   celebration: null,
 
@@ -157,6 +160,139 @@ function armDelete(button, armedLabel, onConfirm) {
   });
 }
 
+/* -------------------------------------------------------------- replies */
+
+/* "You might hear back" — two or three things a person actually says in reply,
+   each with its English and a Listen button. Saying your line well is half of
+   it; the half that strands you is the answer, so these are for the ear, not
+   just the page.
+
+   Rendered in three places (the Add review, the phrase sheet and under the
+   drill) from the one function, so they read the same everywhere. Ported from
+   Xerra with the same markup — keep the two in step. */
+function repliesBlock(replies, title = "You might hear back") {
+  if (!replies?.length) return "";
+  return `
+    <div class="section-label">${esc(title)}</div>
+    <ul class="replies">
+      ${replies
+        .map(
+          (reply, i) => `
+        <li class="reply">
+          <button class="reply-play" data-say="${i}" aria-label="Listen to this reply">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+          </button>
+          <span class="reply-main">
+            <span class="reply-text">${esc(reply.text)}</span>
+            <span class="reply-translation">${esc(reply.translation)}</span>
+          </span>
+        </li>`
+        )
+        .join("")}
+    </ul>`;
+}
+
+/* The replies go through the same Azure voice and the same audio cache as the
+   card itself — modelAudio keys on the text, so a reply heard once is there
+   offline afterwards. No key, and the browser voice reads it instead. */
+function wireReplies(root, replies) {
+  root?.querySelectorAll("[data-say]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const reply = replies[Number(button.dataset.say)];
+      if (reply) sayAloud(button, reply.text, "Couldn't play that reply.");
+    })
+  );
+}
+
+/* One tap, one voice. Stops whatever is playing, then the Azure audio for this
+   text if there is a key and the browser voice if there isn't. The busy flag
+   is on the button rather than shared, because several of these sit on one
+   screen at once. */
+async function sayAloud(button, text, failed = "Couldn't play that.") {
+  if (!text.trim()) return;
+  player.stop();
+  browserSpeech.stop();
+  if (button.dataset.busy === "1") return;
+  button.dataset.busy = "1";
+  button.classList.add("busy");
+  try {
+    const blob = await speech.modelAudio({ text, language: COURSE_LANGUAGE }, settings);
+    if (blob) await player.play(blob);
+    else if (browserSpeech.available(COURSE_LANGUAGE)) browserSpeech.speak(text, COURSE_LANGUAGE);
+    else toast("No Spanish voice available on this device.");
+  } catch {
+    toast(failed);
+  } finally {
+    button.dataset.busy = "0";
+    button.classList.remove("busy");
+  }
+}
+
+/* Replies for a card that hasn't got any — the whole course, and anything
+   added before this existed. Its own endpoint, so asking for them can never
+   slow down or fail a card generation, and so the card itself is never
+   rewritten behind your back. */
+async function fetchReplies(phrase) {
+  const result = await cardAssistant.replies(
+    {
+      text: phrase.text,
+      translation: phrase.translation,
+      situation: phrase.situation ?? "",
+      deck: "Deb-o-lingo",
+      languageCode: COURSE_LANGUAGE,
+      languageName: "Spanish (Spain)",
+    },
+    settings
+  );
+  const replies = library.setReplies(phrase.id, Array.isArray(result.replies) ? result.replies : []);
+  /* The caller is holding a decorated *copy* — the card in `lesson.queue`, the
+     phrase the sheet was opened with — so the copy has to be brought up to
+     date too, or what comes back lands on the store and not on the card being
+     looked at. Xerra mutates the stored object instead; same fix, different
+     shape. */
+  phrase.replies = replies;
+  return replies;
+}
+
+/* Answers kept from a chat, printed back under the card they were kept on.
+   Reference material like the situation, and held back on the same terms: a
+   note about a card quotes it and always explains it. */
+function notesBlock(notes, { deletable = false } = {}) {
+  if (!notes?.length) return "";
+  return `
+    <div class="section-label">Notes you kept</div>
+    <div class="kept-notes">
+      ${notes
+        .map(
+          (note) => `
+        <div class="kept-note">
+          ${note.question ? `<strong>${esc(note.question)}</strong>` : ""}
+          <span>${esc(note.answer)}</span>
+          ${deletable ? `<button class="link btn-danger" data-note="${esc(note.id)}">Forget this</button>` : ""}
+        </div>`
+        )
+        .join("")}
+    </div>`;
+}
+
+/* What the assistant is told about the card it's being asked about. The lesson
+   and the phrase sheet ask about a saved card, so they share this; the Add tab
+   reads its half-built one out of the form fields instead. */
+function chatContext(phrase) {
+  return {
+    languageCode: COURSE_LANGUAGE,
+    languageName: "Spanish (Spain)",
+    deck: "Deb-o-lingo",
+    card: {
+      text: phrase.text,
+      translation: phrase.translation,
+      situation: phrase.situation ?? "",
+      usageNote: phrase.usageNote ?? "",
+      focusNote: phrase.focusNote ?? "",
+    },
+  };
+}
+
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -196,7 +332,8 @@ function stopEverything() {
 
 function render() {
   syncTabs();
-  const inLesson = state.tab === "learn" && state.stage !== "path";
+  // Sobre mí keeps the tab bar: it is a place you go, not a lesson you are in.
+  const inLesson = state.tab === "learn" && (state.stage === "drill" || state.stage === "complete");
   document.body.classList.toggle("in-lesson", inLesson);
   // Scroll to the top only when moving to a different screen. Re-renders of
   // the same screen (the Azure score landing, revealing the translation)
@@ -207,6 +344,7 @@ function render() {
   if (state.tab === "learn") {
     if (state.stage === "drill") return renderDrill();
     if (state.stage === "complete") return renderComplete();
+    if (state.stage === "about") return renderAbout();
     return renderPath();
   }
   if (state.tab === "phrases") return renderPhrases();
@@ -222,45 +360,75 @@ function render() {
    earlier ids stay put; deleting one can reshuffle membership, which only
    costs a completion tick on a lesson she made herself. */
 const OWN_UNIT_ID = "propias";
+const ABOUT_UNIT_ID = "sobre-mi";
 const OWN_LESSON_SIZE = 5;
 
-function ownUnit() {
-  const phrases = library.ownPhrases().filter((p) => p.text.trim());
-  if (!phrases.length) return null;
-
+/** Chunk a run of her own cards into lesson-sized bites, in creation order. */
+function chunkLessons(phrases, prefix, name) {
   const lessons = [];
   for (let at = 0; at < phrases.length; at += OWN_LESSON_SIZE) {
     const number = lessons.length + 1;
     lessons.push({
-      id: `own-${number}`,
-      title: phrases.length <= OWN_LESSON_SIZE ? "Your cards" : `Your cards ${number}`,
+      id: `${prefix}-${number}`,
+      title: phrases.length <= OWN_LESSON_SIZE ? name : `${name} ${number}`,
       phrases: phrases.slice(at, at + OWN_LESSON_SIZE),
     });
   }
+  return lessons;
+}
+
+/** Her own cards, minus the ones the interview wrote — those get their own
+    unit below, so the two lists can't shuffle each other's lesson ids. */
+function ownUnit() {
+  const phrases = library.ownPhrases().filter((p) => p.text.trim() && p.deck !== ABOUT_DECK);
+  if (!phrases.length) return null;
 
   return {
     id: OWN_UNIT_ID,
     title: "Lo tuyo",
     subtitle: "The cards you made yourself",
-    color: "#ce82ff",
-    colorDark: "#a568cc",
-    lessons,
+    color: "var(--purple)",
+    colorDark: "var(--purple-dark)",
+    lessons: chunkLessons(phrases, "own", "Your cards"),
   };
 }
 
-/** The course units plus Deb's own, in path order. */
-function allUnits() {
-  const own = ownUnit();
-  return own ? [...COURSE, own] : [...COURSE];
+/* Sobre mí — cards the assistant wrote about Deb's own life. It is the one
+   unit that shows up before it has any lessons in it, because its first node
+   is not a lesson: it is the interview that fills it, and an empty invitation
+   has to be findable. With no card assistant configured there is nothing it
+   could ever hold, so it stays away entirely. */
+function aboutUnit() {
+  const phrases = library.ownPhrases().filter((p) => p.text.trim() && p.deck === ABOUT_DECK);
+  if (!phrases.length && !settings.hasAssistant) return null;
+
+  return {
+    id: ABOUT_UNIT_ID,
+    title: ABOUT_DECK,
+    subtitle: phrases.length
+      ? "Your own life, in Spanish"
+      : "Tell it about you and it writes the cards",
+    color: "var(--orange)",
+    colorDark: "var(--orange-dark)",
+    workshop: true,
+    lessons: chunkLessons(phrases, "about", "About you"),
+  };
 }
 
-/** Lesson lookup that knows about the generated "Lo tuyo" lessons too. */
+/** The course units plus the two generated ones, in path order. */
+function allUnits() {
+  return [...COURSE, ownUnit(), aboutUnit()].filter(Boolean);
+}
+
+/** Lesson lookup that knows about the generated lessons too. */
 function findLesson(id) {
   const course = lessonById(id);
   if (course) return course;
-  const own = ownUnit();
-  const lesson = own?.lessons.find((l) => l.id === id);
-  return lesson ? { ...lesson, unit: own } : null;
+  for (const unit of [ownUnit(), aboutUnit()]) {
+    const lesson = unit?.lessons.find((l) => l.id === id);
+    if (lesson) return { ...lesson, unit };
+  }
+  return null;
 }
 
 function firstOpenLesson() {
@@ -289,6 +457,21 @@ function renderPath() {
 
   const units = allUnits()
     .map((unit) => {
+      /* Sobre mí leads with a node that isn't a lesson. Every other node on
+         the path drills; this one opens the interview, because the interview
+         is the only way cards get into this unit. It sits first, and it is
+         there before the unit has anything in it at all. */
+      const workshop = unit.workshop
+        ? `
+        <div class="node-slot" style="--offset:${offsets[nodeIndex++ % offsets.length]}">
+          <button class="node open" id="about-open"
+                  style="--node:${unit.color};--node-dark:${unit.colorDark}" aria-label="${esc(ABOUT_DECK)}">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+          </button>
+          <div class="node-title">${unit.lessons.length ? "Tell it more" : "Tell it about you"}</div>
+        </div>`
+        : "";
+
       const nodes = unit.lessons
         .map((lesson) => {
           const done = progress.isDone(lesson.id);
@@ -320,7 +503,7 @@ function renderPath() {
           <div class="unit-name">${esc(unit.title)}</div>
           <div class="unit-sub">${esc(unit.subtitle)}</div>
         </div>
-        <div class="path">${nodes}</div>
+        <div class="path">${workshop}${nodes}</div>
       </section>`;
     })
     .join("");
@@ -377,6 +560,12 @@ function renderPath() {
     })
   );
 
+  document.getElementById("about-open")?.addEventListener("click", () => {
+    stopEverything();
+    state.stage = "about";
+    render();
+  });
+
   document.getElementById("practice").onclick = () => startPractice();
 
   document.getElementById("starred")?.addEventListener("click", () =>
@@ -389,6 +578,317 @@ function renderPath() {
         ? `${streak} day${streak === 1 ? "" : "s"} in a row. One lesson a day keeps it burning.`
         : "Finish a lesson to light the flame."
     );
+}
+
+// ---------------------------------------------------------------- sobre mí
+
+/* The interview, and the cards it writes.
+ 
+   Every other card in the app arrives already written — the course in
+   content.js, or something typed into Add. These are written *about Deb*, from
+   a conversation held entirely in English, because a beginner cannot answer
+   questions about her own life in Spanish yet. That is the whole reason it is
+   an interview and not a text box: you don't know what is worth saying about
+   yourself until something asks, and "tell us about you" in a blank box gets a
+   blank box back.
+ 
+   What comes out is ordinary cards of hers. They drill, star, score, level up,
+   export, edit and delete exactly like a card from Add, and nothing downstream
+   of `library.addPhrase` knows where they came from — `deck` names them so
+   they can have a unit of their own on the path, and that is all it does. */
+function interviewPayload() {
+  return {
+    languageCode: COURSE_LANGUAGE,
+    languageName: "Spanish (Spain)",
+    /* Trimmed to what the Worker will accept anyway. Its 24k body cap is
+       checked on the raw request before the validator runs, so a conversation
+       that ran all year has to be cut here or the whole call is rejected. */
+    history: aboutMe.turns.slice(-16).map((turn) => ({ role: turn.role, text: turn.text.slice(0, 800) })),
+    /* What it must not write again, sent as the English — that is what the
+       assistant is choosing between, and two cards can say the same thing in
+       different Spanish and still be the same card.
+ 
+       120 characters each, and that is not cosmetic: 16 turns at their full
+       800 plus 40 translations at the 300 a card may hold comes to 24.8k, over
+       the 24k the Worker rejects a body at outright. Enough of a translation to
+       recognise it by is all this field is for. */
+    existing: aboutCards()
+      .slice(-40)
+      .map((phrase) => phrase.translation?.slice(0, 120))
+      .filter(Boolean),
+  };
+}
+
+function aboutCards() {
+  return library.ownPhrases().filter((p) => p.deck === ABOUT_DECK);
+}
+
+function renderAbout() {
+  const cards = aboutCards().filter((p) => p.text.trim());
+  let asking = false;
+  let making = false;
+  let armed = false;
+
+  view.innerHTML = `
+    <div class="lesson-top">
+      <button class="quit" id="about-back" aria-label="Back to the path">✕</button>
+    </div>
+
+    <h1 class="about-head">${esc(ABOUT_DECK)}</h1>
+    <p class="muted about-lede">${
+      cards.length
+        ? `${cards.length} card${cards.length === 1 ? "" : "s"} written from what you've told it.`
+        : "Answer a few questions in English and it'll write you cards about your own life."
+    }</p>
+
+    ${
+      cards.length
+        ? `<button class="btn btn-primary btn-big" id="about-practise" style="width:100%">Practise these ${cards.length}</button>
+           <div class="section-label">Your cards</div>
+           <div class="rows">
+             ${cards
+               .map(
+                 (phrase) => `
+                   <div class="row">
+                     ${starButton(phrase)}
+                     <button class="row-open" data-phrase="${esc(phrase.id)}">
+                       <span class="row-main">
+                         <span class="row-title">${esc(phrase.text)}</span><br>
+                         <span class="row-sub">${esc(phrase.translation)}</span>
+                       </span>
+                       <span class="chev">›</span>
+                     </button>
+                   </div>`
+               )
+               .join("")}
+           </div>`
+        : ""
+    }
+
+    ${
+      settings.hasAssistant
+        ? `<div class="section-label">${cards.length ? "Tell it more" : "Tell it about you"}</div>
+           <div class="card chat-card">
+             <div class="chat-log" id="about-log" hidden></div>
+             <form class="chat-form" id="about-form">
+               <textarea rows="1" id="about-answer" lang="en-US" autocapitalize="sentences"
+                         aria-label="Your answer"></textarea>
+               <button class="btn btn-primary" type="submit" id="about-send">Send</button>
+             </form>
+             <div class="notice bad" id="about-error" hidden></div>
+             <div class="chat-foot" id="about-foot" hidden>
+               <button class="link btn-danger" id="about-reset">Start the conversation again</button>
+             </div>
+           </div>
+           <button class="btn btn-primary" id="about-make">
+             ${cards.length ? "Make more cards from this" : "Create cards"}
+           </button>
+           <p class="tiny muted">Answer a few questions, then let it write the phrases. Come back and tell it
+           more whenever you like — they land on the path under ${esc(ABOUT_DECK)}.</p>`
+        : `<div class="section-label">Heads up</div>
+           <div class="notice">These cards are written by the card builder, so it needs its address and
+           passcode. Add them in Settings and come back.</div>`
+    }`;
+
+  document.getElementById("about-back").onclick = () => {
+    state.stage = "path";
+    render();
+  };
+  document.getElementById("about-practise")?.addEventListener("click", () =>
+    startPractice(cards.slice())
+  );
+  view.querySelectorAll("[data-phrase]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const phrase = library.phraseById(button.dataset.phrase);
+      if (phrase) showPhrase(phrase);
+    })
+  );
+  view.querySelectorAll("[data-fav]").forEach((button) =>
+    button.addEventListener("click", () => {
+      library.toggleFavourite(button.dataset.fav);
+      render();
+    })
+  );
+
+  if (!settings.hasAssistant) return;
+
+  const log = document.getElementById("about-log");
+  const errorBox = document.getElementById("about-error");
+  const input = document.getElementById("about-answer");
+  const send = document.getElementById("about-send");
+  const make = document.getElementById("about-make");
+
+  document.getElementById("about-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    answer();
+  });
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      answer();
+    }
+  });
+  make.addEventListener("click", makeCards);
+
+  /* Clearing it is armed, the same two taps deleting a card takes — it is the
+     only way back from a conversation that went somewhere she didn't mean. The
+     cards it already wrote are left alone: they are ordinary cards now, and
+     deleting those is the phrase sheet's job. */
+  armDelete(document.getElementById("about-reset"), "Tap again to clear the conversation", () => {
+    aboutMe.clear();
+    render();
+  });
+
+  paintLog();
+  /* The first question arrives on its own. "The first time you open it, it
+     asks about you" is the feature — a chat that opens with an empty box and
+     waits is the blank page this exists to avoid. */
+  if (!aboutMe.turns.length) nextQuestion();
+
+  function paintLog() {
+    const busy = asking || making;
+    log.hidden = !aboutMe.turns.length && !busy;
+    /* Shown the moment there is a conversation to clear, rather than waiting
+       for the next full render — answering a question only repaints the log,
+       so the way out would otherwise not appear until she left and came back.
+       (Xerra still has that gap; worth porting this back.) */
+    document.getElementById("about-foot").hidden = !aboutMe.turns.length;
+    log.innerHTML =
+      aboutMe.turns
+        .map(
+          (turn) =>
+            `<div class="chat-msg ${turn.role === "learner" ? "user" : "assistant"}">${esc(turn.text)}</div>`
+        )
+        .join("") +
+      (busy ? `<div class="chat-msg assistant chat-thinking"><span class="spinner"></span></div>` : "");
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function setBusy() {
+    send.disabled = asking || making;
+    make.disabled = asking || making || !aboutMe.answered;
+    make.innerHTML = making
+      ? `<span class="spinner"></span> Writing cards…`
+      : cards.length
+      ? "Make more cards from this"
+      : "Create cards";
+    paintLog();
+  }
+
+  /* Asked for on its own after every answer, so the conversation keeps moving
+     without a "next question" button to press. A failure here leaves the
+     transcript intact — the answer is already saved, and Try again asks again
+     rather than making her retype it. */
+  async function nextQuestion() {
+    if (asking) return;
+    asking = true;
+    errorBox.hidden = true;
+    setBusy();
+    try {
+      const result = await cardAssistant.interview(interviewPayload(), settings);
+      /* Saved whether or not the page is still on screen. The transcript is
+         persistent, so a question fetched while she was in a lesson is waiting
+         when she comes back — throwing it away would mean paying for the call
+         twice. `isConnected` rather than a lookup by id: a render() puts a
+         *new* log in the document, and only this one being detached means
+         these handles are stale. */
+      aboutMe.add("assistant", result.reply);
+    } catch (error) {
+      if (!log.isConnected) return;
+      errorBox.className = "notice bad";
+      errorBox.innerHTML = `${esc(error.message)} <button class="link" id="about-retry">Try again</button>`;
+      errorBox.hidden = false;
+      document.getElementById("about-retry").addEventListener("click", () => nextQuestion());
+    } finally {
+      asking = false;
+      if (log.isConnected) setBusy();
+    }
+  }
+
+  function answer() {
+    const text = input.value.trim();
+    if (!text || asking || making) return;
+    aboutMe.add("learner", text);
+    input.value = "";
+    autosize(input);
+    setBusy();
+    nextQuestion();
+  }
+
+  /* The transcript, turned into cards and saved straight away. No review step,
+     unlike Add: there is no half-remembered phrase being corrected here, so
+     there is nothing to check the assistant's reading against — and five cards
+     to approve one at a time would be the longest screen in the app. They land
+     as ordinary cards, so a wrong one is edited or deleted from the phrase
+     sheet like any other. */
+  async function makeCards() {
+    if (making || asking) return;
+    if (!aboutMe.answered) {
+      toast("Answer a question or two first.");
+      return;
+    }
+    making = true;
+    errorBox.hidden = true;
+    setBusy();
+    try {
+      const result = await cardAssistant.aboutCards(interviewPayload(), settings);
+
+      const existing = new Set(library.allPhrases().map((phrase) => normaliseSentence(phrase.text)));
+      const fresh = [];
+      for (const card of Array.isArray(result.cards) ? result.cards : []) {
+        const key = normaliseSentence(card.text ?? "");
+        // The prompt is told what it has already written, but a model asked
+        // twice about the same life will eventually say the same sentence.
+        if (!key || existing.has(key)) continue;
+        existing.add(key);
+        fresh.push(card);
+      }
+
+      if (!fresh.length) {
+        if (!log.isConnected) return;
+        errorBox.className = "notice";
+        errorBox.textContent =
+          "Nothing new came back this time. Tell it something else about yourself and try again.";
+        errorBox.hidden = false;
+        return;
+      }
+
+      for (const card of fresh) {
+        library.addPhrase({
+          text: card.text,
+          translation: card.translation,
+          deck: ABOUT_DECK,
+          situation: card.situation || null,
+          usageNote: null,
+          focusNote: card.focusNote || null,
+        });
+      }
+      /* Said back into the conversation rather than only as a toast. The next
+         question is built from this transcript, so the assistant has to know
+         it has already written them — and it answers "how do I get more?" in
+         the one place the question occurs to you. */
+      aboutMe.add(
+        "assistant",
+        `I've written ${fresh.length} card${fresh.length === 1 ? "" : "s"} from that, and they're under ${ABOUT_DECK} on your path now. Tell me more whenever you like and I'll write some more.`
+      );
+      // The cards are saved above regardless; only the telling about it needs
+      // the page to still be here.
+      if (!log.isConnected) return;
+      toast(`${fresh.length} card${fresh.length === 1 ? "" : "s"} added. ¡Olé!`);
+      render();
+    } catch (error) {
+      if (!log.isConnected) return;
+      errorBox.className = "notice bad";
+      errorBox.textContent = error.message;
+      errorBox.hidden = false;
+    } finally {
+      making = false;
+      // A successful run has just re-rendered the page; these handles belong
+      // to the old one, and painting a spinner onto a detached node is the bug
+      // where the button comes back disabled for no visible reason.
+      if (log.isConnected) setBusy();
+    }
+  }
 }
 
 function startLesson(lesson) {
@@ -569,7 +1069,18 @@ function renderDrill() {
 
     <div id="comparison">${state.attempt ? renderComparison() : ""}</div>
 
-    ${state.banner ? renderBanner() : ""}`;
+    ${state.banner ? renderBanner() : ""}
+
+    ${drillReplies(phrase, asking)}
+    <div id="drill-notes">${drillNotes(phrase, asking)}</div>
+    ${
+      /* Asking about the card she has just said is half of practising it — she
+         gets it right and still wants to know what `pone` is doing there. The
+         box shows nothing until she types, but the answer it fetches is built
+         from the card, so it stays out while a level-two question is standing:
+         it would be a way round the question. */
+      settings.hasAssistant && !asking ? `<section id="drill-chat" hidden></section>` : ""
+    }`;
 
   document.getElementById("quit").onclick = quitLesson;
 
@@ -616,10 +1127,95 @@ function renderDrill() {
     advance({ skipped: false, score: state.attempt?.overall ?? null });
   });
 
+  wireReplies(view.querySelector(".drill-replies"), phrase.replies ?? []);
+
+  /* Fetching them mid-lesson. The card is repainted in place rather than
+     through render(), which would take the attempt she is looking at off the
+     screen — and fetchReplies writes them onto the queue's copy of the card,
+     so what comes back is on the card being practised, not on a copy of it. */
+  document.getElementById("drill-get-replies")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const errorBox = document.getElementById("drill-replies-error");
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner"></span> Asking…`;
+    errorBox.hidden = true;
+    try {
+      const replies = await fetchReplies(phrase);
+      const card = view.querySelector(".drill-replies");
+      // Moved on, or the card was edited out from under it, while we waited.
+      if (!card || currentPhrase()?.id !== phrase.id) return;
+      if (!replies.length) {
+        errorBox.className = "notice";
+        errorBox.textContent = "Nothing much gets said back to this one.";
+        errorBox.hidden = false;
+        button.remove();
+        return;
+      }
+      card.innerHTML = repliesBlock(replies);
+      wireReplies(card, replies);
+    } catch (error) {
+      errorBox.className = "notice bad";
+      errorBox.textContent = error.message;
+      errorBox.hidden = false;
+      button.disabled = false;
+      button.textContent = "What might they say back?";
+    }
+  });
+
+  /* The same panel the phrase sheet and the Add tab use, with somewhere to put
+     an answer. Keeping one repaints the notes section in place rather than
+     re-rendering: a render() here would take the attempt she is looking at off
+     the screen, and would throw the conversation away with it. */
+  const chatHost = document.getElementById("drill-chat");
+  if (chatHost) {
+    cardChatPanel(chatHost, "Ask about this card", () => chatContext(phrase), {
+      onKeep: ({ question, answer }) => {
+        const note = library.keepNote(phrase.id, { question, answer });
+        if (!note) return false;
+        // The queue holds a decorated copy, so it has to be told as well.
+        phrase.notes = library.notesFor(phrase.id);
+        document.getElementById("drill-notes").innerHTML = drillNotes(phrase, asking);
+        toast("Kept on the card.");
+        return true;
+      },
+    });
+  }
+
   if (state.attempt) wireComparison();
   drawCanvases();
 
   window.scrollTo(0, scrollY);
+}
+
+/* What she'd hear back, and — for a card that hasn't got any — the offer to go
+   and find out. The whole course predates the field, and the moment she wants
+   them is the moment she has just said the line and wondered what happens
+   next, so the offer belongs here and not only on the phrase sheet.
+
+   Two gates, and they are the ones the drill card already uses. Out while the
+   meaning is hidden, and out while a level-two question is standing — a
+   situation is a clue, but "we're full, about twenty minutes" is the answer to
+   the question she is being asked to produce. The offer sits behind the same
+   gate as the replies it would fill in: pressing it puts three answers and
+   their English on the screen, so it can't be on the near side of a line the
+   replies themselves are on the far side of. */
+function drillReplies(phrase, asking) {
+  if (!state.showTranslation || asking) return "";
+  if (phrase.replies?.length) return `<div class="card drill-replies">${repliesBlock(phrase.replies)}</div>`;
+  if (!settings.hasAssistant || !phrase.text.trim()) return "";
+  return `
+    <div class="card drill-replies">
+      <button class="btn btn-primary" id="drill-get-replies" style="width:100%">What might they say back?</button>
+      <div id="drill-replies-error" class="notice bad" hidden></div>
+    </div>`;
+}
+
+/* Answers she kept from a chat, printed back under the card. Reference
+   material, behind the same two gates: a note about a card quotes it and
+   always explains it. */
+function drillNotes(phrase, asking) {
+  if (!state.showTranslation || asking || !phrase.notes?.length) return "";
+  return `<div class="card drill-notes">${notesBlock(phrase.notes)}</div>`;
 }
 
 function quitLesson() {
@@ -1181,10 +1777,22 @@ function renderPhrases() {
         <div class="rows">${pending.map((p) => rowFor(p)).join("")}</div>`);
     }
 
-    const own = library.ownPhrases().filter((p) => p.text.trim()).filter(match);
+    const own = library
+      .ownPhrases()
+      .filter((p) => p.text.trim() && p.deck !== ABOUT_DECK)
+      .filter(match);
     if (own.length) {
       sections.push(`<div class="section-label">Deb's own phrases</div>
         <div class="rows">${own.map((p) => rowFor(p)).join("")}</div>`);
+    }
+
+    const about = library
+      .ownPhrases()
+      .filter((p) => p.text.trim() && p.deck === ABOUT_DECK)
+      .filter(match);
+    if (about.length) {
+      sections.push(`<div class="section-label">${esc(ABOUT_DECK)}</div>
+        <div class="rows">${about.map((p) => rowFor(p)).join("")}</div>`);
     }
 
     for (const unit of COURSE) {
@@ -1282,6 +1890,16 @@ function showPhrase(phrase) {
        <button class="btn btn-primary" id="p-practise">Practise now</button>
        <button class="btn" id="p-edit">Edit</button>
      </div>
+     <section id="p-replies" style="margin-bottom:14px">${repliesBlock(phrase.replies)}</section>
+     ${
+       // The course predates replies, so a card without them offers to go and
+       // get some rather than just not having the section.
+       !phrase.replies?.length && settings.hasAssistant && phrase.text.trim()
+         ? `<button class="btn" id="p-get-replies" style="width:100%;margin-bottom:14px">What might they say back?</button>
+            <div id="p-replies-error" class="notice bad" hidden></div>`
+         : ""
+     }
+     <section id="p-notes" style="margin-bottom:14px"></section>
      <section id="p-chat" hidden style="margin-bottom:14px"></section>
      ${trend ? `<div class="notice good" style="margin-bottom:12px">${esc(trend)}</div>` : ""}
      ${
@@ -1339,19 +1957,61 @@ function showPhrase(phrase) {
   });
 
   if (settings.hasAssistant) {
-    cardChatPanel(document.getElementById("p-chat"), "Ask about this card", () => ({
-      languageCode: COURSE_LANGUAGE,
-      languageName: "Spanish",
-      deck: "Deb-o-lingo",
-      card: {
-        text: phrase.text,
-        translation: phrase.translation,
-        situation: phrase.situation ?? "",
-        usageNote: phrase.usageNote ?? "",
-        focusNote: phrase.focusNote ?? "",
+    cardChatPanel(document.getElementById("p-chat"), "Ask about this card", () => chatContext(phrase), {
+      onKeep: ({ question, answer }) => {
+        if (!library.keepNote(phrase.id, { question, answer })) return false;
+        phrase.notes = library.notesFor(phrase.id);
+        paintNotes();
+        return true;
       },
-    }));
+    });
   }
+
+  /* The sheet is where a kept note can be got rid of again — the lesson prints
+     them and otherwise keeps out of the way of the card being practised. */
+  function paintNotes() {
+    const box = document.getElementById("p-notes");
+    if (!box) return;
+    box.innerHTML = notesBlock(phrase.notes, { deletable: true });
+    box.querySelectorAll("[data-note]").forEach((button) =>
+      button.addEventListener("click", () => {
+        phrase.notes = library.forgetNote(phrase.id, button.dataset.note);
+        paintNotes();
+      })
+    );
+  }
+  paintNotes();
+
+  wireReplies(document.getElementById("p-replies"), phrase.replies ?? []);
+
+  document.getElementById("p-get-replies")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const errorBox = document.getElementById("p-replies-error");
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner"></span> Asking…`;
+    errorBox.hidden = true;
+    try {
+      const replies = await fetchReplies(phrase);
+      if (!document.getElementById("p-get-replies")) return; // sheet closed
+      if (!replies.length) {
+        errorBox.className = "notice";
+        errorBox.textContent = "Nothing much gets said back to this one.";
+        errorBox.hidden = false;
+        button.remove();
+        return;
+      }
+      const section = document.getElementById("p-replies");
+      section.innerHTML = repliesBlock(replies);
+      wireReplies(section, replies);
+      button.remove();
+    } catch (error) {
+      errorBox.className = "notice bad";
+      errorBox.textContent = error.message;
+      errorBox.hidden = false;
+      button.disabled = false;
+      button.textContent = "What might they say back?";
+    }
+  });
 
   sheetBody.querySelectorAll("[data-play]").forEach((button) =>
     button.addEventListener("click", async () => {
@@ -1412,7 +2072,7 @@ function editPhrase(phrase, onSaved = null) {
   );
 
   autosizeAll(sheetBody);
-  wireEditorAI(phrase);
+  const editorAI = wireEditorAI(phrase);
 
   document.getElementById("f-save").onclick = () => {
     const text = document.getElementById("f-text").value.trim();
@@ -1428,8 +2088,15 @@ function editPhrase(phrase, onSaved = null) {
       usageNote: document.getElementById("f-usage").value.trim() || null,
       focusNote: document.getElementById("f-note").value.trim() || null,
     };
-    if (phrase) library.updatePhrase({ ...phrase, ...data });
-    else library.addPhrase(data);
+    if (phrase) {
+      library.updatePhrase({ ...phrase, ...data });
+      /* A rebuild rewrites the whole card, so the replies it had answered the
+         card it used to be — "coming right up" is no answer to a phrase that
+         is now about something else. Dropped rather than refetched: the card
+         offers *What might they say back?* again, and that costs a tap instead
+         of a call nobody asked for. A plain edit keeps them. */
+      if (editorAI?.rebuilt()) library.setReplies(phrase.id, []);
+    } else library.addPhrase(data);
     closeSheet();
     if (onSaved) onSaved(phrase ? library.phraseById(phrase.id) : null);
     render();
@@ -1461,7 +2128,11 @@ function editPhrase(phrase, onSaved = null) {
    the Add tab. Change both, or neither, and both go. */
 function wireEditorAI(phrase) {
   const button = document.getElementById("f-ai");
-  if (!button) return;
+  if (!button) return null;
+
+  // Whether the card in the boxes is the assistant's rewrite or Deb's own
+  // typing — what Save consults before deciding the replies are stale.
+  let rebuilt = false;
 
   const field = (id) => document.getElementById(id);
   const before = {
@@ -1478,6 +2149,7 @@ function wireEditorAI(phrase) {
       ["f-text", before.text], ["f-translation", before.translation],
       ["f-situation", before.situation], ["f-usage", before.usage], ["f-note", before.note],
     ]) field(id).value = value;
+    rebuilt = false;
     noteBox.hidden = true;
     autosizeAll(sheetBody);
   };
@@ -1518,6 +2190,7 @@ function wireEditorAI(phrase) {
       field("f-situation").value = result.situation;
       field("f-usage").value = result.usageNote;
       field("f-note").value = result.focusNote;
+      rebuilt = true;
       autosizeAll(sheetBody);
 
       noteBox.className = "notice";
@@ -1536,6 +2209,8 @@ function wireEditorAI(phrase) {
       }
     }
   });
+
+  return { rebuilt: () => rebuilt };
 }
 
 // --------------------------------------------------------------------- add
@@ -1546,6 +2221,13 @@ function wireEditorAI(phrase) {
 // Gemini key never leaves Cloudflare; this app only holds the shared passcode.
 
 function renderAdd() {
+  /* Not a form field, so it lives here rather than in the DOM: whatever the
+     last completion's replies came back as, saved with the card and replaced
+     by the next "Try again". The token guards against a slow set landing after
+     a different card has been asked for. */
+  let replies = [];
+  let repliesToken = 0;
+
   view.innerHTML = `
     <h1>Add a card</h1>
     <p class="muted add-intro">Write whatever you remember, in Spanish or English. Perico's clever cousin
@@ -1583,6 +2265,7 @@ function renderAdd() {
           <textarea id="result-usage" rows="3"></textarea></label>
         <label class="field"><span>Pronunciation tip</span>
           <textarea id="result-focus" rows="3"></textarea></label>
+        <section id="result-replies"></section>
         <div class="btn-row">
           <button class="btn" id="try-again">Try again</button>
           <button class="btn btn-primary" id="save-card">Save it</button>
@@ -1659,6 +2342,7 @@ function renderAdd() {
       document.getElementById("card-preview").hidden = false;
       // Sized after unhiding — a display:none box has no height to measure.
       autosizeAll(view);
+      askForReplies();
 
       // A fresh panel per card: a new card means a new conversation.
       cardChatPanel(document.getElementById("add-chat"), "Ask about this card", () => ({
@@ -1696,15 +2380,58 @@ function renderAdd() {
       return;
     }
 
-    library.addPhrase({
+    const saved = library.addPhrase({
       text,
       translation,
       situation: document.getElementById("add-situation").value.trim() || null,
       usageNote: document.getElementById("result-usage").value.trim() || null,
       focusNote: document.getElementById("result-focus").value.trim() || null,
     });
+    // Replies are stored beside the card by id, like her stars and her edits,
+    // because a course card is code and can't carry them either.
+    library.setReplies(saved.id, replies);
     renderAdd();
     toast("Saved to Lo tuyo. ¡Olé!");
+  }
+
+  /* Fired after the card is on screen and never awaited. Card generation used
+     to carry the replies, which roughly doubled its output and pushed it past
+     the Worker's per-attempt timeout — the Add tab spun for a minute and then
+     said Gemini was busy. Now the card lands at its old speed, Save is ready
+     immediately, and a failure here costs nothing but the section. */
+  function askForReplies() {
+    const box = document.getElementById("result-replies");
+    const token = ++repliesToken;
+    replies = [];
+    box.innerHTML = `<p class="tiny muted"><span class="spinner"></span> Asking what you'd hear back…</p>`;
+
+    cardAssistant
+      .replies(
+        {
+          text: document.getElementById("add-target").value.trim(),
+          translation: document.getElementById("add-english").value.trim(),
+          situation: document.getElementById("add-situation").value.trim(),
+          deck: "Deb-o-lingo",
+          languageCode: COURSE_LANGUAGE,
+          languageName: "Spanish (Spain)",
+        },
+        settings
+      )
+      .then((result) => {
+        const current = document.getElementById("result-replies");
+        if (token !== repliesToken || !current) return;
+        replies = Array.isArray(result.replies) ? result.replies : [];
+        current.innerHTML = replies.length
+          ? repliesBlock(replies)
+          : `<p class="tiny muted">Nothing much gets said back to this one.</p>`;
+        wireReplies(current, replies);
+      })
+      .catch(() => {
+        const current = document.getElementById("result-replies");
+        if (token !== repliesToken || !current) return;
+        current.innerHTML =
+          `<p class="tiny muted">Couldn't fetch what you'd hear back — the card is fine to save, and the phrase sheet can ask again later.</p>`;
+      });
   }
 
   function setAddBusy(busy) {
@@ -1726,10 +2453,11 @@ function normaliseSentence(value) {
     .trim();
 }
 
-/* Chat about a card, shown under a finished card on Add and on the phrase
-   sheet. History lives only as long as the panel does — it's a study aside,
-   not a stored transcript. getContext runs per question, so edits count. */
-function cardChatPanel(host, title, getContext) {
+/* Chat about a card, shown under the drill card, under a finished card on Add
+   and on the phrase sheet. History lives only as long as the panel does — it's
+   a study aside, not a stored transcript. getContext runs per question, so
+   edits count. `onKeep` is what turns an answer into something that stays. */
+function cardChatPanel(host, title, getContext, { onKeep = null } = {}) {
   const history = [];
   let busy = false;
 
@@ -1751,6 +2479,22 @@ function cardChatPanel(host, title, getContext) {
   autosize(input);
   const send = form.querySelector("button");
   const errorBox = host.querySelector(".chat-error");
+
+  /* An answer worth keeping goes onto the card. Delegated, because renderLog
+     rewrites the whole log on every turn. Kept per answer rather than per
+     conversation: a chat wanders, and the one paragraph that finally explained
+     the subjunctive is the part worth having under the card next time — and
+     the question that drew it is stored with it, because an answer with no
+     question in front of it reads like a note someone else left. */
+  log.addEventListener("click", (event) => {
+    const button = event.target.closest?.("[data-keep]");
+    if (!button || !onKeep) return;
+    const at = Number(button.dataset.keep);
+    const answer = history[at];
+    if (!answer || answer.kept) return;
+    answer.kept = Boolean(onKeep({ question: history[at - 1]?.text ?? "", answer: answer.text }));
+    renderLog();
+  });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -1802,7 +2546,15 @@ function cardChatPanel(host, title, getContext) {
     log.hidden = !history.length && !busy;
     log.innerHTML =
       history
-        .map((turn) => `<div class="chat-msg ${turn.role === "user" ? "user" : "assistant"}">${esc(turn.text)}</div>`)
+        .map(
+          (turn, i) => `<div class="chat-msg ${turn.role === "user" ? "user" : "assistant"}">${esc(turn.text)}${
+            onKeep && turn.role === "assistant"
+              ? turn.kept
+                ? `<span class="chat-kept">Kept on the card ✓</span>`
+                : `<button class="link chat-keep" data-keep="${i}">Keep on the card</button>`
+              : ""
+          }</div>`
+        )
         .join("") +
       (busy ? `<div class="chat-msg assistant chat-thinking"><span class="spinner"></span></div>` : "");
     log.scrollTop = log.scrollHeight;
@@ -1949,6 +2701,20 @@ function renderSettings() {
       </p>
     </div>
 
+    <div class="section-label">Version</div>
+    <div class="card">
+      <div class="version-row">
+        <span>Running</span>
+        <strong id="s-running">${esc(VERSION)}</strong>
+      </div>
+      <div class="version-row">
+        <span>Installed</span>
+        <strong id="s-installed">…</strong>
+      </div>
+      <p class="tiny muted" id="s-version-note" style="margin:10px 0 0"></p>
+      <button class="btn" id="s-update" style="width:100%;margin-top:10px">Check for an update</button>
+    </div>
+
     <p class="tiny muted center" style="margin-top:22px">deb·o·lingo — made for Deb, with love (and a parrot)</p>`;
 
   document.getElementById("s-rate").oninput = (event) => {
@@ -2053,6 +2819,62 @@ function renderSettings() {
   };
 
   showUsage();
+  showVersion();
+
+  document.getElementById("s-update").onclick = async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner"></span> Checking…`;
+    try {
+      const registration = await navigator.serviceWorker?.getRegistration?.();
+      // Asks the network for sw.js regardless of how fresh the browser thinks
+      // its copy is. If a new one is there it installs and takes over, and the
+      // two numbers above go out of step until the page is reloaded.
+      await registration?.update();
+    } catch {
+      // Offline, or no worker — showVersion says what it can see either way.
+    }
+    button.disabled = false;
+    button.textContent = "Check for an update";
+    await showVersion({ checked: true });
+  };
+}
+
+/* Two numbers, because "is the fix in?" and "has the phone caught up?" are
+   different questions, and having only one of them is what makes a stale app
+   so confusing. "Running" is the version of the JavaScript executing right
+   now; "Installed" is what the service worker has in its cache, read back from
+   the cache name. They match in the steady state. After a deploy the installed
+   one moves first, and the gap between them is the reload still owed. */
+async function showVersion({ checked = false } = {}) {
+  const installedEl = document.getElementById("s-installed");
+  const note = document.getElementById("s-version-note");
+  if (!installedEl || !note) return;
+
+  let installed = null;
+  try {
+    const keys = await caches.keys();
+    installed = keys.filter((key) => key.startsWith("debolingo-")).sort().pop() ?? null;
+  } catch {
+    installed = null;
+  }
+  const short = installed ? installed.replace(/^debolingo-/, "") : null;
+
+  installedEl.textContent = short ?? "not cached";
+  note.className = "tiny muted";
+  if (!short) {
+    note.textContent =
+      "No offline copy yet — the app is coming straight from the network, so it's always current.";
+    return;
+  }
+  if (short === VERSION) {
+    note.textContent = checked ? "Up to date." : "Up to date — this is the newest version on this phone.";
+    return;
+  }
+  note.className = "tiny";
+  note.innerHTML = `A newer version (${esc(short)}) is installed but isn't running yet. Reload to finish updating.
+    <button class="link" id="s-reload" style="padding:0 0 0 4px">Reload now</button>`;
+  document.getElementById("s-reload").onclick = () => location.reload();
 }
 
 async function showUsage() {
@@ -2098,6 +2920,7 @@ function flameSVG() {
 settings.load();
 library.load();
 progress.load();
+aboutMe.load();
 state.showTranslation = settings.showTranslationUpFront;
 render();
 
