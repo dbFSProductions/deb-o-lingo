@@ -40,6 +40,16 @@ different numbers on the screen rather than silently. That panel is also the
 answer to "is the fix in, or has the phone not caught up?" — after a deploy the
 installed number moves first, and the gap is the reload still owed.
 
+**Say the two numbers out loud whenever you hand work over.** Every pull
+request and every merge should end with the pair written out — `js/version.js`
+first, then `sw.js`'s — because Settings → *Version* is the only way to tell
+"the fix is in" from "the phone hasn't caught up", and that check is worthless
+without knowing what number to expect. So: state them in the PR body, and state
+them again when reporting a change as done. Deb should never have to go and
+read the diff to find out what she's looking for.
+`.github/pull_request_template.md` has a slot for them so the PR half is
+structural rather than a thing to remember.
+
 Bumping it is necessary and was once not sufficient. The install handler used
 to precache with `cache.add(url)`, whose fetch goes through the browser's own
 HTTP cache — and Pages serves everything `max-age=600`. So for ten minutes
