@@ -19,7 +19,7 @@ a Catalan trainer). Division of labour:
 | `docs/js/speech.js` | Same behaviour, comments retouched. Port bug fixes both ways. |
 | `docs/js/store.js` | Restructured: one fixed language, course content is *code* (content.js) not seeded data, plus lesson progress + streaks. |
 | `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, dictation, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. |
-| `docs/js/card-assistant.js` | **Verbatim copy**, and it talks to the *same deployed Worker* as Xerra: the Worker takes the language per request, and Pages serves both apps from the one `github.io` origin its CORS list allows. There is no `worker/` directory here — the code lives in Xerra's repo. All five endpoints are now called from here (`/complete-card`, `/chat`, `/replies`, `/interview`, `/about-cards`). |
+| `docs/js/card-assistant.js` | Was a verbatim copy; **Xerra's has since grown call timing** (`aiLog` + a Settings panel, its PR #29) that this app doesn't have, so don't "fix" the two back into agreement without porting it deliberately. Everything else is the same, and it talks to the *same deployed Worker*: the Worker takes the language per request, and Pages serves both apps from the one `github.io` origin its CORS list allows. There is no `worker/` directory here — the code lives in Xerra's repo. All five endpoints are called from here (`/complete-card`, `/chat`, `/replies`, `/interview`, `/about-cards`). |
 | `docs/js/version.js` | Ported from Xerra. Bumped in step with `VERSION` in `sw.js`; Settings shows the pair. |
 | `docs/js/content.js` | **Hand-written here.** No Swift twin, no generator — unlike Xerra, editing it directly is correct. Xerra now carries a Catalan rewrite of this course (its Salutacions, Tapes, El mercat and most of Cafès i sortir); the situations are shared, the focusNotes deliberately are not — hers teach Castilian, Xerra's teach Catalan. Add a unit here and it's worth offering there. |
 | `docs/app.css` | Was the divergent one; Xerra has now taken this palette on. The two are meant to stay in step — change a colour here and change it there. Xerra keeps its own structure (section accents, page-head banners, deck meters), so port the *values*, not the rules. |
@@ -295,6 +295,13 @@ and they are the answer to "AI-generated content from life context".
   `/complete-card`. **Both are additive on the Worker, which lives in Xerra's
   repo: `/complete-card`, `/chat` and `/replies` were unchanged, so Sobre mí
   required no Worker edit.**
+- **The Worker owns how these calls behave, and it can change under this app.**
+  Xerra's #29 put `/interview` and `/chat` on a smaller, faster model with a
+  10s timeout, and cut `/about-cards` down. None of that needed a line here,
+  which is the arrangement working as intended — but it does mean "the chat
+  answers got worse" may be a Worker change rather than anything in this repo.
+  `GEMINI_FAST_MODEL = GEMINI_MODEL` in Xerra's `wrangler.toml` undoes the
+  model half.
 - **How many cards a batch holds is the Worker's business, not this app's.**
   `makeCards` saves whatever comes back, so the number is free to change over
   there without a line changing here — and it does: Xerra tuned it down when
