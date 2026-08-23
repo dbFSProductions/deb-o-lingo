@@ -45,7 +45,7 @@ export const ABOUT_DECK = "Sobre mí";
 // from memory. Trying to remember is the part that makes it stick — reading
 // it off the screen a hundredth time doesn't.
 export const RECALL_AFTER = 2;
-const RECALL_PASS = 60; // the same "understandable" line the drill banner uses
+const RECALL_PASS = 75; // the same "understandable" line the lesson banner uses
 
 const DB_NAME = "debolingo";
 const DB_VERSION = 1;
@@ -143,6 +143,36 @@ function writeJSON(key, value) {
   } catch (error) {
     console.warn("Storage write failed", error);
   }
+}
+
+/* The one number the app shows and judges by: Deb's weakest word.
+
+   Every aggregate Azure hands back is generous. `pronunciationScore` is the
+   worst of them — for a read phrase in a locale without prosody assessment
+   (which is every locale but en-US, so es-ES too) it is
+   `0.6·s0 + 0.2·s1 + 0.2·s2` over accuracy, fluency and completeness sorted
+   lowest first, and completeness is 100 whenever you say all the words while
+   fluency on a five-word phrase is nearly always 95+, so two of the three
+   slots are pinned near the top. AccuracyScore is generous too, because it is
+   a mean over the phrase: say four words well and mangle the fifth and it
+   barely moves.
+
+   The doorman doesn't average her. He hears the word she got wrong. So the
+   score is the lowest word in the phrase, and a word Azure marks as omitted
+   scores zero — not saying it is the worst way of saying it.
+
+   Word detail has been stored on every scored attempt since the first version,
+   so this reads back over the whole history without a migration. The
+   aggregates are the fallback for an attempt that somehow has no words.
+
+   Same function, same fallbacks as Xerra's. Keep them in step. */
+export function attemptScore(attempt) {
+  const words = attempt?.words ?? [];
+  const scores = words
+    .map((word) => (word.errorType === "Omission" ? 0 : word.score))
+    .filter((score) => typeof score === "number");
+  if (scores.length) return Math.min(...scores);
+  return attempt?.accuracy ?? attempt?.overall ?? null;
 }
 
 export function uid() {
@@ -381,7 +411,7 @@ export const library = {
 
   bestScore(phraseID) {
     const scores = this.attemptsFor(phraseID)
-      .map((a) => a.overall)
+      .map(attemptScore)
       .filter((s) => typeof s === "number");
     return scores.length ? Math.max(...scores) : null;
   },
@@ -391,7 +421,7 @@ export const library = {
      judge it by and a card would otherwise never leave level one. */
   goodAttempts(phraseID) {
     return this.attemptsFor(phraseID).filter(
-      (a) => a.overall == null || a.overall >= RECALL_PASS
+      (a) => attemptScore(a) == null || attemptScore(a) >= RECALL_PASS
     ).length;
   },
 

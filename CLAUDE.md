@@ -15,7 +15,7 @@ a Catalan trainer). Division of labour:
 
 | File | Relationship to Xerra |
 |---|---|
-| `docs/js/audio.js` | Waveform + pitch analysis are a **verbatim copy**, verified against a 150 Hz tone — if you change the algorithm in either repo, change it in the other and re-verify against a known tone. The playback section has diverged: `comparableLoudness` boosts quiet mic recordings to TTS level before playing (Xerra would likely want the same fix). |
+| `docs/js/audio.js` | **Verbatim copy, both halves.** Recording, playback, the speech detector, the waveform and the pitch tracker are the same code in both repos — change one, change the other, and re-verify numerically (below). Only two comments differ, where the tail-pad argument names a Spanish final -s rather than a Catalan final -t. |
 | `docs/js/speech.js` | Same behaviour, comments retouched. Port bug fixes both ways. |
 | `docs/js/store.js` | Restructured: one fixed language, course content is *code* (content.js) not seeded data, plus lesson progress + streaks. |
 | `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, dictation, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. |
@@ -189,10 +189,33 @@ of it; the half that strands you is the answer.
   key, browser voice if there isn't, busy flag on the button itself so several
   can sit on one screen.
 
-Xerra has all of this, plus a preview line on the Add review that reads the
-card aloud, an Undo that withdraws the whole completion, and replies replaced
-by the editor's AI rebuild. Those three are **not ported yet** and are worth
-having.
+### The Add review says the card out loud, and can be sent back
+
+A generated card used to be checkable only by reading it. The review opens with
+a **preview line** — the phrase, its English and a play button in the Add tab's
+orange — built out of the same parts as a reply because it does the same job
+one step up.
+
+- **The preview reads the field, not a snapshot of the completion.** The
+  Spanish stays editable right up until Save, and a preview saying something
+  other than what is in the box would be worse than no preview.
+- **"Try again" is now "Generate again", and the way back to the inputs is
+  spelled out.** It always re-read the composer fields; the trouble was that
+  they are at the top of the page and it is at the bottom, so on a phone they
+  are never on screen together and it read as "roll the dice again". The hint
+  scrolls the composer into view and puts the cursor in Situation — usually the
+  field that needed to be clearer.
+- **Undo withdraws the whole completion.** The completion overwrites all three
+  inputs with its corrected versions, so re-steering it meant editing the
+  assistant's rewrite of your own words. Undo puts the raw three back, hides
+  the review and the chat, and bumps `repliesToken` — a reply still in flight
+  answers a card that no longer exists. The review notice is always shown now
+  (with a fallback line), because a completion with no `reviewNote` would
+  otherwise have nowhere to hang the Undo.
+- The two review buttons **stack** rather than sharing a row: at 390px both
+  wrap onto a second line and go 70px tall.
+
+Xerra has all of this in the same shape. Keep them in step.
 
 ## Asking about the card you are practising, and keeping the answer
 
@@ -291,6 +314,87 @@ deck list, this has a path) and the Spanish name.
 
 ---
 
+## The score is your weakest word
+
+Azure has no strictness setting worth having, and every number it returns is
+an aggregate. `pronunciationScore` is the worst: for a read phrase in a locale
+without prosody assessment — which is every locale but en-US, so es-ES too —
+it is `0.6·s0 + 0.2·s1 + 0.2·s2` over accuracy, fluency and completeness
+sorted lowest first, and completeness is 100 whenever you say all the words
+while fluency on a five-word phrase is nearly always 95+. Two of the three
+slots are pinned near the top. `accuracyScore` is a mean over the phrase, so
+four good words carry a mangled fifth.
+
+So `attemptScore()` in store.js returns **the lowest word score in the
+attempt**, with an `Omission` counting as zero — not saying a word is the
+worst way of saying it. The doorman doesn't average Deb; he hears the word she
+got wrong. Word detail has been stored on every scored attempt since the first
+version, so this reads back over the whole history with no migration; the
+aggregates are the fallback for an attempt that somehow has none.
+
+**Know what the bands now mean before you touch them.** `PASS_GREAT` (90) means
+*every word in the phrase* cleared 90, and `RECALL_PASS` (75) in store.js means
+every word cleared 75, twice over, before a card goes to level two. That is
+meant to be hard, and it is a real change in difficulty rather than a bug fix —
+the old numbers were 80/60 over Azure's blend, which is roughly 72/50 of actual
+worst-word. All four aggregates stay on the card as sub-scores (Azure's own
+blend included, labelled), and the card names the weakest word so the dial
+points at the chip that earned it.
+
+One thing deliberately left alone: `progress.lessons[].best` still holds
+averages recorded under the old scale, so a lesson's stored best can read
+higher than anything Deb could score today. Migrating them would mean
+inventing numbers; they age out as she repeats lessons.
+
+Xerra scores Catalan through the same call with the same function and the same
+constants. Keep them in step.
+
+---
+
+## The trim, and why it has to be one detector
+
+`speechBounds` finds where the speech is, and the picture, the sound and the
+pacing note all ask it. That is the whole of the fix, and the history is why it
+has to stay that way:
+
+- **A fixed threshold silently stops working in a real room.** 0.015 RMS over
+  256-sample frames is right in a quiet one. `autoGainControl` is off, so a fan
+  or traffic puts the room itself over the line, the scan calls the first frame
+  speech, and nothing is trimmed at all — indistinguishable from the feature
+  having been reverted. Measured here, before the port: a 1.2 s lead-in of room
+  noise at 0.02 RMS in front of 1.5 s of speech reported **3.3 s**, the whole
+  untrimmed clip.
+- **Which made the pacing note lie.** A 1.50 s take against a 1.40 s model
+  measured **2.36×** and told Deb to "try running the words together more" —
+  scolding her for the pause before she started talking. It now reads 1.05×,
+  which is "nicely matched".
+- **The room is read from the quietest frames (2nd percentile), not the quiet
+  tenth.** A TTS clip is speech almost end to end, so its tenth percentile
+  lands inside a syllable and sets the line above the dips between them, which
+  shortens the *model's* measured length and inflates every ratio.
+- **Both ways of being wrong must be "trim less".** The threshold is capped
+  well under the voice (`voice * 0.35`) so a loud room can't drag `room * 3` up
+  to the speech's own level and start eating syllables.
+- **Three frames in a row at each end**, so a click or the stop button isn't
+  the first word or the last one.
+- **The tail is padded, not cut close.** `TAIL_PAD` (0.25 s) is what saves a
+  final consonant, whose release sits under the line that found the word.
+  "¿Cuántos?" heard as "¿cuánto?" is a different question. Playback trims the
+  front only and leaves the tail alone entirely.
+- **The duration is measured between the bounds, not across the padded
+  window** — counting the pad would make every recording read a fifth slower
+  than it is.
+
+The fallback, for a clip the bounds can't judge (under eight frames, all room,
+or all voice), is the old fixed-threshold scan, which is why a synthetic 150 Hz
+tone still passes through untouched and still reads 150 Hz.
+
+**Check this numerically, never by recording in a quiet room** — a quiet room
+is the case the old scan already handled, which is exactly why the bug survived
+so long. See *Running and checking*.
+
+---
+
 ## Level two: drilling from memory
 
 A card is read aloud until `library.goodAttempts()` reaches `RECALL_AFTER` (2),
@@ -360,7 +464,37 @@ alone. For the version panel: `#s-running` and `#s-installed` agree after a
 clean install. Two smoke scripts covering all of that live in the session
 scratchpad rather than the repo — there's no test runner here on purpose.
 
-Anything touching Azure still can't be covered — no key in the repo, ever.
+For the weakest-word score, `attemptScore` is worth driving straight at the
+module: five words with a 61 among them returns 61 and not Azure's 93, an
+`Omission` returns 0, no word detail falls back to `accuracy` and then to
+`overall`, and an unscored attempt stays null. Then that it reaches the screen
+— two seeded attempts scoring 93-with-a-61-in-it must *not* reach level two,
+the attempt rows must read 61, and the phrase row's best must be the best
+worst-word. The score card itself can be driven for real: `--use-fake-device-
+for-media-stream` plus replacing `scoring.score` on the module object (app.js
+holds the same object, so the stub reaches it) gets you a `.dial-value` of 61,
+an `Azure 93` sub-score beside it, and the "your weakest word, “leche”" line.
+
+**The trim is the one thing to check numerically, and it needs no microphone.**
+Build synthetic clips in the page — room noise at a chosen RMS, then a
+150 Hz tone with syllable-rate amplitude modulation, then a tail — encode them
+as WAVs and call `analyse()` on them through Playwright. What the numbers must
+say: the reported duration is the speech alone at 0.001, 0.02 *and* 0.05 RMS of
+room noise; a 1.50 s take against a 1.40 s model reads ~1.05× and not 2.2×; a
+TTS-shaped clip (speech end to end) isn't shortened; a quiet high burst after
+the last vowel still has energy in the last tenth of the drawn envelope; and a
+plain 150 Hz tone comes back untrimmed at 150 Hz. Reverting audio.js and
+re-running is what proves the test has teeth — the old code fails four of those
+and passes the tone.
+
+For the Add review: the preview line follows an edit to the Spanish box, a
+blank `reviewNote` still gets a notice with an Undo in it, `#edit-inputs`
+focuses `#add-situation`, `#try-again` posts the edited situation, and
+`#undo-complete` restores all three raw inputs and re-hides `#card-preview`
+and `#add-chat`.
+
+Anything touching Azure's real endpoint still can't be covered — no key in the
+repo, ever.
 
 Deployment is GitHub Pages from `main`/`docs`. All paths are relative, so it
 works from a subpath. Bump **both** `VERSION`s (`sw.js` and `js/version.js`)
@@ -389,33 +523,19 @@ tell you which one you forgot.
   needs more shape than Repaso + Favourites, that's the pattern to port.
 - More units as Deb's world grows (pharmacy, taxi, phone calls).
 
-### Still sitting in Xerra, not ported
+### Where the two forks still differ
 
-Found while pulling replies, the drill chat, Sobre mí and the version panel
-across. None of them are started here:
+Nothing is waiting to be ported now. What's left is deliberate:
 
-- **`audio.js`'s analysis half.** Xerra rewrote `speechBounds`, `trimSilence`
-  and `analyse`'s duration: one clip-derived threshold read from the quietest
-  frames drives the picture, the sound *and* the pacing note. Here all three
-  still use the old fixed 0.015 RMS scan, which silently stops trimming
-  anything in a room with a fan in it (`autoGainControl` is off) — and the
-  pacing note measures the untrimmed clip, so a take 1.07× the model's length
-  can read as 2.2× and scold Deb for the pause before she started talking.
-  This is the most worthwhile of the four. Check it numerically with synthetic
-  WAVs, not by recording in a quiet room — a quiet room is the case the old
-  scan already handled.
-- **The score is your weakest word.** Xerra's `attemptScore` returns the lowest
-  word score in the attempt (an `Omission` counting as zero) rather than any of
-  Azure's aggregates, all of which are generous. Here `a.overall` is still the
-  number everywhere. Bringing it in step is `attemptScore` plus the three
-  constants (`PASS_GREAT`, `PASS_OK`, `RECALL_PASS`) — and it makes every band
-  meaningfully harder, so it's a decision, not a fix.
-- **The Add review's preview line and Undo.** Xerra's review plays the card
-  aloud before you save it, spells out the way back to the composer fields, and
-  has an Undo that withdraws the whole completion and puts the raw three inputs
-  back. Deb's review still only reads.
-- **The editor's AI rebuild refetching replies.** Handled here in the cheap
-  direction: `wireEditorAI` reports whether the card in the boxes is the
-  assistant's rewrite, and Save drops the replies if it is, so the card offers
-  *What might they say back?* again. Xerra fetches a replacement set instead
-  and lets Undo restore the originals — better, and more moving parts.
+- **The editor's AI rebuild handles replies differently.** Here `wireEditorAI`
+  reports whether the card in the boxes is the assistant's rewrite, and Save
+  drops the replies if it is, so the card offers *What might they say back?*
+  again. Xerra fetches a replacement set instead and lets Undo restore the
+  originals — better, and more moving parts. Either is defensible; don't
+  "fix" one into the other without deciding which.
+- **Deck list versus path.** Xerra browses by deck with an accordion and a
+  merged search page; here everything hangs off the path plus a flat Phrases
+  list. Sobre mí is the visible consequence: a deck row there, a unit with a
+  workshop node here.
+- **The content.** Same situations in the everyday decks, deliberately
+  different focusNotes — hers teach Castilian, Xerra's teach Catalan.

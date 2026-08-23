@@ -65,9 +65,12 @@ A few things worth knowing:
   situations too, so "market" or "polite" finds things.
 - **The Add tab** builds new cards for you. Type what you're trying to say, in
   Spanish or English or a mangled mix, and it comes back corrected with the
-  meaning, when to use it, and what to listen for. You can ask it follow-up
-  questions about any card ("why *me pone* and not *puedo tener*?"). Cards you
-  save join **Lo tuyo** on the path.
+  meaning, when to use it, and what to listen for. **Hear it before you keep
+  it** — there's a play button on the card at the top of the review. If it's
+  not what you meant, **Undo** puts your own words back exactly as you typed
+  them, so you can change the situation and **Generate again**. You can ask it
+  follow-up questions about any card ("why *me pone* and not *puedo tener*?").
+  Cards you save join **Lo tuyo** on the path.
 - **Jot things down.** Leave the Spanish blank and just write the English —
   it'll sit under "needs the Spanish" until you or the Add tab fills it in.
 - **Edit anything**, including the lessons that came with the app. If a tip
@@ -94,11 +97,22 @@ A few things worth knowing:
 ## What the scores mean
 
 The score comes from Azure's pronunciation assessment — the same speech
-recognition tech call centres use, pointed at your Spanish. 80+ means a native
-would follow you without blinking. Tap a tinted word to see which *sound*
-inside it needs work. The waveforms underneath show rhythm: if your bar chart
-is much longer than the model's, you're leaving gaps between words that
-Spanish doesn't have.
+recognition tech call centres use, pointed at your Spanish.
+
+**The number is your weakest word, not your average.** Azure will happily hand
+back 93 for a phrase with one word mangled in the middle of it, because all of
+its own scores are averages — and the man behind the counter doesn't average
+you, he hears the word you got wrong. So the big number is the lowest word in
+the phrase, and a word that didn't come out at all counts as zero. It says
+underneath which word it was.
+
+That makes it a harder number than it looks: **90 means every single word
+cleared 90**, and 75 means every word cleared 75. Azure's own averages are
+still there in small print beside the dial if you want to see the flattering
+version. Tap a tinted word for the *sounds* inside it.
+
+The waveforms underneath show rhythm: if your bar is much longer than the
+model's, you're leaving gaps between words that Spanish doesn't have.
 
 ## For whoever maintains this
 

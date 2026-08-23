@@ -688,7 +688,9 @@ canvas { width: 100%; display: block; }
   font-size: 1.25rem; font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
-.subscores { display: flex; gap: 14px; }
+/* Four aggregates now sit beside the dial, under the verdict line, so they
+   have to wrap rather than squeeze at phone width. */
+.subscores { display: flex; flex-wrap: wrap; gap: 6px 13px; margin-top: 5px; }
 .subscore-label { font-size: 0.7rem; color: var(--text-3); font-weight: 700; }
 .subscore-value { font-size: 0.95rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 
@@ -920,6 +922,38 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 .reply-main { flex: 1; min-width: 0; }
 .reply-text { display: block; font-weight: 800; overflow-wrap: anywhere; }
 .reply-translation { display: block; margin-top: 2px; font-size: 0.82rem; color: var(--text-2); overflow-wrap: anywhere; }
+
+/* The card she's about to save, said out loud. Same shape as a reply — play
+   button, the line, its English — because it does the same job one step up, so
+   it wears the Add tab's orange and slightly bigger text. */
+.preview-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--orange) 13%, transparent);
+}
+.preview-line .reply-play {
+  width: 38px;
+  height: 38px;
+  background: var(--orange);
+  box-shadow: 0 3px 0 var(--orange-dark);
+}
+.preview-line .reply-play:active { box-shadow: 0 1px 0 var(--orange-dark); }
+.preview-line .reply-play svg { width: 17px; height: 17px; }
+.preview-line .reply-text { font-size: 1.08rem; }
+
+/* The fields "Generate again" re-reads are at the top of the page, so the way
+   back to them is spelled out next to the button rather than assumed. */
+.regen-hint { margin: 14px 4px 0; }
+.regen-hint .link { padding: 0; }
+/* Even at 390px "Generate again" and "Save it" can't share a row without both
+   wrapping onto a second line, which makes both buttons 70px tall. The review
+   stacks them instead — same order as the row they replace, secondary above
+   primary, Save nearest the thumb. */
+#card-preview .btn-row { flex-direction: column; }
 
 /* Under the drill it is reference material, so it wears a margin rather than
    sitting tight against the comparison it follows. */

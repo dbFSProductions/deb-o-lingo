@@ -9,6 +9,7 @@
 
 import {
   library, settings, progress, audioStore, aboutMe, VOICES, uid, RECALL_AFTER, ABOUT_DECK,
+  attemptScore,
 } from "./store.js";
 import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById } from "./content.js";
 import { Recorder, Player, analyse, relativeSemitones, resample } from "./audio.js";
@@ -26,8 +27,12 @@ const toastEl = document.getElementById("toast");
 const player = new Player();
 let recorder = new Recorder();
 
-const PASS_GREAT = 80;
-const PASS_OK = 60;
+/* Bands over the weakest word in the attempt, not over any of Azure's
+   aggregates — see `attemptScore` in store.js. They read low and they are not:
+   PASS_GREAT means *every word in the phrase* cleared 90, which is meant to be
+   hard. Xerra's GOOD/OK are the same two numbers; keep them in step. */
+const PASS_GREAT = 90;
+const PASS_OK = 75;
 
 const state = {
   tab: "learn", // learn | phrases | add | settings
@@ -1124,7 +1129,7 @@ function renderDrill() {
   });
   document.getElementById("banner-continue")?.addEventListener("click", () => {
     stopEverything();
-    advance({ skipped: false, score: state.attempt?.overall ?? null });
+    advance({ skipped: false, score: state.attempt ? attemptScore(state.attempt) : null });
   });
 
   wireReplies(view.querySelector(".drill-replies"), phrase.replies ?? []);
@@ -1426,9 +1431,10 @@ async function handleRecording({ blob, duration }) {
     Object.assign(attempt, result);
     library.updateAttempt(attempt);
     state.attempt = attempt;
+    const score = attemptScore(attempt);
     state.banner = {
-      kind: attempt.overall >= PASS_GREAT ? "great" : attempt.overall >= PASS_OK ? "ok" : "retry",
-      score: attempt.overall,
+      kind: score >= PASS_GREAT ? "great" : score >= PASS_OK ? "ok" : "retry",
+      score,
     };
   } else {
     state.banner = { kind: "neutral", score: null };
@@ -1477,7 +1483,7 @@ function renderComparison() {
     ${
       state.scoringNow
         ? ""
-        : attempt?.overall != null
+        : attempt && attemptScore(attempt) != null
         ? renderScore(attempt)
         : scoring.lastError
         ? `<div class="notice bad">${esc(scoring.lastError)}</div>`
@@ -1497,13 +1503,32 @@ function timingSummary() {
 }
 
 function renderScore(attempt) {
+  const score = attemptScore(attempt);
   const circumference = 2 * Math.PI * 30;
-  const dash = (attempt.overall / 100) * circumference;
+  const dash = (score / 100) * circumference;
 
+  /* The dial is the weakest word, so the verdict talks about that rather than
+     about the phrase as a whole — 90 now means every single word cleared 90,
+     which is a much harder thing to have done. */
+  const verdict =
+    score >= 95
+      ? "Every word landed. Say it just like that."
+      : score >= PASS_GREAT
+      ? "Solid — even your weakest word is close."
+      : score >= PASS_OK
+      ? "Understandable. The tinted words are what's holding it back."
+      : score >= 55
+      ? "Some of it landed. Play the model again and copy the rhythm."
+      : "Not there yet. Slow it down and go word by word.";
+
+  /* Azure's aggregates sit here rather than in the dial. All three are
+     generous — they average away the one word she got wrong — so they're worth
+     seeing and not worth being judged by. */
   const sub = [
     ["Accuracy", attempt.accuracy],
     ["Fluency", attempt.fluency],
     ["Complete", attempt.completeness],
+    ["Azure", attempt.overall],
   ]
     .filter(([, v]) => v != null)
     .map(
@@ -1519,25 +1544,43 @@ function renderScore(attempt) {
     )
     .join("");
 
+  // Whichever chip is reddest is the dial — say so, so the number has somewhere
+  // to point rather than being a verdict from nowhere.
+  const weakest = attempt.words
+    .filter((word) => typeof word.score === "number" || word.errorType === "Omission")
+    .sort((a, b) => (a.errorType === "Omission" ? 0 : a.score) - (b.errorType === "Omission" ? 0 : b.score))[0];
+
   return `
     <div class="card">
       <div class="score-head">
         <div class="dial">
           <svg viewBox="0 0 68 68">
             <circle cx="34" cy="34" r="30" fill="none" stroke="var(--surface-2)" stroke-width="7"/>
-            <circle cx="34" cy="34" r="30" fill="none" stroke="${scoreColour(attempt.overall)}"
+            <circle cx="34" cy="34" r="30" fill="none" stroke="${scoreColour(score)}"
                     stroke-width="7" stroke-linecap="round"
                     stroke-dasharray="${dash} ${circumference}"/>
           </svg>
-          <div class="dial-value">${Math.round(attempt.overall)}</div>
+          <div class="dial-value">${Math.round(score)}</div>
         </div>
-        <div class="subscores">${sub}</div>
+        <div>
+          <div style="font-weight:700">${verdict}</div>
+          <div class="subscores">${sub}</div>
+        </div>
       </div>
 
       ${chips ? `<div class="section-label" style="margin:16px 4px 8px">Word by word</div><div class="chips">${chips}</div>` : ""}
       <div id="phoneme-detail"></div>
 
       ${attempt.transcript ? `<p class="tiny muted" style="margin-top:12px">Heard: ${esc(attempt.transcript)}</p>` : ""}
+      ${
+        weakest
+          ? `<p class="tiny muted" style="margin-top:6px">The score is your weakest word${
+              weakest.errorType === "Omission"
+                ? ` — “${esc(weakest.word)}” didn't come out at all`
+                : `, “${esc(weakest.word)}”`
+            }. Tap a chip for its sounds.</p>`
+          : ""
+      }
     </div>`;
 }
 
@@ -1852,7 +1895,7 @@ function renderPhrases() {
 
 function showPhrase(phrase) {
   const attempts = library.attemptsFor(phrase.id);
-  const scores = [...attempts].reverse().map((a) => a.overall).filter((score) => score != null);
+  const scores = [...attempts].reverse().map(attemptScore).filter((score) => score != null);
 
   // A running read on the attempts, so the list says something rather than
   // just listing dates.
@@ -1915,8 +1958,8 @@ function showPhrase(phrase) {
                     day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
                   })}</span>
                 </span>
-                ${attempt.overall != null
-                  ? `<strong style="color:${scoreColour(attempt.overall)};font-variant-numeric:tabular-nums">${Math.round(attempt.overall)}</strong>`
+                ${attemptScore(attempt) != null
+                  ? `<strong style="color:${scoreColour(attemptScore(attempt))};font-variant-numeric:tabular-nums">${Math.round(attemptScore(attempt))}</strong>`
                   : ""}
                 <button class="link btn-danger" data-delete="${attempt.id}">Delete</button>
               </div>`
@@ -2261,13 +2304,25 @@ function renderAdd() {
       <div class="section-label">Check it over</div>
       <div class="card add-card">
         <div id="review-note" class="notice" hidden></div>
+        <div class="preview-line">
+          <button class="reply-play" id="preview-say" aria-label="Listen to this card">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+          </button>
+          <span class="reply-main">
+            <span class="reply-text" id="preview-text"></span>
+            <span class="reply-translation" id="preview-translation"></span>
+          </span>
+        </div>
         <label class="field"><span>How it's used</span>
           <textarea id="result-usage" rows="3"></textarea></label>
         <label class="field"><span>Pronunciation tip</span>
           <textarea id="result-focus" rows="3"></textarea></label>
         <section id="result-replies"></section>
+        <p class="tiny muted regen-hint">Not what you meant?
+          <button class="link" id="edit-inputs">Change the Spanish, English or situation</button>
+          above, then generate again.</p>
         <div class="btn-row">
-          <button class="btn" id="try-again">Try again</button>
+          <button class="btn" id="try-again">Generate again</button>
           <button class="btn btn-primary" id="save-card">Save it</button>
         </div>
       </div>
@@ -2300,6 +2355,37 @@ function renderAdd() {
   tryAgain.addEventListener("click", completeCard);
   document.getElementById("save-card").addEventListener("click", saveCard);
 
+  /* Hear the card before committing to it. Same button and same voice as a
+     reply, one size up, and it reads the *field* rather than a snapshot of the
+     completion — the Spanish stays editable right up until Save, and a preview
+     saying something other than what's in the box would be worse than none. */
+  document.getElementById("preview-say").addEventListener("click", (event) => {
+    const text = document.getElementById("add-target").value.trim();
+    if (!text) return toast("There's no Spanish to say yet.");
+    sayAloud(event.currentTarget, text, "Couldn't play the card.");
+  });
+
+  // Both boxes stay live, so the preview line follows what she types into them.
+  for (const id of ["add-target", "add-english"])
+    document.getElementById(id).addEventListener("input", paintPreview);
+
+  /* "Generate again" is at the bottom of the review, the fields it re-reads are
+     at the top of the page, and on a phone they are never on screen together —
+     so it read as "roll the dice again" rather than "I'll use what you change".
+     This scrolls the composer back into view and puts the cursor in Situation,
+     which is usually the field that needed to be clearer. */
+  document.getElementById("edit-inputs").addEventListener("click", () => {
+    document.querySelector(".add-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("add-situation").focus({ preventScroll: true });
+  });
+
+  function paintPreview() {
+    document.getElementById("preview-text").textContent =
+      document.getElementById("add-target").value.trim() || "No Spanish yet";
+    document.getElementById("preview-translation").textContent =
+      document.getElementById("add-english").value.trim();
+  }
+
   async function completeCard() {
     const target = document.getElementById("add-target").value.trim();
     const english = document.getElementById("add-english").value.trim();
@@ -2311,6 +2397,16 @@ function renderAdd() {
       toast("Set the card builder up in Settings first.");
       return;
     }
+
+    /* What she typed, kept raw, so the review's Undo can put her own words
+       back. The completion overwrites all three inputs with its corrected
+       versions, and "be clearer about the situation" is much easier to do from
+       what she wrote than from the assistant's rewrite of it. */
+    const before = {
+      target: document.getElementById("add-target").value,
+      english: document.getElementById("add-english").value,
+      situation: document.getElementById("add-situation").value,
+    };
 
     setAddBusy(true);
     const errorBox = document.getElementById("add-error");
@@ -2335,10 +2431,15 @@ function renderAdd() {
       document.getElementById("add-situation").value = result.situation;
       document.getElementById("result-usage").value = result.usageNote;
       document.getElementById("result-focus").value = result.focusNote;
+      paintPreview();
 
+      /* Always shown now, with a fallback line: a completion that came back
+         with no reviewNote would otherwise have nowhere to hang the Undo. */
       const review = document.getElementById("review-note");
-      review.textContent = result.reviewNote;
-      review.hidden = !result.reviewNote;
+      review.innerHTML = `${esc(result.reviewNote || "Built from what you typed. Check it over, then Save.")}
+        <button class="link" id="undo-complete" style="padding:0 0 0 4px">Undo</button>`;
+      review.hidden = false;
+      document.getElementById("undo-complete").addEventListener("click", undoCompletion);
       document.getElementById("card-preview").hidden = false;
       // Sized after unhiding — a display:none box has no height to measure.
       autosizeAll(view);
@@ -2362,6 +2463,23 @@ function renderAdd() {
       errorBox.hidden = false;
     } finally {
       setAddBusy(false);
+    }
+
+    /* Undo withdraws the whole completion, not just the wording: the usage
+       note, the tip and the replies all answered the card being taken back.
+       She is left with what she typed, in the boxes she typed it in. */
+    function undoCompletion() {
+      document.getElementById("add-target").value = before.target;
+      document.getElementById("add-english").value = before.english;
+      document.getElementById("add-situation").value = before.situation;
+      // A reply still in flight now answers a card that no longer exists.
+      repliesToken++;
+      replies = [];
+      document.getElementById("card-preview").hidden = true;
+      document.getElementById("add-chat").hidden = true;
+      paintPreview();
+      autosizeAll(view);
+      document.querySelector(".add-card").scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
@@ -2434,10 +2552,14 @@ function renderAdd() {
       });
   }
 
+  /* Both buttons run the same completion, and after the first one the review's
+     is the one she is looking at — so it gets its own spinner rather than just
+     greying out while a button off the top of the screen does the talking. */
   function setAddBusy(busy) {
     completeButton.disabled = busy;
     tryAgain.disabled = busy;
     completeButton.innerHTML = busy ? `<span class="spinner"></span> Building…` : "Build the card";
+    tryAgain.innerHTML = busy ? `<span class="spinner"></span> Generating…` : "Generate again";
   }
 }
 
