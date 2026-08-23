@@ -418,6 +418,10 @@ button { font: inherit; }
 
 .link { background: none; border: 0; color: var(--blue); font-weight: 800; cursor: pointer; padding: 6px; }
 .muted-link { color: var(--text-3); letter-spacing: 0.1em; font-size: 0.8rem; }
+/* .btn-danger is defined above .link and loses to it on a plain link, so every
+   "Delete" and "Forget this" was quietly painted the same blue as everything
+   else. Needs to sit after .link, not before it. */
+.link.btn-danger { color: var(--red); }
 
 /* ----------------------------------------------------------------- tabbar */
 
@@ -881,3 +885,115 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 .chat-form textarea { min-height: 46px; }
 .chat-form textarea, .add-card textarea, .sheet-panel textarea { resize: none; }
 .chat-form .btn { flex: none; }
+
+/* ---------------------------------------------------------------- replies */
+
+/* What you might hear back. The play button leads, because the point of these
+   is to have heard them before someone says one to you at speed.
+   Ported from Xerra — same markup, same shape; keep the two in step. */
+.replies { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.reply {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--blue) 9%, transparent);
+}
+.reply-play {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin-top: -1px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--blue-dark);
+  cursor: pointer;
+}
+.reply-play svg { width: 15px; height: 15px; fill: currentColor; margin-left: 2px; }
+.reply-play:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--blue-dark); }
+.reply-play.busy { opacity: 0.55; }
+.reply-main { flex: 1; min-width: 0; }
+.reply-text { display: block; font-weight: 800; overflow-wrap: anywhere; }
+.reply-translation { display: block; margin-top: 2px; font-size: 0.82rem; color: var(--text-2); overflow-wrap: anywhere; }
+
+/* Under the drill it is reference material, so it wears a margin rather than
+   sitting tight against the comparison it follows. */
+.drill-replies, .drill-notes { margin-top: 18px; }
+.drill-replies .section-label, .drill-notes .section-label { margin: 0 4px 8px; }
+
+/* -------------------------------------------------------------- kept notes */
+
+/* Keeping an answer. The button sits inside the bubble it belongs to, on its
+   own line, so several answers can each offer it without a row of controls
+   competing with the text. */
+.chat-keep, .chat-kept {
+  display: block;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.chat-kept { color: var(--text-3); }
+
+/* A kept answer, printed back under the card. Green rather than the chat's
+   blue: on the phrase sheet it sits a few pixels from the replies, and the two
+   are different things — what you'd hear back, and what you asked. */
+.kept-notes { display: grid; gap: 8px; }
+.kept-note {
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px 11px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+/* The question, in the case it was typed in. The uppercase treatment the other
+   labels wear is for two-word headings — a whole question in caps shouts. */
+.kept-note strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--green-dark);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+/* Only the answer keeps its line breaks: pre-wrap on the box itself would
+   print the template's own indentation. */
+.kept-note span { display: block; white-space: pre-wrap; }
+.kept-note .link { display: block; margin-top: 6px; padding: 0; font-size: 0.75rem; }
+
+/* ---------------------------------------------------------------- sobre mí */
+
+/* The way out of an interview that went somewhere you didn't mean. Under the
+   ask box and quiet, because clearing the conversation is the rare thing to
+   want on a page whose whole job is adding to it. */
+.chat-foot { margin-top: 10px; text-align: center; }
+.chat-foot .link { font-size: 0.78rem; }
+
+.about-head { margin: 0 0 6px; }
+.about-lede { margin: 0 0 16px; }
+#about-practise { margin-bottom: 4px; }
+#about-make { width: 100%; margin-top: 12px; }
+#about-make + .tiny { margin-top: 8px; text-align: center; }
+
+/* --------------------------------------------------------------- versions */
+
+/* The two version numbers in Settings, side by side so a mismatch is obvious. */
+.version-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  color: var(--text-2);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.version-row strong { color: var(--text); font-variant-numeric: tabular-nums; }

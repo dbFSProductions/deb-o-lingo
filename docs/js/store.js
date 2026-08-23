@@ -21,6 +21,9 @@ const KEYS = {
   settings: "debolingo.settings",
   favourites: "debolingo.favourites",
   overrides: "debolingo.overrides",
+  notes: "debolingo.notes",
+  replies: "debolingo.replies",
+  aboutMe: "debolingo.aboutMe",
 };
 
 // The fields an edit can touch. Course phrases are code, so editing one is
@@ -28,6 +31,14 @@ const KEYS = {
 // stays the source of truth, and a later course revision still reaches every
 // phrase Deb hasn't personally changed.
 const EDITABLE = ["text", "translation", "focusNote", "situation", "usageNote"];
+
+/* Cards the assistant writes about Deb's own life, from an English interview.
+   They are ordinary cards of hers in every way — they drill, star, score,
+   level up, export, edit and delete like anything she typed into Add — so
+   this is a name they carry in `deck`, not a flag anything has to test for.
+   The one thing it buys is a unit of their own on the path; a card with no
+   `deck` at all is a Lo tuyo card, which is every card that predates this. */
+export const ABOUT_DECK = "Sobre mí";
 
 // Level two. A card is read aloud until it has been said well twice; after
 // that the drill shows only the English and Deb has to produce the Spanish
@@ -156,12 +167,22 @@ export const library = {
   attempts: [],
   favourites: [], // phrase ids — course and custom alike
   overrides: {}, // course phrase id -> the fields Deb has changed
+  /* Two more stores keyed by phrase id, for the same reason favourites is one:
+     a course phrase is code, so anything Deb accumulates against it has to
+     live beside it rather than on it. Neither is an *edit*, so neither belongs
+     in `overrides` — an override is a diff against content.js that "Reset to
+     the original" throws away, and losing the answer you kept about a phrase
+     because you reset its wording would be wrong. */
+  notes: {}, // phrase id -> answers kept from a chat
+  replies: {}, // phrase id -> what you might hear back
 
   load() {
     this.customPhrases = readJSON(KEYS.phrases, []);
     this.attempts = readJSON(KEYS.attempts, []);
     this.favourites = readJSON(KEYS.favourites, []);
     this.overrides = readJSON(KEYS.overrides, {});
+    this.notes = readJSON(KEYS.notes, {});
+    this.replies = readJSON(KEYS.replies, {});
   },
 
   saveCustom() {
@@ -176,13 +197,22 @@ export const library = {
   saveOverrides() {
     writeJSON(KEYS.overrides, this.overrides);
   },
+  saveNotes() {
+    writeJSON(KEYS.notes, this.notes);
+  },
+  saveReplies() {
+    writeJSON(KEYS.replies, this.replies);
+  },
 
-  /** A stored phrase as the app should see it: edits applied, star attached. */
+  /** A stored phrase as the app should see it: edits applied, star, notes and
+      replies attached. Everything that reads a phrase goes through here. */
   decorate(phrase) {
     return {
       ...phrase,
       ...(this.overrides[phrase.id] ?? {}),
       favourite: this.favourites.includes(phrase.id),
+      notes: this.notes[phrase.id] ?? [],
+      replies: this.replies[phrase.id] ?? [],
     };
   },
 
@@ -235,6 +265,47 @@ export const library = {
     return at === -1;
   },
 
+  /* Answers kept from a chat, and what you might hear back. Both are stored by
+     phrase id and both return the new list rather than mutating anything,
+     because a Deb phrase is a *decorated copy* — Xerra can mutate the object
+     its queue is holding, and here that object is a copy `decorate()` made.
+     So the caller assigns what comes back onto the copy it is holding (the
+     card in `lesson.queue`, the phrase the sheet was opened with), which is
+     the same fix in a different shape: repaint the card you are looking at,
+     don't re-render underneath yourself. */
+  keepNote(phraseID, { question, answer }) {
+    if (!answer?.trim()) return null;
+    const note = { id: uid(), question: question ?? "", answer, keptAt: new Date().toISOString() };
+    this.notes[phraseID] = [...(this.notes[phraseID] ?? []), note];
+    this.saveNotes();
+    return note;
+  },
+
+  notesFor(phraseID) {
+    return this.notes[phraseID] ?? [];
+  },
+
+  forgetNote(phraseID, noteID) {
+    const kept = (this.notes[phraseID] ?? []).filter((note) => note.id !== noteID);
+    // An empty list is a deleted key, the same way an empty override is.
+    if (kept.length) this.notes[phraseID] = kept;
+    else delete this.notes[phraseID];
+    this.saveNotes();
+    return kept;
+  },
+
+  setReplies(phraseID, replies) {
+    const list = Array.isArray(replies) ? replies : [];
+    if (list.length) this.replies[phraseID] = list;
+    else delete this.replies[phraseID];
+    this.saveReplies();
+    return list;
+  },
+
+  repliesFor(phraseID) {
+    return this.replies[phraseID] ?? [];
+  },
+
   addPhrase(phrase) {
     const saved = {
       id: uid(),
@@ -271,8 +342,11 @@ export const library = {
 
     const index = this.customPhrases.findIndex((p) => p.id === phrase.id);
     if (index === -1) return;
-    // favourite lives in its own list, not on the record.
-    const { favourite, ...record } = phrase;
+    // The star, the kept notes and the replies all live in their own stores
+    // keyed by id, so `decorate()` hangs them on and this takes them back off
+    // — writing them into the record would keep a stale second copy that
+    // export and import would then carry around.
+    const { favourite, notes, replies, ...record } = phrase;
     this.customPhrases[index] = record;
     this.saveCustom();
   },
@@ -290,9 +364,13 @@ export const library = {
     this.attempts = this.attempts.filter((a) => a.phraseID !== phraseID);
     this.customPhrases = this.customPhrases.filter((p) => p.id !== phraseID);
     this.favourites = this.favourites.filter((id) => id !== phraseID);
+    delete this.notes[phraseID];
+    delete this.replies[phraseID];
     this.saveCustom();
     this.saveAttempts();
     this.saveFavourites();
+    this.saveNotes();
+    this.saveReplies();
   },
 
   attemptsFor(phraseID) {
@@ -353,7 +431,13 @@ export const library = {
         attempts: this.attempts,
         favourites: this.favourites,
         overrides: this.overrides,
+        notes: this.notes,
+        replies: this.replies,
         progress: { lessons: progress.lessons, streak: progress.streak },
+        // Not a phrase and not an attempt, but it is what the Sobre mí cards
+        // were made out of: restore a backup without it and the assistant
+        // starts the life story over, asking what it has already been told.
+        aboutMe: aboutMe.turns,
       },
       null,
       2
@@ -370,15 +454,72 @@ export const library = {
     // Older backups predate stars and edits; absent is empty, not an error.
     this.favourites = Array.isArray(parsed.favourites) ? parsed.favourites : [];
     this.overrides = parsed.overrides && typeof parsed.overrides === "object" ? parsed.overrides : {};
+    this.notes = parsed.notes && typeof parsed.notes === "object" ? parsed.notes : {};
+    this.replies = parsed.replies && typeof parsed.replies === "object" ? parsed.replies : {};
     this.saveCustom();
     this.saveAttempts();
     this.saveFavourites();
     this.saveOverrides();
+    this.saveNotes();
+    this.saveReplies();
+    aboutMe.replace(Array.isArray(parsed.aboutMe) ? parsed.aboutMe : []);
     if (parsed.progress) {
       progress.lessons = parsed.progress.lessons ?? {};
       progress.streak = parsed.progress.streak ?? { count: 0, lastDay: null };
       progress.save();
     }
+  },
+};
+
+// ---------------------------------------------------------------- about me
+//
+/* The English conversation the Sobre mí cards are written from: the
+   assistant's questions and Deb's answers, in the order they happened.
+ 
+   Persisted, unlike the card chat panel's history, and that is the whole
+   difference between the two. A card chat is a study aside that dies with the
+   panel. This one is the material the cards are built from, so it has to
+   survive finishing a lesson and coming back, a reload and the weekly
+   reinstall — and it is what stops the assistant asking about her job twice.
+ 
+   Kept whole here and trimmed only when sent, so a conversation that ran for
+   months still reads back in full on the page. */
+
+export const aboutMe = {
+  turns: [],
+
+  load() {
+    const stored = readJSON(KEYS.aboutMe, null);
+    this.turns = Array.isArray(stored?.turns) ? stored.turns : [];
+  },
+
+  save() {
+    writeJSON(KEYS.aboutMe, { turns: this.turns });
+  },
+
+  add(role, text) {
+    const turn = { role: role === "assistant" ? "assistant" : "learner", text: String(text ?? "").trim() };
+    if (!turn.text) return null;
+    this.turns.push(turn);
+    this.save();
+    return turn;
+  },
+
+  replace(turns) {
+    this.turns = turns
+      .filter((turn) => turn && typeof turn === "object" && typeof turn.text === "string")
+      .map((turn) => ({ role: turn.role === "assistant" ? "assistant" : "learner", text: turn.text }));
+    this.save();
+  },
+
+  clear() {
+    this.turns = [];
+    this.save();
+  },
+
+  /** Has Deb actually said anything, as opposed to just been asked? */
+  get answered() {
+    return this.turns.some((turn) => turn.role === "learner");
   },
 };
 

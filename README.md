@@ -42,6 +42,24 @@ A few things worth knowing:
   the whole course plus your own cards.
 - **Star anything.** Tap the star on a phrase and it gathers into a Favourites
   node next to Repaso, for the handful that keep tripping you up.
+- **What they might say back.** Under the lesson, and on any phrase in the
+  Phrases tab, there's *You might hear back* — two or three things a person
+  actually replies, each with a play button and its English. Saying your line
+  well is half of it; the half that strands you is the answer. Older cards
+  don't have them yet, so there's a **What might they say back?** button that
+  goes and fetches some.
+- **Ask about the card you're practising.** Down at the bottom of the lesson
+  there's an ask box: "why *me pone* and not *puedo tener*?", "what's *tingui*
+  doing there?". When an answer is worth keeping, tap **Keep on the card** and
+  it's printed under that phrase from then on — through Repaso, next week, and
+  in your export. *Forget this* on the phrase sheet drops one again.
+- **Sobre mí — cards about your own life.** Near the bottom of the path
+  there's an orange person icon. Tap it and it asks you questions **in
+  English** — where you live, who's at home, what you do — and then writes
+  Spanish cards out of your answers. They land on the path in their own unit
+  and behave like any other card: drill them, star them, edit them, delete
+  them. Come back and tell it more whenever you like. The conversation is
+  saved, so it never asks you the same thing twice.
 - **The Phrases tab** is your phrasebook: every phrase in the app, with your
   best score and every recording. Search it — it looks inside the tips and the
   situations too, so "market" or "polite" finds things.
@@ -66,7 +84,12 @@ A few things worth knowing:
 - Anything your doorman *actually* says that isn't in here — tell Fin, or just
   add it yourself on the Add tab.
 - **Settings → Export** saves your progress to a file once in a while. iPhones
-  sometimes clear a web app's storage if it's unused for a long time.
+  sometimes clear a web app's storage if it's unused for a long time. It now
+  carries your kept notes and the Sobre mí conversation too.
+- **"Is my fix in?"** Settings → *Version* shows two numbers. *Running* is the
+  app that's on screen; *Installed* is what your phone has downloaded. If they
+  differ, the new one is there and a reload finishes the job — there's a button
+  for that. **Check for an update** goes and looks.
 
 ## What the scores mean
 
