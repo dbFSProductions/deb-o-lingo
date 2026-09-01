@@ -86,6 +86,12 @@ scripts it names. **Don't undo either one for "fewer requests."**
   card showing its edit, and makes a typo in the marks cost only the
   highlight. Their translations stay uncontracted ("I have been", "did not")
   on purpose: word-for-word English is what lets the tense mapping be seen.
+- And `infinitive` — "trabajar — to work" — printed as one quiet italic line
+  under the translation (`.infinitive-line`, behind `showTranslation` since
+  the gloss is half the meaning) and beside the term on the phrase sheet. She
+  should know what the -aba is hanging off; it also makes visible that *fui a
+  Atlanta* is ir while *la clase fue dura* is ser. Deliberately not loud —
+  the endings are the loud part.
 - If Deb's target ever shifts to Latin American Spanish, the focusNotes need
   rewriting (no 'th'), not just the voice — `VOICES` in store.js is
   deliberately es-ES only, and `settings.load()` resets any voice not in
