@@ -1151,15 +1151,6 @@ function renderDrill() {
       }</p>
     </div>
 
-    ${
-      /* Next on every card, a real button rather than the old muted SKIP link:
-         listening without saying is a legitimate way through a lesson, and a
-         way past a card should not need hunting for. Filed as skipped, so it
-         never counts as a good go. Hidden while a banner is up — the banner's
-         own Continue is the next button then. */
-      state.banner ? "" : `<button class="btn" id="next" style="width:100%">Next →</button>`
-    }
-
     <div id="comparison">${state.attempt ? renderComparison() : ""}</div>
 
     ${state.banner ? renderBanner() : ""}
@@ -1173,6 +1164,17 @@ function renderDrill() {
          from the card, so it stays out while a level-two question is standing:
          it would be a way round the question. */
       settings.hasAssistant && !asking ? `<section id="drill-chat" hidden></section>` : ""
+    }
+
+    ${
+      /* Next on every card, a real button rather than the old muted SKIP link:
+         listening without saying is a legitimate way through a lesson, and a
+         way past a card should not need hunting for. Last on the page on
+         purpose — under the record button it was the easy way out of every
+         card; down here it is reachable without being tempting. Filed as
+         skipped, so it never counts as a good go. Hidden while a banner is up
+         — the banner's own Continue is the next button then. */
+      state.banner ? "" : `<button class="btn" id="next" style="width:100%;margin-top:14px">Next →</button>`
     }`;
 
   document.getElementById("quit").onclick = quitLesson;
