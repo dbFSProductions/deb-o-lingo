@@ -717,10 +717,12 @@ What came over in Xerra's shape, and should stay in step with it:
 One thing in the drill came with this unit but is not part of it:
 
 - **Next is a real button on every card**, not just gated ones — the old muted
-  SKIP link under the record circle, promoted to a full-width `#next` button so
-  a listen-only pass through a lesson doesn't need hunting for the way past a
-  card. Same behaviour: filed as skipped, never counts as a good go, hidden
-  while a banner is up (the banner's Continue is the next button then).
+  SKIP link promoted to a full-width `#next` button so a listen-only pass
+  through a lesson doesn't need hunting for the way past a card. It sits
+  **last on the page**, below the comparison and the notes: under the record
+  circle it was the easy way out of every card, and reachable-but-not-tempting
+  was the ask. Same behaviour: filed as skipped, never counts as a good go,
+  hidden while a banner is up (the banner's Continue is the next button then).
 
 ---
 
