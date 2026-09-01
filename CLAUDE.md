@@ -78,8 +78,10 @@ scripts it names. **Don't undo either one for "fewer requests."**
   a box, or line* below. `aspect` is the shape the card is about, and a lesson's
   contents decide what the gate offers, so filing a card matters twice.
 - El pasado cards also carry `marked`: the text with the tense machinery in
-  `[brackets]`, drawn as a gold highlight on the drill card (`drillSpanish` in
-  app.js, `.ending-mark` in app.css). The brackets must strip back to `text`
+  `[brackets]`, drawn on the drill card as amber *lettering* — a letter shade,
+  not a background block, which made trabaj-aba read as two words
+  (`drillSpanish` in app.js, `.ending-mark` in app.css; `--amber` is the gold
+  that works as text, where `--gold` is a fill). The brackets must strip back to `text`
   exactly or the highlight is silently dropped — which is what keeps an edited
   card showing its edit, and makes a typo in the marks cost only the
   highlight. Their translations stay uncontracted ("I have been", "did not")
@@ -694,15 +696,23 @@ What came over in Xerra's shape, and should stay in step with it:
 - **Each single-shape lesson carries one card of the other shape** on purpose —
   a lesson whose name answers its own question trains the lesson, not the
   grammar. The traps are load-bearing too: *fue dura* against *estaba cansada*
-  (both "was", different shapes), and *esta semana he ido todos los días*
+  (both "was", different shapes), and *he ido todos los días esta semana*
   ("every day" reads habit, but the bracket still has now inside it).
 - **Repaso gates too**: the pool can pick up El pasado cards, and
   `aspectChoices` reads the queue in front of her either way.
 - **The ending is lit up in the sentence itself.** Once the Spanish is on
-  screen, the verb's tense machinery wears the same gold highlight the verdict
-  prints the endings line on — `marked` in content.js, `drillSpanish` in
-  app.js. See *Content model* for the reduce-to-text rule that keeps it safe
-  against edits.
+  screen, the verb's tense machinery is lettered in the score-amber shade —
+  `marked` in content.js, `drillSpanish` in app.js. A letter shade and not a
+  background on purpose: a highlighter block behind "aba" made trabaj-aba read
+  as two words. See *Content model* for the reduce-to-text rule that keeps it
+  safe against edits.
+- **The sentences are pruned to the decision.** No word survives that isn't
+  needed to pick the shape from the English: *Antes trabajaba* became plain
+  *Trabajaba* because the -aba alone says "used to", Tampa and the friend
+  clause went, *ayer* replaced *la semana pasada* where either would do. What
+  must stay is any word the *English* needs to be decidable — "every week" on
+  the flying card, "this week" on the trap — because the gate asks from the
+  English alone. Don't fatten them back up for naturalness.
 
 One thing in the drill came with this unit but is not part of it:
 
@@ -765,7 +775,7 @@ survive; every choice button carries an `.aspect-endings` line; `pasado-3`
 offers three and asks *Which shape?*; a wrong pick paints
 `.aspect-verdict.wrong` naming both shapes with the endings on the gold tint
 and the `.aspect-why` underneath, and puts the whole drill back beneath it;
-`saludos-1` is never gated; "Antes trabajaba en Chicago." shows a
+`saludos-1` is never gated; "Trabajaba en Chicago." shows a
 `.phrase-aspect` reading *A line · -aba · -ía* on its sheet; and unticking
 `#s-aspect` removes the gate and the verdict together. Once a gated card's
 Spanish is on screen, `.drill-text .ending-mark` wraps exactly the bracketed

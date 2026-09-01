@@ -582,15 +582,13 @@ button { font: inherit; }
   background: color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
-/* The ending lit up inside the sentence itself — same gold highlighter the
-   verdict prints the endings line on, so the two read as one idea: this bit
-   of the verb is the shape. */
+/* The ending lit up inside the sentence itself. A letter shade, not a
+   background: a highlighter block behind "aba" made trabaj-aba read as two
+   words, so the word stays one word and only the ink changes. --amber is the
+   gold this app already letters scores in — the gold that works as text,
+   with its own dark-mode shade — where --gold is a fill. */
 .ending-mark {
-  background: color-mix(in srgb, var(--gold) 35%, transparent);
-  border-radius: 6px;
-  padding: 0 3px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  color: var(--amber);
 }
 
 /* The grammar-book name. Small, italic and quiet — on the screen every time

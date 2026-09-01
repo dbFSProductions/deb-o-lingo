@@ -569,31 +569,31 @@ export const COURSE = [
         phrases: [
           {
             id: "pasado-1-1",
-            text: "Antes trabajaba en Chicago.",
-            marked: "Antes trabaj[aba] en Chicago.",
+            text: "Trabajaba en Chicago.",
+            marked: "Trabaj[aba] en Chicago.",
             translation: "I used to work in Chicago.",
             focusNote:
               "tra-ba-HA-ba, stress on -HA-. That -aba tail is the sound of the line — you'll hear it all lesson.",
             aspect: "line",
             aspectNote:
-              "'Antes' with no end date on it is a stretch, not an event. The -aba is the line.",
+              "No date, no edges — the -aba on its own says 'used to'. That is the line.",
           },
           {
             id: "pasado-1-2",
-            text: "Cuando tenía veintiún años, trabajaba en un restaurante.",
-            marked: "Cuando ten[ía] veintiún años, trabaj[aba] en un restaurante.",
-            translation: "When I was twenty-one I worked in a restaurant.",
+            text: "Tenía veintiún años.",
+            marked: "Ten[ía] veintiún años.",
+            translation: "I was twenty-one.",
             focusNote:
               "te-NÍ-a — three syllables, stress on the Í. That -ía is the line's other ending.",
             aspect: "line",
             aspectNote:
-              "A stretch of your life with no edges on it. Both verbs are the line: tenía (-ía) and trabajaba (-aba).",
+              "'Was', and still the line: being twenty-one is a stretch of life, not an event. Spanish says ages with tener — ten-ÍA.",
           },
           {
             id: "pasado-1-3",
-            text: "Volaba cada semana de Tampa a Chicago.",
-            marked: "Vol[aba] cada semana de Tampa a Chicago.",
-            translation: "I flew from Tampa to Chicago every week.",
+            text: "Volaba cada semana a Chicago.",
+            marked: "Vol[aba] cada semana a Chicago.",
+            translation: "I flew to Chicago every week.",
             focusNote:
               "bo-LA-ba — that v is a b, stress on -LA-. Another -aba.",
             aspect: "line",
@@ -602,9 +602,9 @@ export const COURSE = [
           },
           {
             id: "pasado-1-4",
-            text: "Antes me levantaba todos los días a las seis y media.",
-            marked: "Antes me levant[aba] todos los días a las seis y media.",
-            translation: "I used to get up at six thirty every day.",
+            text: "Me levantaba a las seis y media.",
+            marked: "Me levant[aba] a las seis y media.",
+            translation: "I used to get up at six thirty.",
             focusNote:
               "le-ban-TA-ba — v is b again. The 6:30 these lessons were sized for, in the past.",
             aspect: "line",
@@ -613,14 +613,14 @@ export const COURSE = [
           },
           {
             id: "pasado-1-5",
-            text: "La semana pasada compré una planta nueva.",
-            marked: "La semana pasada compr[é] una planta nueva.",
-            translation: "I bought a new plant last week.",
+            text: "Ayer compré una planta.",
+            marked: "Ayer compr[é] una planta.",
+            translation: "I bought a plant yesterday.",
             focusNote:
               "com-PRÉ — the stress lands hard on the final É. That end-stress is the dot's sound, where -aba sits in the middle.",
             aspect: "dot",
             aspectNote:
-              "The odd one out. Last week is a shut box and the buying happened once inside it — a dot, and the ending jumps to a stressed -é.",
+              "The odd one out. Yesterday is a shut box and the buying happened once inside it — a dot, and the ending jumps to a stressed -é.",
           },
         ],
       },
@@ -630,42 +630,42 @@ export const COURSE = [
         phrases: [
           {
             id: "pasado-2-1",
-            text: "La semana pasada fui a Atlanta.",
-            marked: "La semana pasada [fui] a Atlanta.",
-            translation: "I went to Atlanta last week.",
+            text: "Fui a Atlanta.",
+            marked: "[Fui] a Atlanta.",
+            translation: "I went to Atlanta.",
             focusNote:
               "'Fui' is one syllable — fwee. It does the work of both 'I went' and 'I was'.",
             aspect: "dot",
             aspectNote:
-              "Last week is a shut box. One trip, one dot — fui is a dot with no ending to listen for; the whole word is the signal.",
+              "One finished trip, one dot. Fui is the dot with no ending to listen for — the whole word is the signal.",
           },
           {
             id: "pasado-2-2",
-            text: "Fui a Atlanta y luego a Florida a ver a una amiga.",
-            marked: "[Fui] a Atlanta y luego a Florida a ver a una amiga.",
-            translation: "I went to Atlanta and then to Florida to see a friend.",
+            text: "Fui a Atlanta y luego a Florida.",
+            marked: "[Fui] a Atlanta y luego a Florida.",
+            translation: "I went to Atlanta and then to Florida.",
             focusNote:
-              "LWE-go, and a light tapped r in 'ver'. Run 'a ver a una amiga' together as one ribbon.",
+              "LWE-go — the ue glides as one sound. Two place names to coast on.",
             aspect: "dot",
             aspectNote:
               "Two trips, one after the other — dots in a row. A story that moves forward is told in dots.",
           },
           {
             id: "pasado-2-3",
-            text: "El domingo fui a un mercadillo de plantas.",
-            marked: "El domingo [fui] a un mercadillo de plantas.",
-            translation: "On Sunday I went to a plant sale.",
+            text: "Fui a un mercadillo de plantas.",
+            marked: "[Fui] a un mercadillo de plantas.",
+            translation: "I went to a plant sale.",
             focusNote:
               "mer-ka-DEE-yo — the ll is a y and the d melts soft. Stress on -DEE-.",
             aspect: "dot",
             aspectNote:
-              "Sunday came and went — the box is shut. One visit, one dot.",
+              "One visit, over and done — a dot.",
           },
           {
             id: "pasado-2-4",
-            text: "La clase de pilates de ayer fue dura.",
-            marked: "La clase de pilates de ayer [fue] dura.",
-            translation: "Yesterday's Pilates class was hard.",
+            text: "La clase de ayer fue dura.",
+            marked: "La clase de ayer [fue] dura.",
+            translation: "Yesterday's class was hard.",
             focusNote:
               "'Fue' is one syllable — fweh. Tap the r in 'dura': DU-ra.",
             aspect: "dot",
@@ -674,11 +674,11 @@ export const COURSE = [
           },
           {
             id: "pasado-2-5",
-            text: "Ayer estaba cansada y no quería salir.",
-            marked: "Ayer est[aba] cansada y no quer[ía] salir.",
-            translation: "Yesterday I was tired and did not want to go out.",
+            text: "Ayer estaba cansada.",
+            marked: "Ayer est[aba] cansada.",
+            translation: "Yesterday I was tired.",
             focusNote:
-              "es-TA-ba and ke-RÍ-a — one of each line ending, -aba and -ía, in the same breath.",
+              "es-TA-ba — the -aba again, sitting on 'was'.",
             aspect: "line",
             aspectNote:
               "The odd one out, and the trap: 'ayer' doesn't make it a dot. Being tired is the backdrop, not an event — the line. Yesterday's class WAS hard (fue, a dot); yesterday you WERE tired (estaba, a line).",
@@ -713,9 +713,9 @@ export const COURSE = [
           },
           {
             id: "pasado-3-3",
-            text: "Esta semana he ido a pilates todos los días.",
-            marked: "Esta semana [he ido] a pilates todos los días.",
-            translation: "I went to Pilates every day this week.",
+            text: "He ido todos los días esta semana.",
+            marked: "[He ido] todos los días esta semana.",
+            translation: "I went every day this week.",
             focusNote:
               "eh EE-tho again, then TO-thos los DEE-as — keep every vowel pure.",
             aspect: "presentPerfect",
@@ -724,11 +724,11 @@ export const COURSE = [
           },
           {
             id: "pasado-3-4",
-            text: "He estado usando la aplicación para aprender español.",
-            marked: "[He estado] usando la aplicación para aprender español.",
-            translation: "I have been using the app to learn Spanish.",
+            text: "He estado usando la aplicación.",
+            marked: "[He estado] usando la aplicación.",
+            translation: "I have been using the app.",
             focusNote:
-              "eh es-TA-tho u-SAN-do — soft d's all through. 'Aplicación' ends on a stressed -THYON, that Spain c.",
+              "eh es-TA-tho u-SAN-do. 'Aplicación' ends on a stressed -THYON, that Spain c.",
             aspect: "presentPerfect",
             aspectNote:
               "Started in the past and still true this minute — the line reaching right up to now. he + -ado again.",
@@ -767,8 +767,8 @@ export const COURSE = [
           },
           {
             id: "pasado-4-2",
-            text: "Antes vivía en Chicago.",
-            marked: "Antes viv[ía] en Chicago.",
+            text: "Vivía en Chicago.",
+            marked: "Viv[ía] en Chicago.",
             translation: "I used to live in Chicago.",
             focusNote:
               "bi-BÍ-a — the v is a b, three syllables, stress on the Í. The -ía again.",
