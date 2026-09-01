@@ -582,6 +582,15 @@ button { font: inherit; }
   background: color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
+/* The ending lit up inside the sentence itself. A letter shade, not a
+   background: a highlighter block behind "aba" made trabaj-aba read as two
+   words, so the word stays one word and only the ink changes. --amber is the
+   gold this app already letters scores in — the gold that works as text,
+   with its own dark-mode shade — where --gold is a fill. */
+.ending-mark {
+  color: var(--amber);
+}
+
 /* The grammar-book name. Small, italic and quiet — on the screen every time
    without ever being the thing she is asked for. */
 .aspect-term {
