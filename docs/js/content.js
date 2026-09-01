@@ -571,6 +571,7 @@ export const COURSE = [
             id: "pasado-1-1",
             text: "Trabajaba en Chicago.",
             marked: "Trabaj[aba] en Chicago.",
+            infinitive: "trabajar — to work",
             translation: "I used to work in Chicago.",
             focusNote:
               "tra-ba-HA-ba, stress on -HA-. That -aba tail is the sound of the line — you'll hear it all lesson.",
@@ -582,6 +583,7 @@ export const COURSE = [
             id: "pasado-1-2",
             text: "Tenía veintiún años.",
             marked: "Ten[ía] veintiún años.",
+            infinitive: "tener — to have",
             translation: "I was twenty-one.",
             focusNote:
               "te-NÍ-a — three syllables, stress on the Í. That -ía is the line's other ending.",
@@ -593,6 +595,7 @@ export const COURSE = [
             id: "pasado-1-3",
             text: "Volaba cada semana a Chicago.",
             marked: "Vol[aba] cada semana a Chicago.",
+            infinitive: "volar — to fly",
             translation: "I flew to Chicago every week.",
             focusNote:
               "bo-LA-ba — that v is a b, stress on -LA-. Another -aba.",
@@ -604,6 +607,7 @@ export const COURSE = [
             id: "pasado-1-4",
             text: "Me levantaba a las seis y media.",
             marked: "Me levant[aba] a las seis y media.",
+            infinitive: "levantarse — to get up",
             translation: "I used to get up at six thirty.",
             focusNote:
               "le-ban-TA-ba — v is b again. The 6:30 these lessons were sized for, in the past.",
@@ -615,6 +619,7 @@ export const COURSE = [
             id: "pasado-1-5",
             text: "Ayer compré una planta.",
             marked: "Ayer compr[é] una planta.",
+            infinitive: "comprar — to buy",
             translation: "I bought a plant yesterday.",
             focusNote:
               "com-PRÉ — the stress lands hard on the final É. That end-stress is the dot's sound, where -aba sits in the middle.",
@@ -632,6 +637,7 @@ export const COURSE = [
             id: "pasado-2-1",
             text: "Fui a Atlanta.",
             marked: "[Fui] a Atlanta.",
+            infinitive: "ir — to go",
             translation: "I went to Atlanta.",
             focusNote:
               "'Fui' is one syllable — fwee. It does the work of both 'I went' and 'I was'.",
@@ -643,6 +649,7 @@ export const COURSE = [
             id: "pasado-2-2",
             text: "Fui a Atlanta y luego a Florida.",
             marked: "[Fui] a Atlanta y luego a Florida.",
+            infinitive: "ir — to go",
             translation: "I went to Atlanta and then to Florida.",
             focusNote:
               "LWE-go — the ue glides as one sound. Two place names to coast on.",
@@ -654,6 +661,7 @@ export const COURSE = [
             id: "pasado-2-3",
             text: "Fui a un mercadillo de plantas.",
             marked: "[Fui] a un mercadillo de plantas.",
+            infinitive: "ir — to go",
             translation: "I went to a plant sale.",
             focusNote:
               "mer-ka-DEE-yo — the ll is a y and the d melts soft. Stress on -DEE-.",
@@ -665,6 +673,7 @@ export const COURSE = [
             id: "pasado-2-4",
             text: "La clase de ayer fue dura.",
             marked: "La clase de ayer [fue] dura.",
+            infinitive: "ser — to be",
             translation: "Yesterday's class was hard.",
             focusNote:
               "'Fue' is one syllable — fweh. Tap the r in 'dura': DU-ra.",
@@ -676,6 +685,7 @@ export const COURSE = [
             id: "pasado-2-5",
             text: "Ayer estaba cansada.",
             marked: "Ayer est[aba] cansada.",
+            infinitive: "estar — to be",
             translation: "Yesterday I was tired.",
             focusNote:
               "es-TA-ba — the -aba again, sitting on 'was'.",
@@ -693,6 +703,7 @@ export const COURSE = [
             id: "pasado-3-1",
             text: "Hoy he ido a pilates.",
             marked: "Hoy [he ido] a pilates.",
+            infinitive: "ir — to go",
             translation: "I have been to Pilates today.",
             focusNote:
               "'He' is just eh — silent h. Then EE-tho: 'ido' with the soft d.",
@@ -704,6 +715,7 @@ export const COURSE = [
             id: "pasado-3-2",
             text: "Ayer fui a pilates.",
             marked: "Ayer [fui] a pilates.",
+            infinitive: "ir — to go",
             translation: "I went to Pilates yesterday.",
             focusNote:
               "Same sentence as its pair — but listen: one closed fwee where 'he ido' was.",
@@ -715,6 +727,7 @@ export const COURSE = [
             id: "pasado-3-3",
             text: "He ido todos los días esta semana.",
             marked: "[He ido] todos los días esta semana.",
+            infinitive: "ir — to go",
             translation: "I went every day this week.",
             focusNote:
               "eh EE-tho again, then TO-thos los DEE-as — keep every vowel pure.",
@@ -726,6 +739,7 @@ export const COURSE = [
             id: "pasado-3-4",
             text: "He estado usando la aplicación.",
             marked: "[He estado] usando la aplicación.",
+            infinitive: "usar — to use",
             translation: "I have been using the app.",
             focusNote:
               "eh es-TA-tho u-SAN-do. 'Aplicación' ends on a stressed -THYON, that Spain c.",
@@ -737,6 +751,7 @@ export const COURSE = [
             id: "pasado-3-5",
             text: "Pasé un buen fin de semana.",
             marked: "Pas[é] un buen fin de semana.",
+            infinitive: "pasar — to spend (time)",
             translation: "I had a nice weekend.",
             focusNote:
               "pa-SÉ — the stress slams onto the final É. 'Buen' is one syllable: bwen.",
@@ -759,6 +774,7 @@ export const COURSE = [
             id: "pasado-4-1",
             text: "Ayer fui al mercado.",
             marked: "Ayer [fui] al mercado.",
+            infinitive: "ir — to go",
             translation: "I went to the market yesterday.",
             focusNote:
               "fwee again — one syllable. 'Mercado' with the soft d: mer-KA-tho.",
@@ -769,6 +785,7 @@ export const COURSE = [
             id: "pasado-4-2",
             text: "Vivía en Chicago.",
             marked: "Viv[ía] en Chicago.",
+            infinitive: "vivir — to live",
             translation: "I used to live in Chicago.",
             focusNote:
               "bi-BÍ-a — the v is a b, three syllables, stress on the Í. The -ía again.",
@@ -780,6 +797,7 @@ export const COURSE = [
             id: "pasado-4-3",
             text: "La semana pasada trabajé mucho.",
             marked: "La semana pasada trabaj[é] mucho.",
+            infinitive: "trabajar — to work",
             translation: "I worked a lot last week.",
             focusNote:
               "tra-ba-HÉ — the stress jumps to the end. Compare it with trabajaba.",
@@ -791,6 +809,7 @@ export const COURSE = [
             id: "pasado-4-4",
             text: "Esta semana he trabajado mucho.",
             marked: "Esta semana [he trabajado] mucho.",
+            infinitive: "trabajar — to work",
             translation: "I have worked a lot this week.",
             focusNote:
               "eh tra-ba-HA-tho. Same sentence as its pair — listen for the little 'he'.",
@@ -802,6 +821,7 @@ export const COURSE = [
             id: "pasado-4-5",
             text: "Hoy he comprado una planta.",
             marked: "Hoy [he comprado] una planta.",
+            infinitive: "comprar — to buy",
             translation: "I have bought a plant today.",
             focusNote:
               "eh com-PRA-tho — the -ado melts to 'AH-tho'.",

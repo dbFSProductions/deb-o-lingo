@@ -591,6 +591,14 @@ button { font: inherit; }
   color: var(--amber);
 }
 
+/* The verb's dictionary form under the translation — deliberately quiet, one
+   italic line: she should know what the -aba is hanging off, without it
+   becoming a thing. */
+.infinitive-line {
+  font-style: italic;
+  margin: 2px 0 0;
+}
+
 /* The grammar-book name. Small, italic and quiet — on the screen every time
    without ever being the thing she is asked for. */
 .aspect-term {

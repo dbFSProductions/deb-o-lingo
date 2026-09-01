@@ -1105,6 +1105,14 @@ function renderDrill() {
                  : `<button class="link" id="reveal" style="padding-left:0">Show meaning</button>`
              }
              ${
+               /* The verb's dictionary form, said quietly — she should know
+                  what the -aba is hanging off. Behind showTranslation, since
+                  "to work" is half the meaning she asked to hide. */
+               phrase.infinitive && state.showTranslation
+                 ? `<p class="infinitive-line tiny muted">${esc(phrase.infinitive)}</p>`
+                 : ""
+             }
+             ${
                phrase.focusNote
                  ? `<div class="focus-note"><strong>Tip</strong><span>${esc(phrase.focusNote)}</span></div>`
                  : ""
@@ -2110,7 +2118,7 @@ function showPhrase(phrase) {
               <span class="aspect-verdict-body">
                 <strong>${esc(aspectOf(phrase).label)}</strong>
                 <span class="aspect-endings">${esc(aspectOf(phrase).endings)}</span>
-                <span class="aspect-term">${esc(aspectOf(phrase).term)}</span>
+                <span class="aspect-term">${esc(aspectOf(phrase).term)}${phrase.infinitive ? ` · ${esc(phrase.infinitive)}` : ""}</span>
                 ${aspectOf(phrase).note ? `<span class="aspect-why">${esc(aspectOf(phrase).note)}</span>` : ""}
               </span>
             </div>`
