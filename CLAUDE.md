@@ -77,6 +77,13 @@ scripts it names. **Don't undo either one for "fewer requests."**
 - The **El pasado** phrases also carry `aspect` and `aspectNote` — see *Dot in
   a box, or line* below. `aspect` is the shape the card is about, and a lesson's
   contents decide what the gate offers, so filing a card matters twice.
+- El pasado cards also carry `marked`: the text with the tense machinery in
+  `[brackets]`, drawn as a gold highlight on the drill card (`drillSpanish` in
+  app.js, `.ending-mark` in app.css). The brackets must strip back to `text`
+  exactly or the highlight is silently dropped — which is what keeps an edited
+  card showing its edit, and makes a typo in the marks cost only the
+  highlight. Their translations stay uncontracted ("I have been", "did not")
+  on purpose: word-for-word English is what lets the tense mapping be seen.
 - If Deb's target ever shifts to Latin American Spanish, the focusNotes need
   rewriting (no 'th'), not just the voice — `VOICES` in store.js is
   deliberately es-ES only, and `settings.load()` resets any voice not in
@@ -647,8 +654,9 @@ Xerra has the same feature in the same shape — same constants, same flags, sam
 ## Dot in a box, or line: El pasado
 
 Xerra's past-tense gate, ported in a deliberately reduced form: the **El
-pasado** unit (three lessons, five cards each, all from Deb's actual life —
-Pilates, Atlanta, Chicago, plants) drills the *shape* of a past sentence
+pasado** unit (four lessons, five cards each, all from Deb's actual life —
+Pilates, Atlanta, Chicago, plants; `pasado-4` is tiny derivatives of the other
+fifteen, deliberately very basic) drills the *shape* of a past sentence
 before it will show the Spanish. Three shapes only — a dot in a box
 (preterite, `[●]`), a line (imperfect, `▬▬`), and a line reaching now (present
 perfect, `(▬···●)`). Xerra's `both` and pluperfect stay over there until Deb
@@ -690,6 +698,19 @@ What came over in Xerra's shape, and should stay in step with it:
   ("every day" reads habit, but the bracket still has now inside it).
 - **Repaso gates too**: the pool can pick up El pasado cards, and
   `aspectChoices` reads the queue in front of her either way.
+- **The ending is lit up in the sentence itself.** Once the Spanish is on
+  screen, the verb's tense machinery wears the same gold highlight the verdict
+  prints the endings line on — `marked` in content.js, `drillSpanish` in
+  app.js. See *Content model* for the reduce-to-text rule that keeps it safe
+  against edits.
+
+One thing in the drill came with this unit but is not part of it:
+
+- **Next is a real button on every card**, not just gated ones — the old muted
+  SKIP link under the record circle, promoted to a full-width `#next` button so
+  a listen-only pass through a lesson doesn't need hunting for the way past a
+  card. Same behaviour: filed as skipped, never counts as a good go, hidden
+  while a banner is up (the banner's Continue is the next button then).
 
 ---
 
@@ -700,7 +721,7 @@ cd docs && python3 -m http.server 8765   # http://127.0.0.1:8765
 ```
 
 Playwright against that URL beats clicking through. Worth asserting: no
-console errors on boot, the path shows 15 course nodes + Repaso with **nothing
+console errors on boot, the path shows 16 course nodes + Repaso with **nothing
 locked** (`.node.locked` should never match), the deepest lesson opens straight
 away with `.drill-text` populated, an edit to a course phrase drills as edited
 and Reset puts it back, a starred phrase raises the Favourites node, a saved
@@ -746,7 +767,13 @@ offers three and asks *Which shape?*; a wrong pick paints
 and the `.aspect-why` underneath, and puts the whole drill back beneath it;
 `saludos-1` is never gated; "Antes trabajaba en Chicago." shows a
 `.phrase-aspect` reading *A line · -aba · -ía* on its sheet; and unticking
-`#s-aspect` removes the gate and the verdict together.
+`#s-aspect` removes the gate and the verdict together. Once a gated card's
+Spanish is on screen, `.drill-text .ending-mark` wraps exactly the bracketed
+machinery ("aba" on the Chicago card, "he ido" on the Pilates one); `pasado-4`
+offers all three shapes. For the Next button: `#next` is on `saludos-1` and on
+an answered pasado card alike, absent while the gate stands and while a banner
+is up, advances the bar without recording, and there is no `#skip` anywhere
+any more.
 
 For the weakest-word score, `attemptScore` is worth driving straight at the
 module: five words with a 61 among them returns 61 and not Azure's 93, an

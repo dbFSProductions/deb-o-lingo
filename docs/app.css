@@ -582,6 +582,17 @@ button { font: inherit; }
   background: color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
+/* The ending lit up inside the sentence itself — same gold highlighter the
+   verdict prints the endings line on, so the two read as one idea: this bit
+   of the verb is the shape. */
+.ending-mark {
+  background: color-mix(in srgb, var(--gold) 35%, transparent);
+  border-radius: 6px;
+  padding: 0 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 /* The grammar-book name. Small, italic and quiet — on the screen every time
    without ever being the thing she is asked for. */
 .aspect-term {

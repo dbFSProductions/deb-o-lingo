@@ -1098,7 +1098,7 @@ function renderDrill() {
           ? `<p class="drill-text recall-prompt">${esc(phrase.translation)}</p>
              ${phrase.situation ? `<p class="drill-translation">${esc(phrase.situation)}</p>` : ""}
              <p class="tiny muted" style="margin:10px 0 0">Say it in Spanish, then you'll see it.</p>`
-          : `<p class="drill-text">${esc(phrase.text)}</p>
+          : `<p class="drill-text">${drillSpanish(phrase)}</p>
              ${
                state.showTranslation
                  ? `<p class="drill-translation">${esc(phrase.translation)}</p>`
@@ -1149,8 +1149,16 @@ function renderDrill() {
           ? "Tap, say it in Spanish, tap again"
           : "Tap, say it, tap again"
       }</p>
-      ${state.banner ? "" : `<button class="link muted-link" id="skip">SKIP</button>`}
     </div>
+
+    ${
+      /* Next on every card, a real button rather than the old muted SKIP link:
+         listening without saying is a legitimate way through a lesson, and a
+         way past a card should not need hunting for. Filed as skipped, so it
+         never counts as a good go. Hidden while a banner is up — the banner's
+         own Continue is the next button then. */
+      state.banner ? "" : `<button class="btn" id="next" style="width:100%">Next →</button>`
+    }
 
     <div id="comparison">${state.attempt ? renderComparison() : ""}</div>
 
@@ -1194,7 +1202,7 @@ function renderDrill() {
     render();
     playModel(1);
   });
-  document.getElementById("skip")?.addEventListener("click", () => {
+  document.getElementById("next")?.addEventListener("click", () => {
     stopEverything();
     advance({ skipped: true, score: null });
   });
@@ -1529,6 +1537,24 @@ function announceLevelUp(phrase) {
   if (state.recall || !settings.recallMode) return;
   if (library.goodAttempts(phrase.id) !== RECALL_AFTER) return;
   toast("¡Nivel 2! Next time you'll say this one from memory.", 3600);
+}
+
+/* The Spanish with its tense machinery lit up. `marked` on an El pasado card
+   is the text with the ending — or the auxiliary pair — in [brackets], and it
+   renders as a gold highlight on the drill card, so the -aba, the -é or the
+   `he ido` is seen on the verb itself rather than only read about in the
+   verdict. The brackets must reduce to the text exactly, or the plain text is
+   used instead — which is what keeps an edited card showing its edit (the
+   override changes `text`, not `marked`) and what makes a typo in the marks
+   cost only the highlight. */
+function drillSpanish(phrase) {
+  const marked = phrase.marked;
+  if (marked && marked.replace(/[\[\]]/g, "") === phrase.text) {
+    return esc(marked)
+      .replace(/\[/g, `<span class="ending-mark">`)
+      .replace(/\]/g, "</span>");
+  }
+  return esc(phrase.text);
 }
 
 /* Dot or line, asked before the sentence is on the screen. The card gives her

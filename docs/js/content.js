@@ -570,6 +570,7 @@ export const COURSE = [
           {
             id: "pasado-1-1",
             text: "Antes trabajaba en Chicago.",
+            marked: "Antes trabaj[aba] en Chicago.",
             translation: "I used to work in Chicago.",
             focusNote:
               "tra-ba-HA-ba, stress on -HA-. That -aba tail is the sound of the line — you'll hear it all lesson.",
@@ -580,6 +581,7 @@ export const COURSE = [
           {
             id: "pasado-1-2",
             text: "Cuando tenía veintiún años, trabajaba en un restaurante.",
+            marked: "Cuando ten[ía] veintiún años, trabaj[aba] en un restaurante.",
             translation: "When I was twenty-one I worked in a restaurant.",
             focusNote:
               "te-NÍ-a — three syllables, stress on the Í. That -ía is the line's other ending.",
@@ -590,6 +592,7 @@ export const COURSE = [
           {
             id: "pasado-1-3",
             text: "Volaba cada semana de Tampa a Chicago.",
+            marked: "Vol[aba] cada semana de Tampa a Chicago.",
             translation: "I flew from Tampa to Chicago every week.",
             focusNote:
               "bo-LA-ba — that v is a b, stress on -LA-. Another -aba.",
@@ -600,6 +603,7 @@ export const COURSE = [
           {
             id: "pasado-1-4",
             text: "Antes me levantaba todos los días a las seis y media.",
+            marked: "Antes me levant[aba] todos los días a las seis y media.",
             translation: "I used to get up at six thirty every day.",
             focusNote:
               "le-ban-TA-ba — v is b again. The 6:30 these lessons were sized for, in the past.",
@@ -610,6 +614,7 @@ export const COURSE = [
           {
             id: "pasado-1-5",
             text: "La semana pasada compré una planta nueva.",
+            marked: "La semana pasada compr[é] una planta nueva.",
             translation: "I bought a new plant last week.",
             focusNote:
               "com-PRÉ — the stress lands hard on the final É. That end-stress is the dot's sound, where -aba sits in the middle.",
@@ -626,6 +631,7 @@ export const COURSE = [
           {
             id: "pasado-2-1",
             text: "La semana pasada fui a Atlanta.",
+            marked: "La semana pasada [fui] a Atlanta.",
             translation: "I went to Atlanta last week.",
             focusNote:
               "'Fui' is one syllable — fwee. It does the work of both 'I went' and 'I was'.",
@@ -636,6 +642,7 @@ export const COURSE = [
           {
             id: "pasado-2-2",
             text: "Fui a Atlanta y luego a Florida a ver a una amiga.",
+            marked: "[Fui] a Atlanta y luego a Florida a ver a una amiga.",
             translation: "I went to Atlanta and then to Florida to see a friend.",
             focusNote:
               "LWE-go, and a light tapped r in 'ver'. Run 'a ver a una amiga' together as one ribbon.",
@@ -646,6 +653,7 @@ export const COURSE = [
           {
             id: "pasado-2-3",
             text: "El domingo fui a un mercadillo de plantas.",
+            marked: "El domingo [fui] a un mercadillo de plantas.",
             translation: "On Sunday I went to a plant sale.",
             focusNote:
               "mer-ka-DEE-yo — the ll is a y and the d melts soft. Stress on -DEE-.",
@@ -656,6 +664,7 @@ export const COURSE = [
           {
             id: "pasado-2-4",
             text: "La clase de pilates de ayer fue dura.",
+            marked: "La clase de pilates de ayer [fue] dura.",
             translation: "Yesterday's Pilates class was hard.",
             focusNote:
               "'Fue' is one syllable — fweh. Tap the r in 'dura': DU-ra.",
@@ -666,7 +675,8 @@ export const COURSE = [
           {
             id: "pasado-2-5",
             text: "Ayer estaba cansada y no quería salir.",
-            translation: "Yesterday I was tired and didn't want to go out.",
+            marked: "Ayer est[aba] cansada y no quer[ía] salir.",
+            translation: "Yesterday I was tired and did not want to go out.",
             focusNote:
               "es-TA-ba and ke-RÍ-a — one of each line ending, -aba and -ía, in the same breath.",
             aspect: "line",
@@ -682,7 +692,8 @@ export const COURSE = [
           {
             id: "pasado-3-1",
             text: "Hoy he ido a pilates.",
-            translation: "I've been to Pilates today.",
+            marked: "Hoy [he ido] a pilates.",
+            translation: "I have been to Pilates today.",
             focusNote:
               "'He' is just eh — silent h. Then EE-tho: 'ido' with the soft d.",
             aspect: "presentPerfect",
@@ -692,6 +703,7 @@ export const COURSE = [
           {
             id: "pasado-3-2",
             text: "Ayer fui a pilates.",
+            marked: "Ayer [fui] a pilates.",
             translation: "I went to Pilates yesterday.",
             focusNote:
               "Same sentence as its pair — but listen: one closed fwee where 'he ido' was.",
@@ -702,6 +714,7 @@ export const COURSE = [
           {
             id: "pasado-3-3",
             text: "Esta semana he ido a pilates todos los días.",
+            marked: "Esta semana [he ido] a pilates todos los días.",
             translation: "I went to Pilates every day this week.",
             focusNote:
               "eh EE-tho again, then TO-thos los DEE-as — keep every vowel pure.",
@@ -712,7 +725,8 @@ export const COURSE = [
           {
             id: "pasado-3-4",
             text: "He estado usando la aplicación para aprender español.",
-            translation: "I've been using the app to learn Spanish.",
+            marked: "[He estado] usando la aplicación para aprender español.",
+            translation: "I have been using the app to learn Spanish.",
             focusNote:
               "eh es-TA-tho u-SAN-do — soft d's all through. 'Aplicación' ends on a stressed -THYON, that Spain c.",
             aspect: "presentPerfect",
@@ -722,12 +736,78 @@ export const COURSE = [
           {
             id: "pasado-3-5",
             text: "Pasé un buen fin de semana.",
+            marked: "Pas[é] un buen fin de semana.",
             translation: "I had a nice weekend.",
             focusNote:
               "pa-SÉ — the stress slams onto the final É. 'Buen' is one syllable: bwen.",
             aspect: "dot",
             aspectNote:
               "Said on Monday, the weekend is a shut box — a dot, pa-SÉ. On Sunday evening, with the weekend still around you, Spain would say he pasado.",
+          },
+        ],
+      },
+      {
+        // Tiny derivatives of the sentences above — same market, same plants,
+        // same Chicago, same trabajar — so every card is one small step from
+        // one she already knows. All three shapes in play, so the gate asks
+        // the full "Which shape?" here. The trabajé / he trabajado pair is the
+        // one to keep together: the time word is the whole difference.
+        id: "pasado-4",
+        title: "All three · tiny ones",
+        phrases: [
+          {
+            id: "pasado-4-1",
+            text: "Ayer fui al mercado.",
+            marked: "Ayer [fui] al mercado.",
+            translation: "I went to the market yesterday.",
+            focusNote:
+              "fwee again — one syllable. 'Mercado' with the soft d: mer-KA-tho.",
+            aspect: "dot",
+            aspectNote: "Yesterday is a shut box. One trip, one dot.",
+          },
+          {
+            id: "pasado-4-2",
+            text: "Antes vivía en Chicago.",
+            marked: "Antes viv[ía] en Chicago.",
+            translation: "I used to live in Chicago.",
+            focusNote:
+              "bi-BÍ-a — the v is a b, three syllables, stress on the Í. The -ía again.",
+            aspect: "line",
+            aspectNote:
+              "No dates, no edges — just how life was for a stretch. -ía is the line.",
+          },
+          {
+            id: "pasado-4-3",
+            text: "La semana pasada trabajé mucho.",
+            marked: "La semana pasada trabaj[é] mucho.",
+            translation: "I worked a lot last week.",
+            focusNote:
+              "tra-ba-HÉ — the stress jumps to the end. Compare it with trabajaba.",
+            aspect: "dot",
+            aspectNote:
+              "'Pasada' shuts the box. Same verb as the Chicago line card — the ending is the whole difference.",
+          },
+          {
+            id: "pasado-4-4",
+            text: "Esta semana he trabajado mucho.",
+            marked: "Esta semana [he trabajado] mucho.",
+            translation: "I have worked a lot this week.",
+            focusNote:
+              "eh tra-ba-HA-tho. Same sentence as its pair — listen for the little 'he'.",
+            aspect: "presentPerfect",
+            aspectNote:
+              "Change 'la semana pasada' to 'esta semana' and the bracket opens — trabajé becomes he trabajado.",
+          },
+          {
+            id: "pasado-4-5",
+            text: "Hoy he comprado una planta.",
+            marked: "Hoy [he comprado] una planta.",
+            translation: "I have bought a plant today.",
+            focusNote:
+              "eh com-PRA-tho — the -ado melts to 'AH-tho'.",
+            aspect: "presentPerfect",
+            aspectNote:
+              "'Hoy' still has now inside it — he + -ado. Yesterday it would be compré.",
           },
         ],
       },
