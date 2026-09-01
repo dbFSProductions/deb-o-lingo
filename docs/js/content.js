@@ -542,6 +542,197 @@ export const COURSE = [
       },
     ],
   },
+  {
+    // The past, drilled Xerra-style: before a card will show its Spanish, the
+    // lesson asks which SHAPE the sentence is — a dot in a box (preterite), a
+    // line (imperfect), or a line reaching now (present perfect) — and the
+    // verdict answers with the ending in big print. The goal is recognising
+    // the tense and what it does to the ending, not memorising the verbs, so
+    // the sentences are Deb's own life: Pilates, Atlanta, Chicago, plants.
+    //
+    // `aspect` is the shape the card is about and `aspectNote` says why this
+    // sentence is that shape; the gate offers only the shapes the lesson
+    // contains (see ASPECTS in store.js), so a lesson's contents are
+    // load-bearing — a lone present-perfect card added to pasado-1 grows a
+    // third button on every card in it. Each single-shape lesson carries one
+    // card of the other shape on purpose: a lesson whose name answers its own
+    // question trains the lesson, not the grammar.
+    id: "pasado",
+    title: "El pasado",
+    subtitle: "Dot in a box, line — or reaching now?",
+    color: "#ff4b4b",
+    colorDark: "#d63d3d",
+    lessons: [
+      {
+        id: "pasado-1",
+        title: "The line · -aba / -ía",
+        phrases: [
+          {
+            id: "pasado-1-1",
+            text: "Antes trabajaba en Chicago.",
+            translation: "I used to work in Chicago.",
+            focusNote:
+              "tra-ba-HA-ba, stress on -HA-. That -aba tail is the sound of the line — you'll hear it all lesson.",
+            aspect: "line",
+            aspectNote:
+              "'Antes' with no end date on it is a stretch, not an event. The -aba is the line.",
+          },
+          {
+            id: "pasado-1-2",
+            text: "Cuando tenía veintiún años, trabajaba en un restaurante.",
+            translation: "When I was twenty-one I worked in a restaurant.",
+            focusNote:
+              "te-NÍ-a — three syllables, stress on the Í. That -ía is the line's other ending.",
+            aspect: "line",
+            aspectNote:
+              "A stretch of your life with no edges on it. Both verbs are the line: tenía (-ía) and trabajaba (-aba).",
+          },
+          {
+            id: "pasado-1-3",
+            text: "Volaba cada semana de Tampa a Chicago.",
+            translation: "I flew from Tampa to Chicago every week.",
+            focusNote:
+              "bo-LA-ba — that v is a b, stress on -LA-. Another -aba.",
+            aspect: "line",
+            aspectNote:
+              "'Cada semana' is a habit, and habits have no edges. -aba, so a line.",
+          },
+          {
+            id: "pasado-1-4",
+            text: "Antes me levantaba todos los días a las seis y media.",
+            translation: "I used to get up at six thirty every day.",
+            focusNote:
+              "le-ban-TA-ba — v is b again. The 6:30 these lessons were sized for, in the past.",
+            aspect: "line",
+            aspectNote:
+              "A daily habit, however long it ran. -aba is the line.",
+          },
+          {
+            id: "pasado-1-5",
+            text: "La semana pasada compré una planta nueva.",
+            translation: "I bought a new plant last week.",
+            focusNote:
+              "com-PRÉ — the stress lands hard on the final É. That end-stress is the dot's sound, where -aba sits in the middle.",
+            aspect: "dot",
+            aspectNote:
+              "The odd one out. Last week is a shut box and the buying happened once inside it — a dot, and the ending jumps to a stressed -é.",
+          },
+        ],
+      },
+      {
+        id: "pasado-2",
+        title: "The dot in a box · -é / -ó",
+        phrases: [
+          {
+            id: "pasado-2-1",
+            text: "La semana pasada fui a Atlanta.",
+            translation: "I went to Atlanta last week.",
+            focusNote:
+              "'Fui' is one syllable — fwee. It does the work of both 'I went' and 'I was'.",
+            aspect: "dot",
+            aspectNote:
+              "Last week is a shut box. One trip, one dot — fui is a dot with no ending to listen for; the whole word is the signal.",
+          },
+          {
+            id: "pasado-2-2",
+            text: "Fui a Atlanta y luego a Florida a ver a una amiga.",
+            translation: "I went to Atlanta and then to Florida to see a friend.",
+            focusNote:
+              "LWE-go, and a light tapped r in 'ver'. Run 'a ver a una amiga' together as one ribbon.",
+            aspect: "dot",
+            aspectNote:
+              "Two trips, one after the other — dots in a row. A story that moves forward is told in dots.",
+          },
+          {
+            id: "pasado-2-3",
+            text: "El domingo fui a un mercadillo de plantas.",
+            translation: "On Sunday I went to a plant sale.",
+            focusNote:
+              "mer-ka-DEE-yo — the ll is a y and the d melts soft. Stress on -DEE-.",
+            aspect: "dot",
+            aspectNote:
+              "Sunday came and went — the box is shut. One visit, one dot.",
+          },
+          {
+            id: "pasado-2-4",
+            text: "La clase de pilates de ayer fue dura.",
+            translation: "Yesterday's Pilates class was hard.",
+            focusNote:
+              "'Fue' is one syllable — fweh. Tap the r in 'dura': DU-ra.",
+            aspect: "dot",
+            aspectNote:
+              "It says 'was', but yesterday's class is one finished thing being summed up — a dot, so it's fue. Compare the next card.",
+          },
+          {
+            id: "pasado-2-5",
+            text: "Ayer estaba cansada y no quería salir.",
+            translation: "Yesterday I was tired and didn't want to go out.",
+            focusNote:
+              "es-TA-ba and ke-RÍ-a — one of each line ending, -aba and -ía, in the same breath.",
+            aspect: "line",
+            aspectNote:
+              "The odd one out, and the trap: 'ayer' doesn't make it a dot. Being tired is the backdrop, not an event — the line. Yesterday's class WAS hard (fue, a dot); yesterday you WERE tired (estaba, a line).",
+          },
+        ],
+      },
+      {
+        id: "pasado-3",
+        title: "Reaching now · he + -ado / -ido",
+        phrases: [
+          {
+            id: "pasado-3-1",
+            text: "Hoy he ido a pilates.",
+            translation: "I've been to Pilates today.",
+            focusNote:
+              "'He' is just eh — silent h. Then EE-tho: 'ido' with the soft d.",
+            aspect: "presentPerfect",
+            aspectNote:
+              "'Hoy' still has now inside it, so the bracket is open — he + -ido, the line reaching now.",
+          },
+          {
+            id: "pasado-3-2",
+            text: "Ayer fui a pilates.",
+            translation: "I went to Pilates yesterday.",
+            focusNote:
+              "Same sentence as its pair — but listen: one closed fwee where 'he ido' was.",
+            aspect: "dot",
+            aspectNote:
+              "Change hoy to ayer and the box shuts. Spain changes the verb with it: he ido becomes fui.",
+          },
+          {
+            id: "pasado-3-3",
+            text: "Esta semana he ido a pilates todos los días.",
+            translation: "I went to Pilates every day this week.",
+            focusNote:
+              "eh EE-tho again, then TO-thos los DEE-as — keep every vowel pure.",
+            aspect: "presentPerfect",
+            aspectNote:
+              "The trap: 'every day' sounds like a habit-line, but 'this week' still has now inside it, so Spain says he ido. Ask where the bracket is, not how many times.",
+          },
+          {
+            id: "pasado-3-4",
+            text: "He estado usando la aplicación para aprender español.",
+            translation: "I've been using the app to learn Spanish.",
+            focusNote:
+              "eh es-TA-tho u-SAN-do — soft d's all through. 'Aplicación' ends on a stressed -THYON, that Spain c.",
+            aspect: "presentPerfect",
+            aspectNote:
+              "Started in the past and still true this minute — the line reaching right up to now. he + -ado again.",
+          },
+          {
+            id: "pasado-3-5",
+            text: "Pasé un buen fin de semana.",
+            translation: "I had a nice weekend.",
+            focusNote:
+              "pa-SÉ — the stress slams onto the final É. 'Buen' is one syllable: bwen.",
+            aspect: "dot",
+            aspectNote:
+              "Said on Monday, the weekend is a shut box — a dot, pa-SÉ. On Sunday evening, with the weekend still around you, Spain would say he pasado.",
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 // Flat lookups, built once.

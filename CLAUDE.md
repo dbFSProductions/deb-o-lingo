@@ -74,6 +74,9 @@ scripts it names. **Don't undo either one for "fewer requests."**
 - Every phrase has a `focusNote` written for an American English speaker
   learning **Castilian** Spanish — soft d's, silent h, b=v, the 'th' in
   ce/ci/z, tapped r. The notes are the pedagogy, not decoration.
+- The **El pasado** phrases also carry `aspect` and `aspectNote` — see *Dot in
+  a box, or line* below. `aspect` is the shape the card is about, and a lesson's
+  contents decide what the gate offers, so filing a card matters twice.
 - If Deb's target ever shifts to Latin American Spanish, the focusNotes need
   rewriting (no 'th'), not just the voice — `VOICES` in store.js is
   deliberately es-ES only, and `settings.load()` resets any voice not in
@@ -641,6 +644,55 @@ Xerra has the same feature in the same shape — same constants, same flags, sam
 
 ---
 
+## Dot in a box, or line: El pasado
+
+Xerra's past-tense gate, ported in a deliberately reduced form: the **El
+pasado** unit (three lessons, five cards each, all from Deb's actual life —
+Pilates, Atlanta, Chicago, plants) drills the *shape* of a past sentence
+before it will show the Spanish. Three shapes only — a dot in a box
+(preterite, `[●]`), a line (imperfect, `▬▬`), and a line reaching now (present
+perfect, `(▬···●)`). Xerra's `both` and pluperfect stay over there until Deb
+needs them; adding one is an entry in `ASPECTS` and cards that name it.
+
+The point of the drill is **tense recognition and what it does to the ending**,
+not learning the phrases — so, unlike Xerra, the endings line is the loud part:
+`.aspect-endings` rides every choice button in bold and the verdict prints it
+bigger on a gold highlighter tint, while the grammar-book term stays small and
+italic. That emphasis is this app's own divergence, not drift; Xerra keeps term
+and endings on one quiet line.
+
+What came over in Xerra's shape, and should stay in step with it:
+
+- **`ASPECTS` / `aspectOf` / `aspectChoices` in store.js.** One language here,
+  so `endings` are plain strings where Xerra keys them by locale. The gate
+  offers the two `base` shapes always, plus the present perfect only in a
+  lesson that actually contains one — so the question is "Dot in a box, or
+  line?" over two choices and "Which shape?" over three, and a lesson's
+  contents are load-bearing.
+- **The gate is a whole screen** — English sentence, choice buttons, quit and
+  the bar; no Listen, no record, no EDIT (the editor prints the sentence being
+  asked about). No way past the question except answering it.
+- **It stacks above level two.** The gate never shows Spanish, so a level-two
+  card asks its shape first and becomes a memory question after. The verdict's
+  term and endings stay through that; the card's `aspectNote` (`.aspect-why`)
+  waits until the card is revealed, because it quotes Spanish.
+- **A wrong answer costs nothing and nothing is persisted** — no per-shape
+  tally, no demotion. `state.aspectChoice` is per card, reset by `loadPhrase`;
+  answering re-renders the whole drill, which is safe because the gate stands
+  before any attempt exists.
+- **The phrase sheet states the shape flat** (`.phrase-aspect`), gate on or
+  off; **`settings.aspectGate`** is the switch, and cards outside El pasado
+  carry no `aspect`, so it does nothing to the rest of the course.
+- **Each single-shape lesson carries one card of the other shape** on purpose —
+  a lesson whose name answers its own question trains the lesson, not the
+  grammar. The traps are load-bearing too: *fue dura* against *estaba cansada*
+  (both "was", different shapes), and *esta semana he ido todos los días*
+  ("every day" reads habit, but the bracket still has now inside it).
+- **Repaso gates too**: the pool can pick up El pasado cards, and
+  `aspectChoices` reads the queue in front of her either way.
+
+---
+
 ## Running and checking
 
 ```bash
@@ -648,7 +700,7 @@ cd docs && python3 -m http.server 8765   # http://127.0.0.1:8765
 ```
 
 Playwright against that URL beats clicking through. Worth asserting: no
-console errors on boot, the path shows 12 course nodes + Repaso with **nothing
+console errors on boot, the path shows 15 course nodes + Repaso with **nothing
 locked** (`.node.locked` should never match), the deepest lesson opens straight
 away with `.drill-text` populated, an edit to a course phrase drills as edited
 and Reset puts it back, a starred phrase raises the Favourites node, a saved
@@ -684,6 +736,17 @@ a second `/interview`, and `#about-reset` takes two taps and leaves the cards
 alone. For the version panel: `#s-running` and `#s-installed` agree after a
 clean install. Two smoke scripts covering all of that live in the session
 scratchpad rather than the repo — there's no test runner here on purpose.
+
+For the dot-or-line gate: `pasado-1` opens on `.aspect-choice` × 2 asking
+*Dot in a box, or line?* with no `.drill-text` (bar the `.recall-prompt`
+English), no `#listen`, `#record` or `#drill-edit`, while `#quit` and the bar
+survive; every choice button carries an `.aspect-endings` line; `pasado-3`
+offers three and asks *Which shape?*; a wrong pick paints
+`.aspect-verdict.wrong` naming both shapes with the endings on the gold tint
+and the `.aspect-why` underneath, and puts the whole drill back beneath it;
+`saludos-1` is never gated; "Antes trabajaba en Chicago." shows a
+`.phrase-aspect` reading *A line · -aba · -ía* on its sheet; and unticking
+`#s-aspect` removes the gate and the verdict together.
 
 For the weakest-word score, `attemptScore` is worth driving straight at the
 module: five words with a 61 among them returns 61 and not Azure's 93, an
@@ -789,5 +852,10 @@ Nothing is waiting to be ported now. What's left is deliberate:
   merged search page; here everything hangs off the path plus a flat Phrases
   list. Sobre mí is the visible consequence: a deck row there, a unit with a
   workshop node here.
+- **The dot-or-line gate is here in a three-shape cut.** Xerra has five shapes
+  in two languages; El pasado has dot, line and the present perfect, its own
+  five-card lessons, and the endings printed loud (see *Dot in a box, or
+  line* above). Porting Xerra's `both`/pluperfect later is additive — an
+  `ASPECTS` entry and cards.
 - **The content.** Same situations in the everyday decks, deliberately
   different focusNotes — hers teach Castilian, Xerra's teach Catalan.
