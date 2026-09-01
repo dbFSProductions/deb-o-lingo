@@ -99,7 +99,7 @@ export const ASPECTS = {
     label: "A line reaching now",
     gloss: "in a stretch of time that includes today",
     term: "present perfect",
-    endings: "he · has · ha + -ado / -ido",
+    endings: "he · has · ha + -ado / -ido — the 'I have gone / eaten' one",
   },
 };
 
