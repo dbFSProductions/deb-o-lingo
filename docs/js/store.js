@@ -54,6 +54,72 @@ export const ABOUT_DECK = "Sobre mí";
 export const RECALL_AFTER = 4;
 const RECALL_PASS = 75; // the same "understandable" line the lesson banner uses
 
+/* The shape a past sentence has — Xerra's dot-and-line table, cut down to the
+   three shapes Deb's course teaches: a dot in a box, a line, and a line
+   reaching now. (`both` and the pluperfect stay over in Xerra until she wants
+   them; a new shape is an entry here and cards that name it.) On the El pasado
+   lessons the drill asks which shape the sentence is *before* it will show the
+   Spanish — deciding from the meaning alone is the thing that transfers to
+   speaking, where the decision comes before the words.
+
+   The one association these lessons exist to build is ending ↔ shape — the
+   line IS -aba/-ía — so `endings` is not a footnote here the way `term` is:
+   the gate prints it in bold on every choice button and the verdict says it
+   in big print (`.aspect-endings` in app.css). That emphasis is Deb-o's own;
+   Xerra keeps term and endings on one quiet line. One fixed language, so
+   `endings` are plain strings where Xerra keys them by locale.
+
+   The two `base` shapes are always offered — dot-or-line is the question every
+   past sentence poses — and the present perfect joins only in a lesson that
+   actually contains one, so a lesson's contents are load-bearing. */
+export const ASPECTS = {
+  dot: {
+    /* Square brackets because the box is shut — against the present perfect's
+       round ones, which are a stretch of time still open into now. */
+    mark: "[●]",
+    label: "A dot in a box",
+    gloss: "an event in a time-boxed past",
+    term: "preterite (simple past)",
+    endings: "-é · -ó · -í — stress at the very end",
+    base: true,
+  },
+  line: {
+    mark: "▬▬",
+    label: "A line",
+    gloss: "a habit, a state, a background",
+    term: "imperfect",
+    endings: "-aba · -ía — always the line",
+    base: true,
+  },
+  /* A line back in the past, dashed forward into the dot of now; the brackets
+     are the stretch of time — today, this week — that still has now inside it.
+     That bracket is what chooses it over the preterite in Spain. */
+  presentPerfect: {
+    mark: "(▬···●)",
+    label: "A line reaching now",
+    gloss: "in a stretch of time that includes today",
+    term: "present perfect",
+    endings: "he · has · ha + -ado / -ido — the 'I have gone / eaten' one",
+  },
+};
+
+/* Which shapes the gate offers: the base pair always, anything else only when
+   the queue in front of Deb actually contains it. A choice that is never the
+   answer anywhere in the lesson is noise read past every time. */
+export function aspectChoices(queue) {
+  const inPlay = new Set((queue ?? []).map((p) => p?.aspect).filter((key) => ASPECTS[key]));
+  return Object.keys(ASPECTS).filter((key) => ASPECTS[key].base || inPlay.has(key));
+}
+
+/* The shape this card asks about — the table entry plus the card's own note
+   saying why *this* sentence is that shape. Null for every card without an
+   aspect, which is every card outside the El pasado lessons. */
+export function aspectOf(phrase) {
+  const key = phrase?.aspect;
+  if (!key || !ASPECTS[key]) return null;
+  return { key, ...ASPECTS[key], note: phrase.aspectNote || null };
+}
+
 const DB_NAME = "debolingo";
 const DB_VERSION = 1;
 const STORE_MODEL = "modelAudio";
@@ -638,6 +704,9 @@ const DEFAULT_SETTINGS = {
   slowRate: 0.65,
   showTranslationUpFront: true,
   recallMode: true,
+  // The dot-or-line question on the El pasado lessons. Cards elsewhere carry
+  // no shape, so switching it off only quiets those lessons.
+  aspectGate: true,
 };
 
 export const settings = {
