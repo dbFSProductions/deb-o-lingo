@@ -135,9 +135,13 @@ export function aspectOf(phrase) {
 }
 
 const DB_NAME = "debolingo";
-const DB_VERSION = 1;
+/* Bumped to 2 for the pictures store. The upgrade handler creates whatever is
+   missing rather than assuming a fresh database, so an existing install keeps
+   its recordings and its cached model audio and simply gains the third box. */
+const DB_VERSION = 2;
 const STORE_MODEL = "modelAudio";
 const STORE_RECORDINGS = "recordings";
+const STORE_PICTURES = "pictures";
 
 // ---------------------------------------------------------------- IndexedDB
 
@@ -151,6 +155,7 @@ function openDB() {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_MODEL)) db.createObjectStore(STORE_MODEL);
       if (!db.objectStoreNames.contains(STORE_RECORDINGS)) db.createObjectStore(STORE_RECORDINGS);
+      if (!db.objectStoreNames.contains(STORE_PICTURES)) db.createObjectStore(STORE_PICTURES);
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
@@ -205,6 +210,11 @@ export const audioStore = {
   getRecording: (key) => idbGet(STORE_RECORDINGS, key),
   deleteRecording: (key) => idbDelete(STORE_RECORDINGS, key),
   clearModelCache: () => idbClear(STORE_MODEL),
+
+  putPicture: (key, blob) => idbPut(STORE_PICTURES, key, blob),
+  getPicture: (key) => idbGet(STORE_PICTURES, key),
+  deletePicture: (key) => idbDelete(STORE_PICTURES, key),
+  clearPictures: () => idbClear(STORE_PICTURES),
 
   async usage() {
     if (!navigator.storage?.estimate) return null;
@@ -480,6 +490,8 @@ export const library = {
     for (const attempt of this.attemptsFor(phraseID)) {
       await audioStore.deleteRecording(attempt.id);
     }
+    // The drawing of its picture goes with it, like the recordings do.
+    await audioStore.deletePicture(phraseID);
     this.attempts = this.attempts.filter((a) => a.phraseID !== phraseID);
     this.customPhrases = this.customPhrases.filter((p) => p.id !== phraseID);
     this.favourites = this.favourites.filter((id) => id !== phraseID);
