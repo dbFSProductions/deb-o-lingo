@@ -583,9 +583,11 @@ unit here that teaches single words rather than things you say.
   is new and is purple *as lettering*, on the `--amber` precedent — `--purple`
   is a fill and vanishes as small text on white.
 
-The other fork has this unit too, with the same code and deliberately different
-pictures: hers are dollars and her own week, Mum's are pounds and the Christmas trip. Port the machinery, never the scenes — a picture is
-aimed at one mouth and one life, the same way a focusNote is.
+The other forks have this unit too, with the same code and deliberately
+different pictures: hers are dollars and her own week, Mum's are pounds and the
+Christmas trip, and Xerra's are thirty-six Catalan words in a **Paraules**
+family of six decks. Port the machinery, never the scenes — a picture is aimed
+at one mouth and one life, the same way a focusNote is.
 
 ---
 
@@ -1078,10 +1080,14 @@ Nothing is waiting to be ported now. What's left is deliberate:
   five-card lessons, and the endings printed loud (see *Dot in a box, or
   line* above). Porting Xerra's `both`/pluperfect later is additive — an
   `ASPECTS` entry and cards.
-- **The keyword pictures are here and not in Xerra at all.** The Palabras unit
-  and the `sounds`/`picture` pair are additive — a unit, two fields in
-  `EDITABLE`, one render helper and a hint button — so porting them over there
-  is a day's work and mostly writing scenes. Mum-o-lingo has the same
-  machinery already, with its own pictures.
+- **The keyword pictures are in all three forks now**, with the same machinery
+  and deliberately different scenes. Xerra's is a **Paraules** family of six
+  decks, thirty-six Catalan words, and it needed no Worker change — `/picture`
+  was already deployed. Two things it had to solve that Spanish doesn't pose:
+  Catalan's `ll` has no English sound to bridge to (the scenes say "ya" and the
+  focusNote says *the lli of 'million'*), and its stress decides which vowels
+  survive, so *l'escala* is not "escalator" and *la maleta* is not the "mallet"
+  used here. Over there the fields ride on the phrase itself rather than
+  through an override, since its cards are data rather than code.
 - **The content.** Same situations in the everyday decks, deliberately
   different focusNotes — hers teach Castilian, Xerra's teach Catalan.
