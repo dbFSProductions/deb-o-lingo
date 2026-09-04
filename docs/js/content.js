@@ -833,6 +833,325 @@ export const COURSE = [
       },
     ],
   },
+  /* Palabras — vocabulary by the keyword-picture method.
+   *
+   * Every other unit teaches a phrase you say. This one teaches single words,
+   * and it teaches them the way people who are good at this actually do it:
+   * you hear an English sound inside the Spanish word, and you build one
+   * ridiculous picture out of that sound and the meaning. `tenedor` sounds
+   * like "ten-a-door", so a ten-dollar bill is nailed to a door with a fork,
+   * and the word is never a coin-flip again.
+   *
+   * Two fields carry it. `sounds` is the bridge — what the word sounds like in
+   * English, and nothing else. `picture` is the scene, and it has exactly one
+   * job: to contain BOTH the sound and the meaning, so that recalling the
+   * picture hands back the word. A picture with the sound in it but not the
+   * meaning ("a ten-dollar bill on a door") is useless; so is a pretty one
+   * with neither.
+   *
+   * Rules for writing more of these:
+   *   - Strange beats sensible. The scene should be impossible, or violent, or
+   *     rude, or all three. A plausible picture is forgotten by Thursday.
+   *   - The sound bridge has to be a sound she already owns in English. Don't
+   *     bridge to another Spanish word.
+   *   - Never bridge to a sound the word doesn't have. `llave` is not "lava",
+   *     however good the picture would be — the mnemonic would teach the
+   *     wrong mouth, and a mnemonic that teaches a mispronunciation is worse
+   *     than no mnemonic at all. The focusNote still does the real
+   *     pronunciation work; the picture only has to get her to the word.
+   *   - One picture per word, one sentence long. It's a hook, not a story.
+   *
+   * The nouns carry their article in `text` — "el tenedor", not "tenedor" —
+   * because a noun learnt without its gender has to be learnt twice. */
+  {
+    id: "palabras",
+    title: "Palabras",
+    subtitle: "Everyday words, each with a silly picture to hang it on",
+    color: "var(--purple)",
+    colorDark: "var(--purple-dark)",
+    lessons: [
+      {
+        id: "palabras-1",
+        title: "On the table",
+        phrases: [
+          {
+            id: "palabras-1-1",
+            text: "el tenedor",
+            translation: "the fork",
+            sounds: "ten-a-door",
+            picture:
+              "A ten-dollar bill nailed to your front door — and the nail is a fork.",
+            focusNote:
+              "te-ne-DOR, stress right at the end. Soft d, and the final r is one light tap, not an American growl.",
+          },
+          {
+            id: "palabras-1-2",
+            text: "la cuchara",
+            translation: "the spoon",
+            sounds: "coo-CHAR-a",
+            picture:
+              "You CHAR a marshmallow black on a spoon the size of a shovel, and a pigeon goes 'coo'.",
+            focusNote:
+              "coo-CHA-ra, stress in the middle. 'ch' exactly as in 'church'; the r is a tap.",
+          },
+          {
+            id: "palabras-1-3",
+            text: "el cuchillo",
+            translation: "the knife",
+            sounds: "ooh, CHILLY-o",
+            picture:
+              "You pick up the knife and yelp 'ooh, chilly!' — someone left it in the freezer overnight.",
+            focusNote:
+              "coo-CHEE-yo. The 'll' is a y sound in Spain, so the end is 'yo' — never 'lo'.",
+          },
+          {
+            id: "palabras-1-4",
+            text: "el vaso",
+            translation: "the glass",
+            sounds: "BASS-o",
+            picture:
+              "A bass — the fish — swimming laps inside your water glass, bumping the sides.",
+            focusNote:
+              "The v is a b: BA-so. Same sound as the b in 'bien', both softer than an English b.",
+          },
+          {
+            id: "palabras-1-5",
+            text: "la servilleta",
+            translation: "the napkin",
+            sounds: "serve a YETI",
+            picture:
+              "You serve a yeti his dinner and he tucks a bedsheet-sized napkin under his chin.",
+            focusNote:
+              "ser-bi-YE-ta — v as b again, and 'll' as y. Four syllables, stress on YE.",
+          },
+        ],
+      },
+      {
+        id: "palabras-2",
+        title: "Around the apartment",
+        phrases: [
+          {
+            id: "palabras-2-1",
+            text: "la llave",
+            translation: "the key",
+            sounds: "YA! wave",
+            picture:
+              "You wave the key over your head like a lasso, shout '¡YA!', and the lock gives up.",
+            focusNote:
+              "YA-be. 'll' is y, v is b — and stress the first syllable. Not 'lah-vay'.",
+          },
+          {
+            id: "palabras-2-2",
+            text: "la puerta",
+            translation: "the door",
+            sounds: "PORT-a",
+            picture:
+              "Your front door is a ship's porthole, and you climb through it to get in with the shopping.",
+            focusNote:
+              "PWER-ta — 'pue' is one syllable, pwer. Same 'port' root as English, which is half the reason it sticks.",
+          },
+          {
+            id: "palabras-2-3",
+            text: "la silla",
+            translation: "the chair",
+            sounds: "SEE ya",
+            picture:
+              "You go to sit down and the chair says 'see ya!' and slides out from under you.",
+            focusNote:
+              "SEE-ya. Two syllables, and again 'll' is y. One l in English 'sila' would be wrong — Spanish spells it ll.",
+          },
+          {
+            id: "palabras-2-4",
+            text: "la ventana",
+            translation: "the window",
+            sounds: "VENT + banana",
+            picture:
+              "A banana jammed in the window vent, holding it open all night.",
+            focusNote:
+              "ben-TA-na — v as b, stress on TA. Say it slowly and it's almost 'ventilate'.",
+          },
+          {
+            id: "palabras-2-5",
+            text: "la escalera",
+            translation: "the stairs",
+            sounds: "escalator",
+            picture:
+              "The stairs in your building are an escalator running the wrong way, so you never arrive.",
+            focusNote:
+              "es-ca-LE-ra. Pure vowels, tapped r, stress on LE. It means the ladder too.",
+          },
+        ],
+      },
+      {
+        id: "palabras-3",
+        title: "Out on the street",
+        phrases: [
+          {
+            id: "palabras-3-1",
+            text: "la calle",
+            translation: "the street",
+            sounds: "CAR, yeah!",
+            picture:
+              "You step off the curb, a taxi swerves round you — 'car! yeah!' — and that is a calle.",
+            focusNote:
+              "KA-ye. The 'll' is y once more: never 'callie'. Stress the first syllable.",
+          },
+          {
+            id: "palabras-3-2",
+            text: "la tienda",
+            translation: "the shop",
+            sounds: "TENT + a",
+            picture:
+              "The corner shop is pitched like a circus tent, with ten-dollar bills flapping off the pole.",
+            focusNote:
+              "TYEN-da — 'tie' is one syllable, tyen. It really does mean tent as well, which is where the picture comes from.",
+          },
+          {
+            id: "palabras-3-3",
+            text: "el bolso",
+            translation: "the handbag",
+            sounds: "BOWL-so",
+            picture:
+              "You tip your handbag out on the counter and it is nothing but soup bowls, dozens of them.",
+            focusNote:
+              "BOL-so. Short pure o's, both of them — no English 'boh-oo' slide.",
+          },
+          {
+            id: "palabras-3-4",
+            text: "el dinero",
+            translation: "the money",
+            sounds: "De Niro",
+            picture:
+              "Robert De Niro at the next table, paying for everyone's dinner in cash, one bill at a time.",
+            focusNote:
+              "di-NE-ro, stress on NE. Soft d to start, tapped r in the middle.",
+          },
+          {
+            id: "palabras-3-5",
+            text: "la parada",
+            translation: "the (bus) stop",
+            sounds: "parade",
+            picture:
+              "A whole marching band is waiting at the bus stop, and the bus cannot get anywhere near it.",
+            focusNote:
+              "pa-RA-da — tapped r, and that middle d is soft, closer to 'th' in 'father'.",
+          },
+        ],
+      },
+      {
+        id: "palabras-4",
+        title: "At the market",
+        phrases: [
+          {
+            id: "palabras-4-1",
+            text: "el pan",
+            translation: "the bread",
+            sounds: "pan",
+            picture:
+              "A loaf baked in a frying pan, and it comes out pan-shaped, handle and all.",
+            focusNote:
+              "One syllable, pure a: pahn. Not the English 'pan' with its flat a.",
+          },
+          {
+            id: "palabras-4-2",
+            text: "el queso",
+            translation: "the cheese",
+            sounds: "K, so…",
+            picture:
+              "The cheese man starts every sentence with 'K, so…' and cuts you another slice each time.",
+            focusNote:
+              "KE-so. 'qu' is a plain k and the u is silent — never 'kwe'.",
+          },
+          {
+            id: "palabras-4-3",
+            text: "la leche",
+            translation: "the milk",
+            sounds: "LECTURE",
+            picture:
+              "The milk lectures you, out loud, for drinking it straight from the carton over the sink.",
+            focusNote:
+              "LE-che, 'ch' as in 'church'. Two syllables, stress the first.",
+          },
+          {
+            id: "palabras-4-4",
+            text: "el pollo",
+            translation: "the chicken",
+            sounds: "POLO, yo",
+            picture:
+              "A chicken in a polo shirt, playing polo, shouting 'yo!' at the other chickens.",
+            focusNote:
+              "PO-yo. 'll' as y — and this one matters: 'polo' with an l is a polo shirt, not lunch.",
+          },
+          {
+            id: "palabras-4-5",
+            text: "la manzana",
+            translation: "the apple",
+            sounds: "man, THANK ya",
+            picture:
+              "A man tips his hat and lisps 'man, thank ya' every single time you hand him an apple.",
+            focusNote:
+              "man-THA-na — that's the Spain z, tongue between the teeth. In Latin America it would be 'man-SA-na'.",
+          },
+        ],
+      },
+      {
+        id: "palabras-5",
+        title: "Small words that do a lot",
+        phrases: [
+          {
+            id: "palabras-5-1",
+            text: "siempre",
+            translation: "always",
+            sounds: "SEE 'EM PRAY",
+            picture:
+              "Whenever you look through that window, you see 'em pray — every time, without fail.",
+            focusNote:
+              "SYEM-pre — 'sie' is one syllable, syem. Tapped r at the end.",
+          },
+          {
+            id: "palabras-5-2",
+            text: "nunca",
+            translation: "never",
+            sounds: "NOON car",
+            picture:
+              "The clock crawls towards noon and stops one minute short. Noon never comes, and neither does the car.",
+            focusNote:
+              "NUN-ka. Pure u, said 'oo'. Stress the first syllable.",
+          },
+          {
+            id: "palabras-5-3",
+            text: "ahora",
+            translation: "now",
+            sounds: "an HOUR",
+            picture:
+              "You ask when, they say 'an hour' — and you shout back that you meant NOW. It sounds like 'an hour' and means the opposite.",
+            focusNote:
+              "a-O-ra. The h is silent, so it's three vowels and a tapped r — ah-OH-ra.",
+          },
+          {
+            id: "palabras-5-4",
+            text: "luego",
+            translation: "later",
+            sounds: "LEGO",
+            picture:
+              "Two Lego people wave from the doorway: 'we go… later.' You stand on a brick anyway.",
+            focusNote:
+              "LWE-go — 'lue' is one syllable, lwe. You already say it in '¡Hasta luego!'",
+          },
+          {
+            id: "palabras-5-5",
+            text: "todavía",
+            translation: "still, not yet",
+            sounds: "TOAD a VIA",
+            picture:
+              "A toad sitting in the middle of the road, still there an hour later, refusing to move: 'toad-a-VIA!'",
+            focusNote:
+              "to-da-VEE-a, stress on VEE. Soft d in the middle, and the í is a pure ee.",
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 // Flat lookups, built once.
