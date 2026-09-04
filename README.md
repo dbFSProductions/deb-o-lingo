@@ -3,10 +3,11 @@
 A tiny personal Spanish trainer, made for exactly one student: Deb.
 
 Five-minute lessons for real life — greeting the doorman, ordering coffee and
-cava, tapas, *para llevar*, and holding your own at a market counter. You hear
-a native voice, record yourself saying the same thing, and the app shows you
-how close you got: side-by-side waveforms, an intonation comparison, and a
-word-by-word pronunciation score.
+cava, tapas, *para llevar*, and holding your own at a market counter — plus the
+past tense in dots and lines, and thirty-one everyday words with a ridiculous
+picture nailed to each one. You hear a native voice, record yourself saying the
+same thing, and the app shows you how close you got: side-by-side waveforms, an
+intonation comparison, and a word-by-word pronunciation score.
 
 It looks a little like a certain green owl on purpose, but there's no ads, no
 gems, no guilt — and every phrase is here because Deb will actually say it this
@@ -42,6 +43,20 @@ A few things worth knowing:
   the whole course plus your own cards.
 - **Star anything.** Tap the star on a phrase and it gathers into a Favourites
   node next to Repaso, for the handful that keep tripping you up.
+- **Palabras — words with a picture nailed to them.** The purple unit near the
+  bottom of the path teaches single words the way people who are good at this
+  actually do it: you hang the word on something ridiculous and it stops being
+  a coin-flip. *Tenedor* is a ten-dollar bill nailed to your front door, and the nail is a fork. Every
+  word gives you what it sounds like in English and one daft scene to picture.
+  When one of them goes up to level 2 there's a **Show me the picture** button
+  sitting above **Show me** — reach for the picture first. Remembering it *is*
+  the trick working; being handed the answer isn't.
+- **Hang a picture on any word you keep losing.** It doesn't have to be one of
+  those thirty-one. Open any card, tap **Edit**, and at the bottom there are
+  two boxes: *Sounds like* and *Picture it*. One you make up yourself will beat
+  anything written for you — the ruder and the more impossible, the better — but
+  there's an **Invent a picture for me** button if you're stuck, and you can
+  rewrite whatever it gives you before you save.
 - **What they might say back.** Under the lesson, and on any phrase in the
   Phrases tab, there's *You might hear back* — two or three things a person
   actually replies, each with a play button and its English. Saying your line
