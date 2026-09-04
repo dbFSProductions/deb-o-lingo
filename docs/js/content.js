@@ -870,9 +870,13 @@ export const COURSE = [
     color: "var(--purple)",
     colorDark: "var(--purple-dark)",
     lessons: [
+      /* The ids are not in lesson order, and that is on purpose: these lessons
+         were re-cut after a cull and the cards kept the ids they were born
+         with. Ids are referenced by saved attempts and are never renumbered —
+         which lesson a card sits in is free to change, its id is not. */
       {
         id: "palabras-1",
-        title: "On the table",
+        title: "At the table",
         phrases: [
           {
             id: "palabras-1-1",
@@ -905,50 +909,14 @@ export const COURSE = [
               "coo-CHEE-yo. The 'll' is a y sound in Spain, so the end is 'yo' — never 'lo'.",
           },
           {
-            id: "palabras-1-4",
-            text: "el vaso",
-            translation: "the glass",
-            sounds: "BASS-o",
+            id: "palabras-4-1",
+            text: "el pan",
+            translation: "the bread",
+            sounds: "pan",
             picture:
-              "A bass — the fish — swimming laps inside your water glass, bumping the sides.",
+              "A loaf baked in a frying pan, and it comes out pan-shaped, handle and all.",
             focusNote:
-              "The v is a b: BA-so. Same sound as the b in 'bien', both softer than an English b.",
-          },
-          {
-            id: "palabras-1-5",
-            text: "la servilleta",
-            translation: "the napkin",
-            sounds: "serve a YETI",
-            picture:
-              "You serve a yeti his dinner and he tucks a bedsheet-sized napkin under his chin.",
-            focusNote:
-              "ser-bi-YE-ta — v as b again, and 'll' as y. Four syllables, stress on YE.",
-          },
-        ],
-      },
-      {
-        id: "palabras-2",
-        title: "Around the apartment",
-        phrases: [
-          {
-            id: "palabras-2-1",
-            text: "la llave",
-            translation: "the key",
-            sounds: "YA! wave",
-            picture:
-              "You wave the key over your head like a lasso, shout '¡YA!', and the lock gives up.",
-            focusNote:
-              "YA-be. 'll' is y, v is b — and stress the first syllable. Not 'lah-vay'.",
-          },
-          {
-            id: "palabras-2-2",
-            text: "la puerta",
-            translation: "the door",
-            sounds: "PORT-a",
-            picture:
-              "Your front door is a ship's porthole, and you climb through it to get in with the shopping.",
-            focusNote:
-              "PWER-ta — 'pue' is one syllable, pwer. Same 'port' root as English, which is half the reason it sticks.",
+              "One syllable, pure a: pahn. Not the English 'pan' with its flat a.",
           },
           {
             id: "palabras-2-3",
@@ -960,30 +928,10 @@ export const COURSE = [
             focusNote:
               "SEE-ya. Two syllables, and again 'll' is y. One l in English 'sila' would be wrong — Spanish spells it ll.",
           },
-          {
-            id: "palabras-2-4",
-            text: "la ventana",
-            translation: "the window",
-            sounds: "VENT + banana",
-            picture:
-              "A banana jammed in the window vent, holding it open all night.",
-            focusNote:
-              "ben-TA-na — v as b, stress on TA. Say it slowly and it's almost 'ventilate'.",
-          },
-          {
-            id: "palabras-2-5",
-            text: "la escalera",
-            translation: "the stairs",
-            sounds: "escalator",
-            picture:
-              "The stairs in your building are an escalator running the wrong way, so you never arrive.",
-            focusNote:
-              "es-ca-LE-ra. Pure vowels, tapped r, stress on LE. It means the ladder too.",
-          },
         ],
       },
       {
-        id: "palabras-3",
+        id: "palabras-2",
         title: "Out on the street",
         phrases: [
           {
@@ -997,14 +945,14 @@ export const COURSE = [
               "KA-ye. The 'll' is y once more: never 'callie'. Stress the first syllable.",
           },
           {
-            id: "palabras-3-2",
-            text: "la tienda",
-            translation: "the shop",
-            sounds: "TENT + a",
+            id: "palabras-3-5",
+            text: "la parada",
+            translation: "the (bus) stop",
+            sounds: "parade",
             picture:
-              "The corner shop is pitched like a circus tent, with ten-dollar bills flapping off the pole.",
+              "A whole marching band is waiting at the bus stop, and the bus cannot get anywhere near it.",
             focusNote:
-              "TYEN-da — 'tie' is one syllable, tyen. It really does mean tent as well, which is where the picture comes from.",
+              "pa-RA-da — tapped r, and that middle d is soft, closer to 'th' in 'father'.",
           },
           {
             id: "palabras-3-3",
@@ -1027,131 +975,19 @@ export const COURSE = [
               "di-NE-ro, stress on NE. Soft d to start, tapped r in the middle.",
           },
           {
-            id: "palabras-3-5",
-            text: "la parada",
-            translation: "the (bus) stop",
-            sounds: "parade",
+            id: "palabras-10-3",
+            text: "el paquete",
+            translation: "the parcel",
+            sounds: "PACKET-eh",
             picture:
-              "A whole marching band is waiting at the bus stop, and the bus cannot get anywhere near it.",
+              "The doorman is buried under a parcel the size of a wardrobe, and your name is on the label.",
             focusNote:
-              "pa-RA-da — tapped r, and that middle d is soft, closer to 'th' in 'father'.",
+              "pa-KE-te — 'qu' is a plain k. Three syllables, stress in the middle.",
           },
         ],
       },
       {
-        id: "palabras-4",
-        title: "At the market",
-        phrases: [
-          {
-            id: "palabras-4-1",
-            text: "el pan",
-            translation: "the bread",
-            sounds: "pan",
-            picture:
-              "A loaf baked in a frying pan, and it comes out pan-shaped, handle and all.",
-            focusNote:
-              "One syllable, pure a: pahn. Not the English 'pan' with its flat a.",
-          },
-          {
-            id: "palabras-4-2",
-            text: "el queso",
-            translation: "the cheese",
-            sounds: "K, so…",
-            picture:
-              "The cheese man starts every sentence with 'K, so…' and cuts you another slice each time.",
-            focusNote:
-              "KE-so. 'qu' is a plain k and the u is silent — never 'kwe'.",
-          },
-          {
-            id: "palabras-4-3",
-            text: "la leche",
-            translation: "the milk",
-            sounds: "LECTURE",
-            picture:
-              "The milk lectures you, out loud, for drinking it straight from the carton over the sink.",
-            focusNote:
-              "LE-che, 'ch' as in 'church'. Two syllables, stress the first.",
-          },
-          {
-            id: "palabras-4-4",
-            text: "el pollo",
-            translation: "the chicken",
-            sounds: "POLO, yo",
-            picture:
-              "A chicken in a polo shirt, playing polo, shouting 'yo!' at the other chickens.",
-            focusNote:
-              "PO-yo. 'll' as y — and this one matters: 'polo' with an l is a polo shirt, not lunch.",
-          },
-          {
-            id: "palabras-4-5",
-            text: "la manzana",
-            translation: "the apple",
-            sounds: "man, THANK ya",
-            picture:
-              "A man tips his hat and lisps 'man, thank ya' every single time you hand him an apple.",
-            focusNote:
-              "man-THA-na — that's the Spain z, tongue between the teeth. In Latin America it would be 'man-SA-na'.",
-          },
-        ],
-      },
-      {
-        id: "palabras-5",
-        title: "Small words that do a lot",
-        phrases: [
-          {
-            id: "palabras-5-1",
-            text: "siempre",
-            translation: "always",
-            sounds: "SEE 'EM PRAY",
-            picture:
-              "Whenever you look through that window, you see 'em pray — every time, without fail.",
-            focusNote:
-              "SYEM-pre — 'sie' is one syllable, syem. Tapped r at the end.",
-          },
-          {
-            id: "palabras-5-2",
-            text: "nunca",
-            translation: "never",
-            sounds: "NOON car",
-            picture:
-              "The clock crawls towards noon and stops one minute short. Noon never comes, and neither does the car.",
-            focusNote:
-              "NUN-ka. Pure u, said 'oo'. Stress the first syllable.",
-          },
-          {
-            id: "palabras-5-3",
-            text: "ahora",
-            translation: "now",
-            sounds: "an HOUR",
-            picture:
-              "You ask when, they say 'an hour' — and you shout back that you meant NOW. It sounds like 'an hour' and means the opposite.",
-            focusNote:
-              "a-O-ra. The h is silent, so it's three vowels and a tapped r — ah-OH-ra.",
-          },
-          {
-            id: "palabras-5-4",
-            text: "luego",
-            translation: "later",
-            sounds: "LEGO",
-            picture:
-              "Two Lego people wave from the doorway: 'we go… later.' You stand on a brick anyway.",
-            focusNote:
-              "LWE-go — 'lue' is one syllable, lwe. You already say it in '¡Hasta luego!'",
-          },
-          {
-            id: "palabras-5-5",
-            text: "todavía",
-            translation: "still, not yet",
-            sounds: "TOAD a VIA",
-            picture:
-              "A toad sitting in the middle of the road, still there an hour later, refusing to move: 'toad-a-VIA!'",
-            focusNote:
-              "to-da-VEE-a, stress on VEE. Soft d in the middle, and the í is a pure ee.",
-          },
-        ],
-      },
-      {
-        id: "palabras-6",
+        id: "palabras-3",
         title: "Words you need every hour",
         phrases: [
           {
@@ -1175,16 +1011,6 @@ export const COURSE = [
               "ke-RER — 'qu' is a plain k, the u is silent, and both r's are single taps. 'Quiero' is I want.",
           },
           {
-            id: "palabras-6-3",
-            text: "poder",
-            translation: "to be able to, can",
-            sounds: "POWDER",
-            picture:
-              "One sniff of the powder and you can do anything — lift the fridge, carry all the shopping in one go.",
-            focusNote:
-              "po-DER, stress on DER, and the d is soft. 'Puedo' is I can — the o breaks into 'we'.",
-          },
-          {
             id: "palabras-6-4",
             text: "ir",
             translation: "to go",
@@ -1204,10 +1030,20 @@ export const COURSE = [
             focusNote:
               "sa-BER, tapped r. 'Sé' is I know — one syllable, and nothing like the infinitive.",
           },
+          {
+            id: "palabras-5-3",
+            text: "ahora",
+            translation: "now",
+            sounds: "an HOUR",
+            picture:
+              "You ask when, they say 'an hour' — and you shout back that you meant NOW. It sounds like 'an hour' and means the opposite.",
+            focusNote:
+              "a-O-ra. The h is silent, so it's three vowels and a tapped r — ah-OH-ra.",
+          },
         ],
       },
       {
-        id: "palabras-7",
+        id: "palabras-4",
         title: "Asking questions",
         phrases: [
           {
@@ -1263,8 +1099,8 @@ export const COURSE = [
         ],
       },
       {
-        id: "palabras-8",
-        title: "Today, tomorrow, yesterday",
+        id: "palabras-5",
+        title: "When, and how often",
         phrases: [
           {
             id: "palabras-8-1",
@@ -1277,16 +1113,6 @@ export const COURSE = [
               "One syllable, 'oy'. The h is silent, the way it always is.",
           },
           {
-            id: "palabras-8-2",
-            text: "mañana",
-            translation: "tomorrow, morning",
-            sounds: "a man says 'ya, ya, na'",
-            picture:
-              "A man waves you away — 'ya, ya, na' — he'll do it tomorrow. He said that yesterday too.",
-            focusNote:
-              "ma-NYA-na. The ñ is 'ny' as in canyon. It means the morning as well as tomorrow, which is very Spanish of it.",
-          },
-          {
             id: "palabras-8-3",
             text: "ayer",
             translation: "yesterday",
@@ -1295,16 +1121,6 @@ export const COURSE = [
               "Yesterday feels like a whole year ago, because you spent all of it in the air on a plane.",
             focusNote:
               "a-YER, stress at the end. Two syllables and a tapped r.",
-          },
-          {
-            id: "palabras-8-4",
-            text: "la semana",
-            translation: "the week",
-            sounds: "some MANNA",
-            picture:
-              "Manna falls out of the sky once a week, and you have to catch a whole week's worth in a bedsheet.",
-            focusNote:
-              "se-MA-na, stress in the middle. 'Fin de semana' is the weekend — you already say it to the doorman.",
           },
           {
             id: "palabras-8-5",
@@ -1316,31 +1132,71 @@ export const COURSE = [
             focusNote:
               "TAR-de, soft d. Same word does late and afternoon — 'buenas tardes' is the one you know.",
           },
+          {
+            id: "palabras-5-1",
+            text: "siempre",
+            translation: "always",
+            sounds: "SEE 'EM PRAY",
+            picture:
+              "Whenever you look through that window, you see 'em pray — every time, without fail.",
+            focusNote:
+              "SYEM-pre — 'sie' is one syllable, syem. Tapped r at the end.",
+          },
+          {
+            id: "palabras-5-2",
+            text: "nunca",
+            translation: "never",
+            sounds: "NOON car",
+            picture:
+              "The clock crawls towards noon and stops one minute short. Noon never comes, and neither does the car.",
+            focusNote:
+              "NUN-ka. Pure u, said 'oo'. Stress the first syllable.",
+          },
+          {
+            id: "palabras-5-5",
+            text: "todavía",
+            translation: "still, not yet",
+            sounds: "TOAD a VIA",
+            picture:
+              "A toad sitting in the middle of the road, still there an hour later, refusing to move: 'toad-a-VIA!'",
+            focusNote:
+              "to-da-VEE-a, stress on VEE. Soft d in the middle, and the í is a pure ee.",
+          },
         ],
       },
       {
-        id: "palabras-9",
-        title: "When something hurts",
+        id: "palabras-6",
+        title: "Away from home",
         phrases: [
           {
-            id: "palabras-9-1",
-            text: "la farmacia",
-            translation: "the pharmacy",
-            sounds: "FARM-acia",
+            id: "palabras-11-1",
+            text: "el avión",
+            translation: "the plane",
+            sounds: "a BEE ON",
             picture:
-              "The pharmacy is a farm — a flashing green cross over the barn door and a cow at the counter in a white coat.",
+              "A bee on the wing of the plane, hanging on grimly the whole way to Atlanta.",
             focusNote:
-              "far-MA-thya — that's the Spain c. Look for the flashing green cross; that is what they all have.",
+              "a-BYON — the v is a b, and 'ió' is one syllable. Stress at the end, where the accent is.",
           },
           {
-            id: "palabras-9-2",
-            text: "la cabeza",
-            translation: "the head",
-            sounds: "CAB, BEIGE-a",
+            id: "palabras-11-2",
+            text: "la maleta",
+            translation: "the suitcase",
+            sounds: "MALLET-a",
             picture:
-              "You bang your head on the roof of a beige cab, twice, because you forgot the first time.",
+              "You shut the suitcase with a mallet, then sit on it, and it still will not close.",
             focusNote:
-              "ca-BE-tha — the z is the Spain 'th', tongue between the teeth. Stress the middle.",
+              "ma-LE-ta, three syllables, stress in the middle.",
+          },
+          {
+            id: "palabras-2-5",
+            text: "la escalera",
+            translation: "the stairs",
+            sounds: "escalator",
+            picture:
+              "The stairs in your building are an escalator running the wrong way, so you never arrive.",
+            focusNote:
+              "es-ca-LE-ra. Pure vowels, tapped r, stress on LE. It means the ladder too.",
           },
           {
             id: "palabras-9-3",
@@ -1353,16 +1209,6 @@ export const COURSE = [
               "do-LOR, stress at the end. English 'dolorous' is the same word wearing a coat.",
           },
           {
-            id: "palabras-9-4",
-            text: "cansado",
-            translation: "tired",
-            sounds: "CAN'T SAY DOUGH",
-            picture:
-              "You are so tired you can't say your own name. 'Can… sa… dough…' and you're asleep in the chair.",
-            focusNote:
-              "can-SA-do, soft d. A woman says 'cansada' — the ending agrees with the person, not the tiredness.",
-          },
-          {
             id: "palabras-9-5",
             text: "la receta",
             translation: "the prescription",
@@ -1371,62 +1217,6 @@ export const COURSE = [
               "The pharmacist hands you a recipe instead of a prescription: two eggs, a lemon, and lie down until Thursday.",
             focusNote:
               "re-THE-ta — the Spain c again. It really does mean recipe too, which is why the picture works.",
-          },
-        ],
-      },
-      {
-        id: "palabras-10",
-        title: "Your building and your street",
-        phrases: [
-          {
-            id: "palabras-10-1",
-            text: "el ascensor",
-            translation: "the elevator",
-            sounds: "ASCEND — SORE",
-            picture:
-              "The elevator ascends so fast your ears are sore by the fourth floor, and it does it every single morning.",
-            focusNote:
-              "as-then-SOR — that middle c is the Spain 'th'. Stress right at the end.",
-          },
-          {
-            id: "palabras-10-2",
-            text: "el portero",
-            translation: "the doorman",
-            sounds: "PORTER-o",
-            picture:
-              "The doorman is a hotel porter in a red hat who insists on carrying everything you own, including your coffee.",
-            focusNote:
-              "por-TE-ro, two tapped r's. Same 'port' as puerta — he is the door man, literally.",
-          },
-          {
-            id: "palabras-10-3",
-            text: "el paquete",
-            translation: "the parcel",
-            sounds: "PACKET-eh",
-            picture:
-              "The doorman is buried under a parcel the size of a wardrobe, and your name is on the label.",
-            focusNote:
-              "pa-KE-te — 'qu' is a plain k. Three syllables, stress in the middle.",
-          },
-          {
-            id: "palabras-10-4",
-            text: "la esquina",
-            translation: "the corner",
-            sounds: "a SKINNY one",
-            picture:
-              "A very skinny man is folded into the corner of the street, pointing at the bar you were looking for.",
-            focusNote:
-              "es-KI-na — 'qu' is k, u silent. Directions here are all corners: 'en la esquina'.",
-          },
-          {
-            id: "palabras-10-5",
-            text: "el barrio",
-            translation: "the neighborhood",
-            sounds: "BAR with an O",
-            picture:
-              "Your whole neighborhood is squeezed into one bar, and there is an enormous letter O hanging over the door.",
-            focusNote:
-              "BA-rryo — and this rr is the rolled one, the only one in the unit. English borrowed this word without the roll.",
           },
         ],
       },
