@@ -4,8 +4,8 @@ A tiny personal Spanish trainer, made for exactly one student: Deb.
 
 Five-minute lessons for real life — greeting the doorman, ordering coffee and
 cava, tapas, *para llevar*, and holding your own at a market counter — plus the
-past tense in dots and lines, and twenty-five everyday words with a ridiculous
-picture nailed to each one. You hear a native voice, record yourself saying the
+past tense in dots and lines, and fifty everyday words with a ridiculous picture
+nailed to each one. You hear a native voice, record yourself saying the
 same thing, and the app shows you how close you got: side-by-side waveforms, an
 intonation comparison, and a word-by-word pronunciation score.
 
@@ -52,7 +52,7 @@ A few things worth knowing:
   sitting above **Show me** — reach for the picture first. Remembering it *is*
   the trick working; being handed the answer isn't.
 - **Hang a picture on any word you keep losing.** It doesn't have to be one of
-  those twenty-five. Open any card, tap **Edit**, and at the bottom there are
+  those fifty. Open any card, tap **Edit**, and at the bottom there are
   two boxes: *Sounds like* and *Picture it*. One you make up yourself will beat
   anything written for you — the ruder and the more impossible, the better — but
   there's an **Invent a picture for me** button if you're stuck, and you can

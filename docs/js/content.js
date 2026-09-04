@@ -1150,6 +1150,286 @@ export const COURSE = [
           },
         ],
       },
+      {
+        id: "palabras-6",
+        title: "Words you need every hour",
+        phrases: [
+          {
+            id: "palabras-6-1",
+            text: "tener",
+            translation: "to have",
+            sounds: "TEN in the AIR",
+            picture:
+              "Everything you have floats ten feet in the air — keys, purse, coffee — and you jump for each thing you need.",
+            focusNote:
+              "te-NER, stress at the end, tapped r. 'Tengo' is I have — the g is the odd one in the family.",
+          },
+          {
+            id: "palabras-6-2",
+            text: "querer",
+            translation: "to want, to love",
+            sounds: "care — RARE",
+            picture:
+              "You want your steak so rare that you care about nothing else, and you shout 'care! RARE!' across the restaurant.",
+            focusNote:
+              "ke-RER — 'qu' is a plain k, the u is silent, and both r's are single taps. 'Quiero' is I want.",
+          },
+          {
+            id: "palabras-6-3",
+            text: "poder",
+            translation: "to be able to, can",
+            sounds: "POWDER",
+            picture:
+              "One sniff of the powder and you can do anything — lift the fridge, carry all the shopping in one go.",
+            focusNote:
+              "po-DER, stress on DER, and the d is soft. 'Puedo' is I can — the o breaks into 'we'.",
+          },
+          {
+            id: "palabras-6-4",
+            text: "ir",
+            translation: "to go",
+            sounds: "EAR",
+            picture:
+              "You go everywhere led by your own ear, dragged along by it like a child out of a sweet shop.",
+            focusNote:
+              "One syllable, 'eer'. Two letters and it's the most irregular verb there is — 'voy' is I go.",
+          },
+          {
+            id: "palabras-6-5",
+            text: "saber",
+            translation: "to know (a fact)",
+            sounds: "SABER (the sword)",
+            picture:
+              "You know the answer because there is a sabre held at your throat until you say it out loud.",
+            focusNote:
+              "sa-BER, tapped r. 'Sé' is I know — one syllable, and nothing like the infinitive.",
+          },
+        ],
+      },
+      {
+        id: "palabras-7",
+        title: "Asking questions",
+        phrases: [
+          {
+            id: "palabras-7-1",
+            text: "¿dónde?",
+            translation: "where?",
+            sounds: "DON, all day",
+            picture:
+              "A mafia don sits at the crossroads all day, and he is the only one who knows where anything is.",
+            focusNote:
+              "DON-de, stress the first syllable — that's what the accent is telling you. Soft d at the end.",
+          },
+          {
+            id: "palabras-7-2",
+            text: "¿cuándo?",
+            translation: "when?",
+            sounds: "KWAN DO",
+            picture:
+              "Your tae kwon do teacher will tell you exactly when the class starts, and never where it is.",
+            focusNote:
+              "KWAN-do — 'cua' is one syllable, kwan. The accent again means the stress is at the front.",
+          },
+          {
+            id: "palabras-7-3",
+            text: "¿cuánto?",
+            translation: "how much?",
+            sounds: "QUANTITY",
+            picture:
+              "The man at the counter weighs the quantity on scales made of ten-dollar bills and asks how much you want.",
+            focusNote:
+              "KWAN-to. Same 'cua' as cuándo, and it really is the quantity word — same Latin root.",
+          },
+          {
+            id: "palabras-7-4",
+            text: "¿quién?",
+            translation: "who?",
+            sounds: "KEN",
+            picture:
+              "Ken — the doll, in his little shorts — is buzzing your door at midnight and nobody knows who he is.",
+            focusNote:
+              "kyen, one syllable. 'qu' is a plain k again, so never 'kwee-en'.",
+          },
+          {
+            id: "palabras-7-5",
+            text: "¿por qué?",
+            translation: "why?",
+            sounds: "poor KAY",
+            picture:
+              "Poor Kay asks why, over and over, and not one person in the room will tell her.",
+            focusNote:
+              "por-KE, stress on the KE — that accent is doing real work. Without it, 'porque' is *because*.",
+          },
+        ],
+      },
+      {
+        id: "palabras-8",
+        title: "Today, tomorrow, yesterday",
+        phrases: [
+          {
+            id: "palabras-8-1",
+            text: "hoy",
+            translation: "today",
+            sounds: "OY!",
+            picture:
+              "Someone leans out of a window and yells 'OY!' at you — today, and only today, never again.",
+            focusNote:
+              "One syllable, 'oy'. The h is silent, the way it always is.",
+          },
+          {
+            id: "palabras-8-2",
+            text: "mañana",
+            translation: "tomorrow, morning",
+            sounds: "a man says 'ya, ya, na'",
+            picture:
+              "A man waves you away — 'ya, ya, na' — he'll do it tomorrow. He said that yesterday too.",
+            focusNote:
+              "ma-NYA-na. The ñ is 'ny' as in canyon. It means the morning as well as tomorrow, which is very Spanish of it.",
+          },
+          {
+            id: "palabras-8-3",
+            text: "ayer",
+            translation: "yesterday",
+            sounds: "a YEAR",
+            picture:
+              "Yesterday feels like a whole year ago, because you spent all of it in the air on a plane.",
+            focusNote:
+              "a-YER, stress at the end. Two syllables and a tapped r.",
+          },
+          {
+            id: "palabras-8-4",
+            text: "la semana",
+            translation: "the week",
+            sounds: "some MANNA",
+            picture:
+              "Manna falls out of the sky once a week, and you have to catch a whole week's worth in a bedsheet.",
+            focusNote:
+              "se-MA-na, stress in the middle. 'Fin de semana' is the weekend — you already say it to the doorman.",
+          },
+          {
+            id: "palabras-8-5",
+            text: "tarde",
+            translation: "late, afternoon",
+            sounds: "TAR day",
+            picture:
+              "You are late because you stepped in tar on the way out, and the whole afternoon goes on getting free.",
+            focusNote:
+              "TAR-de, soft d. Same word does late and afternoon — 'buenas tardes' is the one you know.",
+          },
+        ],
+      },
+      {
+        id: "palabras-9",
+        title: "When something hurts",
+        phrases: [
+          {
+            id: "palabras-9-1",
+            text: "la farmacia",
+            translation: "the pharmacy",
+            sounds: "FARM-acia",
+            picture:
+              "The pharmacy is a farm — a flashing green cross over the barn door and a cow at the counter in a white coat.",
+            focusNote:
+              "far-MA-thya — that's the Spain c. Look for the flashing green cross; that is what they all have.",
+          },
+          {
+            id: "palabras-9-2",
+            text: "la cabeza",
+            translation: "the head",
+            sounds: "CAB, BEIGE-a",
+            picture:
+              "You bang your head on the roof of a beige cab, twice, because you forgot the first time.",
+            focusNote:
+              "ca-BE-tha — the z is the Spain 'th', tongue between the teeth. Stress the middle.",
+          },
+          {
+            id: "palabras-9-3",
+            text: "el dolor",
+            translation: "the pain, the ache",
+            sounds: "DOLLAR",
+            picture:
+              "Every twinge of pain costs you a dollar, and watching the money go hurts more than the ache does.",
+            focusNote:
+              "do-LOR, stress at the end. English 'dolorous' is the same word wearing a coat.",
+          },
+          {
+            id: "palabras-9-4",
+            text: "cansado",
+            translation: "tired",
+            sounds: "CAN'T SAY DOUGH",
+            picture:
+              "You are so tired you can't say your own name. 'Can… sa… dough…' and you're asleep in the chair.",
+            focusNote:
+              "can-SA-do, soft d. A woman says 'cansada' — the ending agrees with the person, not the tiredness.",
+          },
+          {
+            id: "palabras-9-5",
+            text: "la receta",
+            translation: "the prescription",
+            sounds: "RECIPE-a",
+            picture:
+              "The pharmacist hands you a recipe instead of a prescription: two eggs, a lemon, and lie down until Thursday.",
+            focusNote:
+              "re-THE-ta — the Spain c again. It really does mean recipe too, which is why the picture works.",
+          },
+        ],
+      },
+      {
+        id: "palabras-10",
+        title: "Your building and your street",
+        phrases: [
+          {
+            id: "palabras-10-1",
+            text: "el ascensor",
+            translation: "the elevator",
+            sounds: "ASCEND — SORE",
+            picture:
+              "The elevator ascends so fast your ears are sore by the fourth floor, and it does it every single morning.",
+            focusNote:
+              "as-then-SOR — that middle c is the Spain 'th'. Stress right at the end.",
+          },
+          {
+            id: "palabras-10-2",
+            text: "el portero",
+            translation: "the doorman",
+            sounds: "PORTER-o",
+            picture:
+              "The doorman is a hotel porter in a red hat who insists on carrying everything you own, including your coffee.",
+            focusNote:
+              "por-TE-ro, two tapped r's. Same 'port' as puerta — he is the door man, literally.",
+          },
+          {
+            id: "palabras-10-3",
+            text: "el paquete",
+            translation: "the parcel",
+            sounds: "PACKET-eh",
+            picture:
+              "The doorman is buried under a parcel the size of a wardrobe, and your name is on the label.",
+            focusNote:
+              "pa-KE-te — 'qu' is a plain k. Three syllables, stress in the middle.",
+          },
+          {
+            id: "palabras-10-4",
+            text: "la esquina",
+            translation: "the corner",
+            sounds: "a SKINNY one",
+            picture:
+              "A very skinny man is folded into the corner of the street, pointing at the bar you were looking for.",
+            focusNote:
+              "es-KI-na — 'qu' is k, u silent. Directions here are all corners: 'en la esquina'.",
+          },
+          {
+            id: "palabras-10-5",
+            text: "el barrio",
+            translation: "the neighborhood",
+            sounds: "BAR with an O",
+            picture:
+              "Your whole neighborhood is squeezed into one bar, and there is an enormous letter O hanging over the door.",
+            focusNote:
+              "BA-rryo — and this rr is the rolled one, the only one in the unit. English borrowed this word without the roll.",
+          },
+        ],
+      },
     ],
   },
 ];
