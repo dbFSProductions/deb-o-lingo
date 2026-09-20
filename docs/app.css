@@ -33,6 +33,12 @@
      above. --purple is a background colour and disappears as text on white;
      this is the keyword picture's ink. */
   --purple-ink: #8e4ec6;
+  /* Quiet mode's colour, and the Review strip's. Teal because every other
+     strong colour here is already saying something — green is the primary and
+     the record button, blue is You and Practice, purple is the level-two
+     badge and Words, gold is The Past, orange is Quick. Xerra's values. */
+  --teal: #00c2b2;
+  --teal-dark: #00a294;
 
   --accent: var(--green);
   --you: var(--blue);
@@ -59,6 +65,7 @@
     --line: #37464f;
     --amber: #e9b83f;
     --purple-ink: #d9b0ff;
+    --ok-ink: #7ee01e;
   }
 }
 
@@ -293,6 +300,110 @@ p { margin: 0 0 10px; }
   font-size: 1.05rem;
   margin-bottom: 12px;
 }
+
+/* ---------------------------------------------------------------- quiet mode */
+
+/* A pill in the lesson bar rather than a link, because it is a control that
+   is *on* or *off* rather than a thing you do. Teal, the one strong colour not
+   already spoken for in the lesson — purple in particular had to be left
+   alone: a purple Quiet pill beside a purple "Level 2" badge reads as the same
+   thing, which is exactly what it isn't. White does not sit on the fill, so
+   the lettering is dark. Ported from Xerra. */
+.mode-toggle {
+  appearance: none;
+  flex: none;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 11px;
+  background: var(--surface);
+  color: var(--text-3);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--line);
+}
+.mode-toggle:active { transform: translateY(3px); box-shadow: none; }
+.quiet-toggle[aria-pressed="true"] {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #00332e;
+  box-shadow: 0 3px 0 var(--teal-dark);
+}
+
+/* The box is the one thing on the screen she is meant to be looking at, so
+   it gets the room the record circle had. */
+.quiet-answer { margin: 22px 0 10px; }
+.quiet-answer .field { margin-bottom: 12px; }
+.quiet-answer textarea { font-size: 1.15rem; font-weight: 700; min-height: 0; }
+
+/* The verdict borrows the border-and-tint the aspect verdict and the .notice
+   pair already use, in the two colours this app scores in — plus gold for the
+   middle cases, which are neither right nor wrong but a keyboard problem. */
+.quiet-verdict { margin-top: 16px; border: 2px solid var(--line); }
+.quiet-verdict strong { display: block; font-size: 1.05rem; }
+.quiet-verdict.right { border-color: var(--green); background: color-mix(in srgb, var(--green) 12%, transparent); }
+.quiet-verdict.accents { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.quiet-verdict.close { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.quiet-verdict.wrong { border-color: var(--red); background: color-mix(in srgb, var(--red) 10%, transparent); }
+
+/* Her own answer, played back with the marks on it. A wrong word is struck
+   through as well as coloured, and a word that only missed its accents is
+   underlined rather than crossed out — colour alone would not survive a glance
+   or a colour-blind reader. */
+.typed-back { margin: 9px 0 12px; font-size: 1.1rem; font-weight: 700; line-height: 1.7; }
+.typed-word { padding: 1px 3px; border-radius: 5px; }
+.typed-word.ok { color: var(--ok-ink, var(--green-dark)); }
+.typed-word.accent {
+  color: var(--amber);
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-underline-offset: 3px;
+}
+.typed-word.miss { color: var(--red-dark); text-decoration: line-through; }
+/* A slip of a letter: amber like a lost accent, since both are "you had the
+   word", but dotted rather than wavy — this one does want fixing. */
+.typed-word.close {
+  color: var(--amber);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.typed-fixes { margin-top: 0; }
+.typed-fix { white-space: nowrap; }
+.typed-fix s { opacity: 0.7; margin-right: 2px; }
+
+/* ------------------------------------------------------------------ review */
+
+/* What has come round, on the home page under the parrot: a filled strip with
+   the solid slab, so it presses like a tile does. Teal, because it sits above
+   six squares and every other strong colour is one of them. Absent when
+   nothing is due. */
+.due-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--teal-dark);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.due-strip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--teal-dark); }
+.due-mark svg { width: 26px; height: 26px; display: block; }
+.due-main { flex: 1; min-width: 0; display: grid; }
+.due-title { font-weight: 900; font-size: 1.02rem; }
+.due-sub { font-size: 0.8rem; font-weight: 700; opacity: 0.92; }
+.due-go { font-weight: 900; font-size: 0.85rem; white-space: nowrap; }
 
 /* ------------------------------------------------------------------ cards */
 

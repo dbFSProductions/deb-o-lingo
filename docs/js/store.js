@@ -84,6 +84,9 @@ export const WORDS_DECK = "Words";
    migration to write. Xerra uses the same number; keep them in step. */
 export const RECALL_AFTER = 4;
 const RECALL_PASS = 75; // the same "understandable" line the lesson banner uses
+/* The review ladder, in days — see `library.reviewOf`. Ported from Xerra. */
+const REVIEW_DAYS = [1, 2, 4, 8, 16, 32, 64];
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /* The shape a past sentence has — Xerra's dot-and-line table, cut down to the
    three shapes Deb's course teaches: a dot in a box, a line, and a line
@@ -636,6 +639,47 @@ export const library = {
     return Math.max(0, RECALL_AFTER - this.goodAttempts(phraseID));
   },
 
+  /* Spaced repetition, read off the attempts rather than stored. Ported from
+     Xerra in the same shape.
+
+     The interval doubles with every *day* she has said the card well and
+     resets to one day the moment she doesn't: one day, two, four, eight, up
+     to about two months. Days rather than goes, because four good goes in one
+     sitting are one act of remembering, and counting them as four would put
+     a card just learned a week away. A card never attempted has no review —
+     it is new, and the path is where new cards are met. A skipped card
+     (Next, no recording) is not an attempt either, so a listen-only pass
+     through a lesson schedules nothing. Nothing here ever demotes: level two
+     is `recallReady` and stays whatever this says. A typed go in quiet mode
+     is not an attempt and so does not count, on the argument that credit in
+     this app means having said it. */
+  reviewOf(phraseID) {
+    const attempts = [...this.attemptsFor(phraseID)].sort(
+      (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
+    );
+    if (!attempts.length) return null;
+    const days = new Set();
+    let streak = 0;
+    for (let i = attempts.length - 1; i >= 0; i -= 1) {
+      const score = attemptScore(attempts[i]);
+      if (score != null && score < RECALL_PASS) break;
+      days.add(new Date(attempts[i].recordedAt).toDateString());
+      streak = days.size;
+    }
+    const last = new Date(attempts[attempts.length - 1].recordedAt).getTime();
+    const interval = REVIEW_DAYS[Math.min(Math.max(streak, 1) - 1, REVIEW_DAYS.length - 1)];
+    return { last, streak, interval, dueAt: last + interval * DAY_MS };
+  },
+
+  /** Every drillable card whose review has come round, most overdue first. */
+  due(now = Date.now()) {
+    return this.drillable()
+      .map((phrase) => ({ phrase, review: this.reviewOf(phrase.id) }))
+      .filter(({ review }) => review && review.dueAt <= now)
+      .sort((a, b) => a.review.dueAt - b.review.dueAt)
+      .map(({ phrase }) => phrase);
+  },
+
   recordAttempt(attempt) {
     this.attempts.push(attempt);
     this.saveAttempts();
@@ -835,6 +879,9 @@ const DEFAULT_SETTINGS = {
   // The dot-or-line question on the El pasado lessons. Cards elsewhere carry
   // no shape, so switching it off only quiets those lessons.
   aspectGate: true,
+  // Quiet mode: the lesson with the speaking taken off it — a box you write
+  // the answer into where the record button was. See `quietNow` in app.js.
+  quietMode: false,
 };
 
 export const settings = {

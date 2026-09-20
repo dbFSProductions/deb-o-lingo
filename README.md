@@ -41,6 +41,17 @@ A few things worth knowing:
   on. Tomorrow it'll be in Repaso.
 - **Repaso** (the dumbbell at the bottom of the path) mixes up everything —
   the whole course plus your own cards.
+- **Review brings things back.** A card you've said well comes round again
+  after a day, then two, then four, and so on — get it wrong and it's back
+  tomorrow. When something is due there's a teal **Review** strip on the home
+  page (and a clock node next to Repaso): ten cards at most, the rest wait
+  for tomorrow. Nothing due, no strip.
+- **Quiet mode, for when you can't talk.** A train, a waiting room, someone
+  asleep. Tap **Quiet** on the lesson bar (or Settings → *Quiet mode*) and the
+  record button becomes a box: you get the English and write the Spanish, or
+  tap Listen first and write what you hear. It tells you which word went
+  wrong. Accents are marked but forgiven. Nothing you write counts towards
+  level 2 — that takes saying it out loud.
 - **Star anything.** Tap the star on a phrase and it gathers into a Favourites
   node next to Repaso, for the handful that keep tripping you up.
 - **Palabras — words with a picture nailed to them.** The purple unit near the
