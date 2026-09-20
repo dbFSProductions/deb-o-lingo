@@ -1253,11 +1253,132 @@ all** — with no Azure key there is no score to judge by, and the alternative i
 that nothing ever leaves level one on the degraded path.
 
 Deliberately *not* done: peeking doesn't demote a card, and nothing ever comes
-back down. Spaced repetition is still the unbuilt feature below, and a decay
-rule is the shape it should take, not a special case bolted onto this.
+back down. Spaced repetition is built now — see *Review* below — and it is a
+decay rule read off the attempts, not a special case bolted onto this: it
+decides *when* a card comes round, never which level it is at.
 
 Xerra has the same feature in the same shape — same constants, same flags, same
 `mode` values. Keep them in step.
+
+---
+
+## Review: spaced repetition, read off the attempts
+
+Ported from Xerra, asked for as *"add the review feature. Maybe just 10 or 15
+a day rather than 20"*. Retrieval practice was in (level two) and scheduling
+was not: nothing ever brought a card back except Repaso's random seven.
+
+- **`library.reviewOf(id)` is the whole rule, and nothing is stored.** The
+  interval doubles with every *day* a card has been said well and resets to
+  one day the moment it isn't — `REVIEW_DAYS` is 1, 2, 4, 8, 16, 32, 64 —
+  read off the attempt history like `recallReady` is. Days rather than goes,
+  because four good goes in one sitting are one act of remembering. A card
+  never attempted has no review: it is new, and the path is where new cards
+  are met. Skipping a card (Next, no recording) records no attempt, so a
+  listen-only pass schedules nothing; a typed go in quiet mode is not an
+  attempt either. **Nothing demotes.**
+- **`REVIEW_CAP` is ten**, not Xerra's twenty. A lesson here is five cards
+  and Repaso is seven — one coffee — so ten is the same size of sitting.
+  `reviewToday()` in app.js is the one reader — the session (`min(due,
+  cap)`) and the rest — for the strip, the node and the queue, so the three
+  can never disagree about what Start starts. The backlog is said as the
+  quieter clause (*10 cards to review today · 5 more waiting*), never hidden.
+- **`startReview()` is `startPractice` with the due cards, most overdue
+  first, and a title.** So it is a practice queue like Repaso's: no lesson
+  ticks, no streak, *¡Repaso completado!* at the end. `startPractice` took a
+  `{ title }` option for it; nothing else reads the title yet.
+- **Two surfaces, both absent when nothing is due.** The `.due-strip` under
+  the parrot on the home page — it is the one thing on that page that changes
+  day to day, so it sits with the greeting rather than among the six squares
+  — and a Review node first in Mézclalo behind Practice. Teal, the one strong
+  colour no tile wears; it is quiet mode's in the lesson, and the two never
+  share a screen. A strip reading *0 due* would be a nag.
+- **Settings only describes it.** There is no switch: a review you can turn
+  off is a review you forget you turned off, and with nothing due it costs
+  nothing to be on.
+
+Worth asserting: no strip and no node with no attempts; a good attempt three
+days old, a good one today and a failed one yesterday give a strip reading
+*2 cards to review today* and a node reading *Review · 2 today*, the strip
+and the node both start a queue with the three-day-old card first, and
+finishing it ticks no lesson; fifteen due read *10 cards to review today · 5
+more waiting* and drill ten; one due reads *1 card*.
+
+---
+
+## Quiet mode: the lesson with the speaking taken off it
+
+Ported from Xerra, where it is road mode's mirror; this fork has no road mode,
+so it is one flag and nothing to be mutually exclusive with. For a train, a
+waiting room, a house with someone asleep in it: everything you can read stays,
+and the record button is replaced by a box you write the answer into.
+
+- **One flag, read in one place.** `quietNow()` in app.js is
+  `settings.quietMode`, and `renderDrill` reads it; there is deliberately no
+  second renderer, because the first thing a copy would drift on is the
+  level-two gates. The switch is the **Quiet** pill in the lesson bar
+  (`.mode-toggle.quiet-toggle`, between the bar and EDIT, on the gate screen
+  too so it never jumps) and `#s-quiet` in Settings; both write the setting.
+- **It makes *every* card a question, and that is the whole of what it adds
+  to the level-two machinery.** Typing a phrase that is printed on the screen
+  is copying, so the Spanish is withheld at level one too. `typing` is
+  `quiet && !state.typed && !state.attempt`, `questioned` is `asking ||
+  typing`, and everything that waited for a level-two answer — the tip, the
+  aspect note, the picture's third position, the replies, the notes, the
+  chat panel — waits for a typed one through that one flag.
+- **Level two still withholds Listen; level one doesn't.** At level one she
+  may hear it before she writes, which is what makes the same box dictation
+  as well as recall — there is deliberately no setting choosing between them.
+  At level two the model audio is the answer, so Show me plays it and keeps
+  the box: she writes what she heard, and *Shown, not remembered* prints
+  once she has.
+- **Nothing a typed go produces is persisted.** No attempt, no tally, nothing
+  in export/import. `goodAttempts` counts an *unscored* attempt as good —
+  the no-Azure path — so a typed go filed as an attempt would push a card to
+  level two after four quiet sessions in which she never said it, and would
+  land in the review schedule besides. The verdict says so out loud, and
+  Next files the card as skipped exactly as it always has.
+- **The mark is which word, not a percentage.** `checkTyped` is the whole of
+  it: `typedWords` keeps accents in `norm` and folds them in `bare` —
+  `normaliseSentence` can't be the first pass here, since it folds accents
+  itself — and `alignWords` is a weighted LCS so a missed word doesn't mark
+  every word after it wrong. Four verdicts, worst wins: **wrong** (struck
+  through, *Left out: …*), **close** (`closeEnough`: within one edit from
+  four letters, two from eight, swaps allowed; dotted amber with the right
+  spelling under it), **accents** (wavy amber; right, mind the accents) and
+  **right**. `ñ` folds like an accent — it is the same long-press on the
+  keyboard, so `ano` for `año` is marked and forgiven rather than struck.
+- **`autocorrect` and `spellcheck` are off, and are not decoration.** iOS
+  corrects her Spanish for her; `lang="es-ES"` so the keyboard and its
+  dictation key are in the right language.
+- **EDIT stays through the question**, because it is the lesson's only way
+  into the editor and the editor is where Delete lives — Xerra lost the
+  delete off every card in the mode by hiding it. The shape gate still comes
+  first, and its `.aspect-why` waits behind the typed question.
+- **Every verdict ends in *Write it again***, and Show me in *Now write it
+  from memory*: `#quiet-again` clears `state.typed` (and `revealed` at level
+  two, so the audio is withheld again) and leaves `peeked` alone.
+- **Teal**, the one strong colour not already doing a job in the lesson;
+  purple had to be left alone beside the purple Level 2 badge. `--teal` and
+  `--teal-dark` are Xerra's values and the palettes are back in step on it.
+  `.typed-word.ok` is `--green-dark` in the light theme and `--ok-ink` in
+  the dark one, since green-dark vanishes on the dark surface.
+
+Worth asserting, with `quietMode: true` planted: the lesson has
+`#quiet-input`, `#quiet-check`, `#listen`, `.drill-text.recall-prompt` and
+`#drill-edit` and no `#record` or `.focus-note`; the box carries
+`autocorrect="off"`, `spellcheck="false"` and `lang="es-ES"`; an empty Check
+is refused; the exact text paints `.quiet-verdict.right` and puts the Spanish
+and the tip back; `#quiet-again` empties the box and withholds the phrase
+again; Enter checks; the text without accents paints `.accents` with one
+`.typed-word.accent` and nothing struck; one letter off paints `.close` with
+the right spelling in `.typed-fixes` and no *Left out*; a dropped word paints
+`.wrong` naming it; `#quiet-show` prints no verdict; `debolingo.attempts` is
+the same length throughout; `#quiet-toggle` puts `#record` back and writes
+the setting; at level two `#show-me` stands with no `#listen`, writing it
+prints no *Shown, not remembered*, and Show me keeps the box and brings
+Listen back; on `pasado-1` the gate comes first and `.aspect-why` waits for
+the answer.
 
 ---
 
@@ -1524,11 +1645,10 @@ tell you which one you forgot.
   design: probably free-recording against a *situation* prompt rather than a
   fixed phrase, plus a small rules/examples table for common EN→ES transfer
   errors.
-- Spaced repetition beyond the simple Repaso shuffle. Level two is the first
-  half of it — cards get harder once known — but nothing decays, so a card
-  learned in March is still "level 2, done" in August. A decay rule (and a
-  demotion when a level-2 card is peeked at or failed) is the next step, and it
-  belongs here rather than as a special case inside the drill.
+- Demotion. Review brings a card back on a schedule read off the attempts,
+  but nothing ever comes back down from level two — a card peeked at or
+  failed comes round sooner, that is all. If a demotion is ever wanted it
+  belongs in `reviewOf`'s neighbourhood, not as a special case in the drill.
 - Xerra's Practice tab groups a deck's rows with a progress meter and an
   average. Deb's path shows per-lesson bests instead; if free-practice ever
   needs more shape than Repaso + Favourites, that's the pattern to port.
@@ -1552,6 +1672,10 @@ Nothing is waiting to be ported now. What's left is deliberate:
   merged search page; here everything hangs off the path plus a flat Phrases
   list. Sobre mí is a home tile in both now; behind it, its cards are a deck
   there and `ownPhrases` in a named deck here.
+- **Road mode.** Xerra's drill stripped to Listen, record, You and the score
+  for practising on the move. Quiet mode — its mirror — is here now; road
+  mode is not, and this drill card has never carried the situation or the
+  usage note, so half of what road mode is for taking off isn't there.
 - **The dot-or-line gate is here in a three-shape cut.** Xerra has five shapes
   in two languages; El pasado has dot, line and the present perfect, its own
   five-card lessons, and the endings printed loud (see *Dot in a box, or
