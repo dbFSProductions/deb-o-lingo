@@ -1345,6 +1345,9 @@ store.js, and nothing about them is hidden in app.js.
   time are kept to be beaten and win nothing. Two cards with the same English
   can't share a round. The Spanish is said aloud on a match only with an
   Azure key — the browser-voice toast would otherwise fire on every pair.
+  **A matched Spanish card is a Listen button from then on** (asked for by
+  Deb the day it shipped): it goes through `sayAloud` on any voice, since a
+  tap is an explicit ask, and wears a speaker; the English half is inert.
 - **Whether a prize is won is computed; only *when* is stored.** `study` is
   the one thing written as it happens; weeks, months and seasons are read
   off it the way `reviewOf` reads the attempts, and the pronunciation tiers
