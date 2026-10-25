@@ -52,6 +52,17 @@ A few things worth knowing:
   tap Listen first and write what you hear. It tells you which word went
   wrong. Accents are marked but forgiven. Nothing you write counts towards
   level 2 — that takes saying it out loud.
+- **Prizes.** Three challenges against yourself, and a cabinet for what you
+  win. **Ten minutes of study** — in a lesson, a review, Repaso or Match —
+  makes a day count; the row of dots on the home page is this week. **Six
+  days wins the week**, a month with **no more than four days off** wins the
+  month, and three winning months in a row is a *Trimestre*. **Pronunciación
+  Pro** gives a medal the first time Azure's own score (the small *Azure*
+  number beside the dial) clears 70, 80, 90 and the perfect 100. **Match** is
+  a pairs game — six Spanish cards, six English, tap them together — with
+  medals at 50, 100, 250 and 500 pairs over all time, and a best clean-round
+  time to beat. Tap the flame or the dots to see **Premios**. The flame itself
+  still counts finished lessons, as it always has.
 - **Star anything.** Tap the star on a phrase and it gathers into a Favourites
   node next to Repaso, for the handful that keep tripping you up.
 - **Palabras — words with a picture nailed to them.** The purple unit near the

@@ -1292,6 +1292,161 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 }
 
 
+/* ----------------------------------------------------------------- prizes */
+
+/* The week on the home page: seven dots under the Review strip, on a white
+   card with the challenge's orange down its side rather than another filled
+   slab — the squares below are the colour on this page, and the dots carry
+   their own. Opens Premios. */
+.week-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 10px 14px 10px 12px;
+  border: 2px solid var(--line);
+  border-left: 6px solid var(--orange);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.week-strip:active { background: var(--surface-2); }
+.week-main { flex: 1; min-width: 0; display: grid; }
+.week-title { font-weight: 900; font-size: 1rem; }
+.week-sub { font-size: 0.8rem; font-weight: 700; color: var(--text-2); }
+.week-go { font-weight: 900; font-size: 0.85rem; white-space: nowrap; color: var(--orange); }
+
+/* Seven dots, Monday first. Done is a filled orange disc with a tick; today
+   an orange ring; a day still to come a faint ring; a day missed a grey dot.
+   With labels (on Premios) they grow and carry the weekday initial. */
+.week-dots { display: inline-flex; gap: 5px; flex: none; }
+.day-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: transparent;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--text-3);
+}
+.day-dot.done { background: var(--orange); border-color: var(--orange); color: #fff; }
+.day-dot.today { border-color: var(--orange); color: var(--orange); }
+.day-dot.missed { background: var(--line); border-color: var(--line); }
+.day-dot.future { opacity: 0.6; }
+.week-dots.labelled { gap: 8px; margin: 2px 0 12px; }
+.week-dots.labelled .day-dot { width: 34px; height: 34px; border-width: 3px; }
+.week-dots.labelled .day-dot.done::after { content: " ✓"; font-size: 0.6rem; }
+
+.prize-stat { margin: 0 0 4px; font-weight: 700; color: var(--text-2); }
+.prize-stat strong { color: var(--text); }
+
+/* Four medals across. A medal not yet won is drawn in grey rather than left
+   out — the ones she hasn't got are the point of the page. */
+.medal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 2px 0 10px; text-align: center; }
+.medal { display: grid; justify-items: center; gap: 1px; }
+.medal .medal-svg { display: block; }
+.medal.locked .medal-svg { filter: grayscale(1); opacity: 0.35; }
+.medal-label { font-weight: 900; font-size: 0.95rem; }
+.medal.locked .medal-label { color: var(--text-3); }
+.medal-sub { font-size: 0.68rem; font-weight: 700; color: var(--text-3); line-height: 1.2; }
+
+.cabinet-row { cursor: default; }
+.cabinet-row .medal-svg { flex: none; }
+.cabinet-date { flex: none; white-space: nowrap; }
+
+/* The celebration: fixed over whatever is underneath, with the same confetti
+   the lesson's complete screen throws. Sits above the sheet (z 70) and under
+   the toast (80), so "today counts" can still land on top of a medal. */
+.prize-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: banner-in 0.25s ease-out;
+}
+.prize-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 22px 20px 18px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+}
+.prize-medal { display: flex; justify-content: center; animation: medal-drop 0.7s cubic-bezier(0.22, 1.6, 0.36, 1) backwards; }
+@keyframes medal-drop {
+  from { transform: translateY(-40px) scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.prize-kicker { font-size: 0.72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-top: 6px; }
+.prize-title { color: var(--gold-dark); font-size: 1.7rem; font-weight: 900; margin: 4px 0 6px; }
+.prize-line { font-weight: 700; color: var(--text-2); margin: 0; }
+.prize-card .btn-big { margin-top: 16px; }
+.prize-all { display: block; margin: 10px auto 0; }
+
+/* ------------------------------------------------------------------ match */
+
+.match-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 700;
+  color: var(--text-2);
+  margin: 0 2px 12px;
+}
+.match-clock { font-variant-numeric: tabular-nums; font-weight: 900; color: var(--purple-ink); }
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.match-col { display: grid; gap: 10px; align-content: start; }
+.match-card {
+  min-height: 64px;
+  padding: 10px 10px;
+  border: 2px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: transform 0.06s, background 0.15s, border-color 0.15s;
+}
+.match-card:active { transform: translateY(2px); border-bottom-width: 2px; }
+.match-card.picked { border-color: var(--purple); background: color-mix(in srgb, var(--purple) 14%, var(--surface)); }
+.match-card.matched {
+  border-color: var(--green);
+  background: color-mix(in srgb, var(--green) 16%, var(--surface));
+  color: var(--text-3);
+  cursor: default;
+  pointer-events: none;
+}
+.match-card.miss { animation: match-shake 0.4s; border-color: var(--red); }
+@keyframes match-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.match-result { margin-top: 16px; }
+.match-result h2 { color: var(--green-dark); }
+
 /* ------------------------------------------------------- phrases, add, chat */
 
 .sheet-lede { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
