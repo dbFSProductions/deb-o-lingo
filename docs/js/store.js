@@ -969,8 +969,21 @@ export const awards = {
       perfect: Number(match.perfect) || 0,
       bestTime: typeof match.bestTime === "number" ? match.bestTime : null,
     };
-    this.earned = data?.earned && typeof data.earned === "object" ? { ...data.earned } : {};
     this.since = /^\d{4}-\d{2}-\d{2}$/.test(data?.since ?? "") ? data.since : localDay();
+    /* A prize dated before the counting started cannot have been won. The
+       first build granted old Azure scores with their real dates before
+       `since` existed, and a filter on what is *pending* never reached what
+       was already written — so the cabinet read August on a feature that
+       started in October. Dropped here, on every load, so a backup from
+       that build is cleaned the same way. Weeks and months are dated when
+       they are granted and are never before `since`. */
+    this.earned = {};
+    const earned = data?.earned && typeof data.earned === "object" ? data.earned : {};
+    for (const [id, at] of Object.entries(earned)) {
+      const when = new Date(at);
+      if (!Number.isNaN(when.getTime()) && localDay(when) >= this.since) this.earned[id] = at;
+    }
+    for (const day of Object.keys(this.study)) if (day < this.since) delete this.study[day];
     this.save();
   },
 
