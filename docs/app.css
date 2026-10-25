@@ -1409,7 +1409,7 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
   color: var(--text-2);
   margin: 0 2px 12px;
 }
-.match-clock { font-variant-numeric: tabular-nums; font-weight: 900; color: var(--purple-ink); }
+.match-clock { font-variant-numeric: tabular-nums; font-weight: 900; color: var(--amber); }
 .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .match-col { display: grid; gap: 10px; align-content: start; }
 .match-card {
@@ -1430,7 +1430,7 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
   transition: transform 0.06s, background 0.15s, border-color 0.15s;
 }
 .match-card:active { transform: translateY(2px); border-bottom-width: 2px; }
-.match-card.picked { border-color: var(--purple); background: color-mix(in srgb, var(--purple) 14%, var(--surface)); }
+.match-card.picked { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 18%, var(--surface)); }
 .match-card.matched {
   border-color: var(--green);
   background: color-mix(in srgb, var(--green) 16%, var(--surface));

@@ -105,8 +105,15 @@ greeting and six tiles, and nothing else — the path lives behind **Practice**.
   that page is every card. Ported from Xerra, where the same row came out of
   Decks the same day.
 - **Sobre mí sits where The Past was, and The Past went down beside Phrases.**
-  The order is Practice, Words, Sobre mí, Quick, The Past, Phrases. Asked for
+  The order was Practice, Words, Sobre mí, Quick, The Past, Phrases. Asked for
   from the phone; the two you reach for most belong on the top two rows.
+- **Match has The Past's square now.** Asked for as *"she doesn't use that"*.
+  The order is Practice, Words, Sobre mí, Quick, Match, Phrases; Match keeps
+  the slot's gold so the grid's palette is unchanged, and it is the tile that
+  carries `data-open-match`. El pasado is not gone: `TILE_UNITS` lost `past`,
+  which is all it takes to put the unit back on the Practice path in course
+  order, after El mercado and before Mézclalo. Four lessons on the path is
+  not the burial that Palabras's thirty-one words were.
 - **Phrases is a square too, and that is what makes six.** It was `.tile-wide`,
   a button across the bottom on the argument that the whole library outranks a
   slice of it; five squares and a strip read worse than six squares, and the
@@ -156,8 +163,9 @@ and no print page.
 
 ### El pasado and Palabras came off the path
 
-`TILE_UNITS` is the whole of it: those two units are reached through a tile
-instead of the path.
+`TILE_UNITS` is the whole of it: a unit named there is reached through a tile
+instead of the path. It was both of them; El pasado came back onto the path
+when Match took its tile (see above), so it is Palabras alone now.
 
 - **They were never "next".** One is a grammar drill, the other a vocabulary
   pile you dip into — neither is a thing you work through in order. Strung out
@@ -442,7 +450,7 @@ is stored beside it, keyed by phrase id:
 | `debolingo.notes` | Answers she kept from a card chat, by phrase id. |
 | `debolingo.replies` | What she might hear back, by phrase id. |
 | `debolingo.aboutMe` | The Sobre mí interview transcript (not keyed by phrase). |
-| `debolingo.awards` | Study seconds per local day, the Match tallies, and prize id → date won. See *Premios*. |
+| `debolingo.awards` | Study seconds per local day, the Match tallies, and prize id → date won. See *Prizes*. |
 
 `library.decorate()` is what merges an override, the star flag, the kept notes
 and the replies onto a stored phrase — anything that reads a phrase for display
@@ -1307,7 +1315,7 @@ more waiting* and drill ten; one due reads *1 card*.
 
 ---
 
-## Premios: three challenges, read off what she did
+## Prizes: three challenges, read off what she did
 
 Asked for in these words: Deb is competitive and wants rewarding for beating a
 challenge, even against herself. The answers she gave to the four questions
@@ -1326,9 +1334,9 @@ store.js, and nothing about them is hidden in app.js.
   the week (`WEEK_NEEDS`); a month with no more than four days off wins the
   month (`MONTH_MISSES`, so 27 of 31 and 26 of 30). A target she can see
   coming, one shot per period. **The next rung is mine to have picked: three
-  winning months in a row is a *Trimestre*** (`SEASON_MONTHS`), awarded on
+  winning months in a row is a prize of its own** (`SEASON_MONTHS`), awarded on
   every third month of a run.
-- **Pronunciación Pro reads Azure's blend, not the weakest word.** Her choice,
+- **Pronunciation Pro reads Azure's blend, not the weakest word.** Her choice,
   made knowing the dial shows the harder number. `attempt.overall` ≥ 70, 80,
   90, 100 on one attempt, each medal once. The page says which number it is,
   because the two sit beside each other on the score card.
@@ -1343,36 +1351,45 @@ store.js, and nothing about them is hidden in app.js.
   are read off the attempts themselves. `earned` exists so a prize is
   celebrated once and the cabinet can date it. `awards.pending()` is the one
   reader; `checkAwards()` in app.js grants and celebrates whatever it returns.
-- **Prizes earned before the feature existed are granted silently at boot**,
-  dated by the attempt that earned them (an Azure 85 from September lights 70
-  and 80 with September's date). A fanfare on first launch for something she
-  did weeks ago reads as a bug.
+- **Nothing before `awards.since` counts.** Asked for as *"start all the
+  rewards from today"*. The day is written the first time the store loads
+  (or a backup without one is restored), `awards.counted()` filters the
+  attempts by it, and the Prizes page says the date. An Azure 85 from last month
+  lights no medal; a cabinet with prizes in it on day one is not a challenge.
+  Anything won while the app was closed — the week turning over at midnight
+  — is still granted silently at boot rather than thrown as a fanfare.
 - **The celebration is an overlay, never a render.** A medal won mid-lesson
   must leave the attempt on the screen; `showNextPrize` appends to `body` and
   queues the rare double. *See all your prizes* is left off it while a drill
   is on screen, because that tap would quit the lesson.
 - **The flame is a different count and deliberately still is.** It counts
-  finished lessons, as it always has; the challenge counts minutes. Premios
+  finished lessons, as it always has; the challenge counts minutes. The Prizes page
   says so in one line rather than making the two agree, which would have
   meant either changing what the flame has meant since the first version or
   counting a five-minute lesson as a ten-minute day. Tapping the flame now
-  opens Premios instead of toasting one line.
+  opens Prizes instead of toasting one line.
+- **The titles are English, by request.** The first cut said Premios, Racha,
+  Vitrina and ¡Semana ganada!, on the app's habit of Spanish names; asked
+  what they meant, Fin chose English. The ¡Olé! on the button stays, as it
+  does on the Add and Sobre mí toasts.
 - **Two surfaces, like Review.** The `.week-strip` under the Review strip on
   the home page — seven dots, the one other thing on that page that changes
-  every day — and a Match node in Mézclalo, purple. Everything else is on
-  the Premios page: the week, the month, the Trimestre run, the two medal
-  grids and the *Vitrina*, every prize with its date. Settings describes it
+  every day — and the Match tile, in The Past's old square. Everything else is on
+  the Prizes page: the week, the month, the three-in-a-row run, the two medal
+  grids and the *Trophy cabinet*, every prize with its date. Settings describes it
   and links to it; there is no switch to turn it off.
 
-Worth asserting: six tiles and seven dots on a clean boot, no overlay; five
+Worth asserting: six tiles, one of them `[data-open-match]` and none
+`[data-section="past"]`, `pasado-1` on the Practice path, seven dots and
+`since` set to today on a clean boot, no overlay; attempts from September
+seeded beside one from this morning grant only what today's score clears; five
 done days plus 595 s today, then one tick inside a drill, paints
-`#prize-overlay` reading *¡Semana ganada!* with no `#prize-all` and the
+`#prize-overlay` reading *Week won!* with no `#prize-all` and the
 `.drill-text` still underneath; 200 s with no input adds at most 95 s;
 three 27-day months seeded grant `month-2026-10` and `season-2026-10` with no
-overlay; attempts at 72 and 85 grant `pro-70` and `pro-80` dated by those
-attempts; a stubbed 93 celebrates 70, 80 and 90 in turn with the score card
+overlay; a stubbed 93 celebrates 70, 80 and 90 in turn with the score card
 still on screen; a round of Match with `total: 49` planted celebrates
-*¡Emparejado!* on the first pair, reports its miss, and a clean second round
+*Matched!* on the first pair, reports its miss, and a clean second round
 counts as `perfect`; export carries `awards`. The smoke script is in the
 session scratchpad, like the others.
 

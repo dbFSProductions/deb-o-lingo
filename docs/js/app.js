@@ -927,8 +927,14 @@ function aboutUnit() {
    back to being the thing you are actually progressing along.
 
    They are still ordinary units: same shape, same lessons, same progress ticks,
-   drawn by the same `renderPath`. Only where you reach them changed. */
-const TILE_UNITS = { past: "pasado", words: "palabras" };
+   drawn by the same `renderPath`. Only where you reach them changed.
+
+   El pasado was behind a tile too, and came back onto the path when Match
+   took its square: four lessons she doesn't reach for is not worth a sixth of
+   the home screen, and on the path it sits in course order after El mercado
+   rather than vanishing. Palabras stays behind Words — thirty-one words is
+   the pile that buried the path. */
+const TILE_UNITS = { words: "palabras" };
 
 /* The course path is a section like the others now, rather than the thing the
    home screen *is*. Home is four tiles and the Phrases button; the winding
@@ -945,7 +951,6 @@ const PRACTICE = "practice";
    both the tile and the section head. */
 const SECTION_TITLES = {
   [PRACTICE]: { title: "Practice", sub: "Lesson by lesson, in order" },
-  past: { title: "The Past", sub: "Name the shape, then say it" },
   words: { title: "Words", sub: "A word, a sound, a picture" },
 };
 
@@ -1009,7 +1014,7 @@ function firstOpenLesson() {
 /* The home screen, and the two tiles that are the same path filtered.
 
    `section` null is home: the wordmark, the four tiles, then the everyday
-   path. `section` "past" or "words" is one unit drawn on its own, by this same
+   path. `section` "words" is one unit drawn on its own, by this same
    function — deliberately not a second renderer, because a copy would drift
    and the first thing to drift would be the node states. */
 function renderPath(section = null) {
@@ -1154,13 +1159,6 @@ function renderPath(section = null) {
                </div>`
             : ""
         }
-        <div class="node-slot" style="--offset:${offsets[((due ? 1 : 0) + 1 + (favourites.length ? 1 : 0)) % offsets.length]}">
-          <button class="node open" id="match"
-                  style="--node:var(--purple);--node-dark:var(--purple-dark)" aria-label="Match">
-            <svg viewBox="0 0 24 24"><path d="M4 6h7v5H4zM13 13h7v5h-7zM11 8.5h2M13 15.5h-2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="node-title">Match · <strong>${awards.match.total}</strong> pairs</div>
-        </div>
       </div>
     </section>`}
 
@@ -1209,7 +1207,6 @@ function renderPath(section = null) {
      the challenges it sits next to. It used to toast one line; the page says
      the same line and the rest. */
   document.getElementById("streak")?.addEventListener("click", openPrizes);
-  document.getElementById("match")?.addEventListener("click", startMatch);
 
   /* The six ways in. Counted from the course rather than hardcoded, so a tile
      says how much is behind it and Quick says whether it has ever been used.
@@ -1229,10 +1226,13 @@ function renderPath(section = null) {
      shown — a tile that comes and goes leaves a hole in a grid — and with no
      assistant it says so, and its page names Settings as the fix.
 
-     The order is Practice, Words, Sobre mí, Quick, The Past, Phrases. Sobre mí
+     The order is Practice, Words, Sobre mí, Quick, Match, Phrases. Sobre mí
      took The Past's place on the second row because it is asked for far more
      often than a grammar drill is, and the two you reach for should be above
-     the fold; The Past moved down beside Phrases rather than out.
+     the fold; The Past moved down beside Phrases, and then Match took that
+     square too — she doesn't use the grammar drill, and El pasado went back
+     onto the Practice path in course order rather than out of the app. Match
+     keeps the slot's gold, so the grid's palette is what it was.
 
      Phrases came in off the bottom row to make the sixth square. It was a
      wide button across the foot of the grid, on the argument that the whole
@@ -1264,7 +1264,7 @@ function renderPath(section = null) {
   /* The streak challenge's one surface on the home page: seven dots for the
      week, under the Review strip and above the squares, because like the
      strip it is the thing on this page that changes every day. It opens
-     Premios, where the rest of the challenges are. */
+     the Prizes page, where the rest of the challenges are. */
   function weekStrip() {
     const today = localDay();
     const week = awards.weekOf(today);
@@ -1307,9 +1307,9 @@ function renderPath(section = null) {
       { key: "quick", title: "Quick", blurb: "A phrase you need right now", colour: "orange",
         count: asked ? `${asked} asked for` : "Ask for one",
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>` },
-      { key: "past", title: SECTION_TITLES.past.title, blurb: SECTION_TITLES.past.sub, colour: "gold",
-        count: `${count("pasado")} phrases`,
-        mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h16"/><circle cx="8" cy="17" r="2.5"/><path d="M13 17V7h6"/></svg>` },
+      { key: "match", title: "Match", blurb: "Pair the Spanish with the English", colour: "gold",
+        count: awards.match.total ? `${awards.match.total} pair${awards.match.total === 1 ? "" : "s"} matched` : "Play a round",
+        mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v5H4zM13 13h7v5h-7zM11 8.5h2M13 15.5h-2"/></svg>` },
       { key: "phrases", title: "All Phrases", blurb: "Every card, searchable", colour: "blue",
         count: `${library.drillable().length} cards`,
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg>` },
@@ -1321,7 +1321,7 @@ function renderPath(section = null) {
           .map(
             (tile) => `
           <button class="tile tile-${tile.colour}" ${
-            tile.key === "about" ? `data-about="1"` : `data-section="${tile.key}"`
+            tile.key === "about" ? `data-about="1"` : tile.key === "match" ? `data-open-match="1"` : `data-section="${tile.key}"`
           }>
             <span class="tile-mark" aria-hidden="true">${tile.mark}</span>
             <span class="tile-title">${esc(tile.title)}</span>
@@ -4868,9 +4868,9 @@ function renderSettings() {
     <div class="card">
       <p class="tiny muted" style="margin:0 0 10px">Three challenges, read off what you do: <strong>ten minutes of study</strong>
         makes a day count, six days wins the week and a month with no more than ${MONTH_MISSES} days off wins the month;
-        <strong>Pronunciación Pro</strong> medals for an Azure score over ${PRO_TIERS.join(", ")}; and <strong>Match</strong>,
+        <strong>Pronunciation Pro</strong> medals for an Azure score over ${PRO_TIERS.join(", ")}; and <strong>Match</strong>,
         a pairs game that keeps count. The week's dots are on the home page; the flame opens the whole cabinet.</p>
-      <button class="btn" data-open-prizes style="width:100%">Open Premios</button>
+      <button class="btn" data-open-prizes style="width:100%">Open Prizes</button>
     </div>
 
     <div class="section-label">Audio</div>
@@ -5101,12 +5101,16 @@ async function showUsage() {
 
    - The streak challenge. Ten minutes of study makes a day count; six days
      wins the week; a month with no more than four days off wins the month;
-     three winning months in a row is the rung above that, the Trimestre.
-   - Pronunciación Pro. Azure's own blended score — the small "Azure" number
+     three winning months in a row is the rung above that.
+   - Pronunciation Pro. Azure's own blended score — the small "Azure" number
      beside the dial, not the weakest word the dial shows — over 70, 80, 90
      and 100, one attempt, each medal won once.
    - Match. English to Spanish, six pairs a round, any card in the app, and
-     medals for the number of pairs matched over all time.
+     medals for the number of pairs matched over all time. It has The Past's
+     square on the home screen.
+
+   Nothing before `awards.since` counts: the ask was to start from today, so
+   an attempt scored before the feature arrived lights no medal.
 
    What is here is the clock, the celebration and the two pages. The clock
    ticks study seconds while a drill or a round of Match is on screen, the tab
@@ -5145,7 +5149,7 @@ function studyTick() {
 setInterval(studyTick, STUDY_TICK_MS);
 
 /* Anything newly won: write it down, then celebrate it unless told not to.
-   The queue is for the rare double — a month and a Trimestre on the same
+   The queue is for the rare double — a month and a three-in-a-row on the same
    tick — so the second waits for the first's ¡Olé! rather than painting over
    it. */
 const prizeQueue = [];
@@ -5201,7 +5205,9 @@ function dateLabel(iso) {
   return `${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`;
 }
 
-/** What a prize id means on screen: its title, one line, and its medal. */
+/** What a prize id means on screen: its title, one line, and its medal.
+    English titles, asked for — the first cut had Racha, Vitrina and
+    ¡Semana ganada!, which read as more things to learn on a prize screen. */
 function prizeInfo(id) {
   let m;
   if ((m = id.match(/^pro-(\d+)$/))) {
@@ -5209,7 +5215,7 @@ function prizeInfo(id) {
     const metal = TIER_METALS[PRO_TIERS.indexOf(tier)] ?? "gold";
     return {
       group: "pro",
-      title: tier === 100 ? "¡Perfecto!" : "¡Pronunciación Pro!",
+      title: tier === 100 ? "Perfect 100!" : "Pronunciation Pro!",
       line: tier === 100 ? "Azure gave you a perfect 100." : `Azure scored you ${tier} or better.`,
       medal: (size) => medalSVG(MEDAL_TINTS[metal], String(tier), size),
     };
@@ -5219,7 +5225,7 @@ function prizeInfo(id) {
     const metal = TIER_METALS[MATCH_TIERS.indexOf(tier)] ?? "gold";
     return {
       group: "match",
-      title: "¡Emparejado!",
+      title: "Matched!",
       line: `${tier} pairs matched.`,
       medal: (size) => medalSVG(MEDAL_TINTS[metal], String(tier), size),
     };
@@ -5227,7 +5233,7 @@ function prizeInfo(id) {
   if ((m = id.match(/^week-(\d{4}-\d{2}-\d{2})$/))) {
     return {
       group: "streak",
-      title: "¡Semana ganada!",
+      title: "Week won!",
       line: `${WEEK_NEEDS} days of study in the week of ${dayLabel(m[1])}.`,
       medal: (size) => medalSVG("var(--orange)", `${WEEK_NEEDS}/7`, size),
     };
@@ -5235,7 +5241,7 @@ function prizeInfo(id) {
   if ((m = id.match(/^month-(\d{4}-\d{2})$/))) {
     return {
       group: "streak",
-      title: "¡Mes ganado!",
+      title: "Month won!",
       line: `${monthName(m[1])}, with no more than ${MONTH_MISSES} days off.`,
       medal: (size) => medalSVG("var(--gold)", "MES", size),
     };
@@ -5243,7 +5249,7 @@ function prizeInfo(id) {
   if ((m = id.match(/^season-(\d{4}-\d{2})$/))) {
     return {
       group: "streak",
-      title: "¡Trimestre!",
+      title: "Three months running!",
       line: `${SEASON_MONTHS} winning months in a row, ending ${monthName(m[1])}.`,
       medal: (size) => medalSVG("var(--purple)", `×${SEASON_MONTHS}`, size),
     };
@@ -5319,7 +5325,7 @@ function renderPrizes() {
   const todayDone = awards.dayDone(today);
   const minutesLeft = Math.ceil((DAY_DONE_SECONDS - todaySeconds) / 60);
   /* Winning months in a row, counting this one if it is already won and the
-     ones before it otherwise — what the Trimestre is being built out of. */
+     ones before it otherwise — what the three-in-a-row is being built out of. */
   const run = month.won ? awards.seasonRun(month.key) : awards.seasonRun(monthPlus(month.key, -1));
   const pro = awards.proSummary(library.attempts);
   const flame = progress.currentStreak();
@@ -5341,13 +5347,14 @@ function renderPrizes() {
 
   view.innerHTML = `
     <header class="home-head section-head">
-      <div class="wordmark">Premios</div>
+      <div class="wordmark">Prizes</div>
       ${homeLink()}
     </header>
-    <p class="muted section-intro">Challenges you set yourself: beat the week, beat the month, beat your own best.</p>
+    <p class="muted section-intro">Challenges you set yourself: beat the week, beat the month, beat your own best.
+      Counting from ${esc(dateLabel(`${awards.since}T12:00:00`))}.</p>
 
     <div class="list-banner" style="--hue:var(--orange);--hue-dark:var(--orange-dark)">
-      <span class="list-banner-name">Racha — the streak challenge</span>
+      <span class="list-banner-name">The streak challenge</span>
       <span class="list-banner-count">${week.done} of 7 days</span>
     </div>
     <div class="card striped" style="--hue:var(--orange)">
@@ -5365,13 +5372,13 @@ function renderPrizes() {
           ? `${month.done} days — out of reach this month; next month starts fresh`
           : `${month.done} of ${month.needs} days · ${month.left} day${month.left === 1 ? "" : "s"} left`
       }</p>
-      <p class="prize-stat"><strong>Trimestre</strong> ${run} winning month${run === 1 ? "" : "s"} in a row · ${SEASON_MONTHS} wins it</p>
+      <p class="prize-stat"><strong>Three in a row</strong> ${run} winning month${run === 1 ? "" : "s"} in a row · ${SEASON_MONTHS} wins it</p>
       <p class="tiny muted" style="margin:10px 0 0">A day counts after ten minutes in a lesson, a review, Repaso or Match.
         The flame on the home page is a different count — finished lessons, ${flame} day${flame === 1 ? "" : "s"} in a row right now.</p>
     </div>
 
     <div class="list-banner" style="--hue:var(--blue);--hue-dark:var(--blue-dark)">
-      <span class="list-banner-name">Pronunciación Pro</span>
+      <span class="list-banner-name">Pronunciation Pro</span>
       <span class="list-banner-count">${pro.best != null ? `best ${Math.round(pro.best)}` : "no score yet"}</span>
     </div>
     <div class="card striped" style="--hue:var(--blue)">
@@ -5385,11 +5392,11 @@ function renderPrizes() {
         the dial, not the weakest-word score the dial shows. Each medal is won once, the first time you clear it.</p>
     </div>
 
-    <div class="list-banner" style="--hue:var(--purple);--hue-dark:var(--purple-dark)">
+    <div class="list-banner" style="--hue:var(--gold);--hue-dark:var(--gold-dark);--hue-on:#4b4b4b">
       <span class="list-banner-name">Match</span>
       <span class="list-banner-count">${match.total} pair${match.total === 1 ? "" : "s"}</span>
     </div>
-    <div class="card striped" style="--hue:var(--purple)">
+    <div class="card striped" style="--hue:var(--gold)">
       <div class="medal-grid">
         ${MATCH_TIERS.map((tier) => medalCell(`match-${tier}`, tier, `${Math.max(0, tier - match.total)} to go`)).join("")}
       </div>
@@ -5400,7 +5407,7 @@ function renderPrizes() {
     </div>
 
     <div class="list-banner" style="--hue:var(--gold);--hue-dark:var(--gold-dark);--hue-on:#4b4b4b">
-      <span class="list-banner-name">Vitrina — everything you've won</span>
+      <span class="list-banner-name">Trophy cabinet — everything you've won</span>
       <span class="list-banner-count">${earned.length}</span>
     </div>
     ${
@@ -5583,7 +5590,7 @@ function paintMatchDone() {
     <div class="card match-result">
       <h2>${
         clean
-          ? `¡Perfecto! ${game.pairs.length} of ${game.pairs.length}, no misses.`
+          ? `Perfect! ${game.pairs.length} of ${game.pairs.length}, no misses.`
           : `Done — ${game.misses} miss${game.misses === 1 ? "" : "es"}.`
       }</h2>
       <p class="muted" style="margin:6px 0 12px">${seconds}s${
@@ -5635,9 +5642,9 @@ progress.load();
 aboutMe.load();
 awards.load();
 state.showTranslation = settings.showTranslationUpFront;
-/* Prizes already earned before this existed — an Azure 85 from last month
-   clears two tiers — are written down with their real dates and not
-   celebrated: a fanfare for something she did weeks ago reads as a bug. */
+/* Anything won while the app was closed — the week turning over at
+   midnight is the usual case — is written down quietly rather than thrown
+   as a fanfare at boot. Nothing before `awards.since` counts at all. */
 checkAwards({ silent: true });
 render();
 
