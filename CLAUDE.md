@@ -450,7 +450,7 @@ is stored beside it, keyed by phrase id:
 | `debolingo.notes` | Answers she kept from a card chat, by phrase id. |
 | `debolingo.replies` | What she might hear back, by phrase id. |
 | `debolingo.aboutMe` | The Sobre mí interview transcript (not keyed by phrase). |
-| `debolingo.awards` | Study seconds per local day, the Match tallies, and prize id → date won. See *Premios*. |
+| `debolingo.awards` | Study seconds per local day, the Match tallies, and prize id → date won. See *Prizes*. |
 
 `library.decorate()` is what merges an override, the star flag, the kept notes
 and the replies onto a stored phrase — anything that reads a phrase for display
@@ -1315,7 +1315,7 @@ more waiting* and drill ten; one due reads *1 card*.
 
 ---
 
-## Premios: three challenges, read off what she did
+## Prizes: three challenges, read off what she did
 
 Asked for in these words: Deb is competitive and wants rewarding for beating a
 challenge, even against herself. The answers she gave to the four questions
@@ -1334,9 +1334,9 @@ store.js, and nothing about them is hidden in app.js.
   the week (`WEEK_NEEDS`); a month with no more than four days off wins the
   month (`MONTH_MISSES`, so 27 of 31 and 26 of 30). A target she can see
   coming, one shot per period. **The next rung is mine to have picked: three
-  winning months in a row is a *Trimestre*** (`SEASON_MONTHS`), awarded on
+  winning months in a row is a prize of its own** (`SEASON_MONTHS`), awarded on
   every third month of a run.
-- **Pronunciación Pro reads Azure's blend, not the weakest word.** Her choice,
+- **Pronunciation Pro reads Azure's blend, not the weakest word.** Her choice,
   made knowing the dial shows the harder number. `attempt.overall` ≥ 70, 80,
   90, 100 on one attempt, each medal once. The page says which number it is,
   because the two sit beside each other on the score card.
@@ -1354,7 +1354,7 @@ store.js, and nothing about them is hidden in app.js.
 - **Nothing before `awards.since` counts.** Asked for as *"start all the
   rewards from today"*. The day is written the first time the store loads
   (or a backup without one is restored), `awards.counted()` filters the
-  attempts by it, and Premios says the date. An Azure 85 from last month
+  attempts by it, and the Prizes page says the date. An Azure 85 from last month
   lights no medal; a cabinet with prizes in it on day one is not a challenge.
   Anything won while the app was closed — the week turning over at midnight
   — is still granted silently at boot rather than thrown as a fanfare.
@@ -1363,16 +1363,20 @@ store.js, and nothing about them is hidden in app.js.
   queues the rare double. *See all your prizes* is left off it while a drill
   is on screen, because that tap would quit the lesson.
 - **The flame is a different count and deliberately still is.** It counts
-  finished lessons, as it always has; the challenge counts minutes. Premios
+  finished lessons, as it always has; the challenge counts minutes. The Prizes page
   says so in one line rather than making the two agree, which would have
   meant either changing what the flame has meant since the first version or
   counting a five-minute lesson as a ten-minute day. Tapping the flame now
-  opens Premios instead of toasting one line.
+  opens Prizes instead of toasting one line.
+- **The titles are English, by request.** The first cut said Premios, Racha,
+  Vitrina and ¡Semana ganada!, on the app's habit of Spanish names; asked
+  what they meant, Fin chose English. The ¡Olé! on the button stays, as it
+  does on the Add and Sobre mí toasts.
 - **Two surfaces, like Review.** The `.week-strip` under the Review strip on
   the home page — seven dots, the one other thing on that page that changes
   every day — and the Match tile, in The Past's old square. Everything else is on
-  the Premios page: the week, the month, the Trimestre run, the two medal
-  grids and the *Vitrina*, every prize with its date. Settings describes it
+  the Prizes page: the week, the month, the three-in-a-row run, the two medal
+  grids and the *Trophy cabinet*, every prize with its date. Settings describes it
   and links to it; there is no switch to turn it off.
 
 Worth asserting: six tiles, one of them `[data-open-match]` and none
@@ -1380,12 +1384,12 @@ Worth asserting: six tiles, one of them `[data-open-match]` and none
 `since` set to today on a clean boot, no overlay; attempts from September
 seeded beside one from this morning grant only what today's score clears; five
 done days plus 595 s today, then one tick inside a drill, paints
-`#prize-overlay` reading *¡Semana ganada!* with no `#prize-all` and the
+`#prize-overlay` reading *Week won!* with no `#prize-all` and the
 `.drill-text` still underneath; 200 s with no input adds at most 95 s;
 three 27-day months seeded grant `month-2026-10` and `season-2026-10` with no
 overlay; a stubbed 93 celebrates 70, 80 and 90 in turn with the score card
 still on screen; a round of Match with `total: 49` planted celebrates
-*¡Emparejado!* on the first pair, reports its miss, and a clean second round
+*Matched!* on the first pair, reports its miss, and a clean second round
 counts as `perfect`; export carries `awards`. The smoke script is in the
 session scratchpad, like the others.
 

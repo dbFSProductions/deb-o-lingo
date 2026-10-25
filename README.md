@@ -56,13 +56,13 @@ A few things worth knowing:
   win. **Ten minutes of study** — in a lesson, a review, Repaso or Match —
   makes a day count; the row of dots on the home page is this week. **Six
   days wins the week**, a month with **no more than four days off** wins the
-  month, and three winning months in a row is a *Trimestre*. **Pronunciación
-  Pro** gives a medal the first time Azure's own score (the small *Azure*
+  month, and three winning months in a row is a prize of its own.
+  **Pronunciation Pro** gives a medal the first time Azure's own score (the small *Azure*
   number beside the dial) clears 70, 80, 90 and the perfect 100. **Match** is
   a pairs game — six Spanish cards, six English, tap them together — with
   medals at 50, 100, 250 and 500 pairs over all time, and a best clean-round
   time to beat; it has its own gold square on the home screen. Tap the flame
-  or the dots to see **Premios**. Everything counts from the day the prizes
+  or the dots to see **Prizes**. Everything counts from the day the prizes
   arrived, not before. The flame itself still counts finished lessons, as it
   always has.
 - **Star anything.** Tap the star on a phrase and it gathers into a Favourites
