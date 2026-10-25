@@ -5484,7 +5484,7 @@ function renderMatch() {
       <div class="wordmark">Match</div>
       ${homeLink()}
     </header>
-    <p class="muted section-intro">Tap a Spanish card, then its English. ${game.pairs.length} pairs a round.</p>
+    <p class="muted section-intro">Tap a Spanish card, then its English. ${game.pairs.length} pairs a round. Tap a matched Spanish card to hear it again.</p>
     <div class="match-bar">
       <span><strong id="match-count">${game.matched.size}</strong> of ${game.pairs.length}</span>
       <span id="match-clock" class="match-clock">0:00</span>
@@ -5521,8 +5521,17 @@ function paintMatchClock() {
 
 function pickMatch(button) {
   const game = state.match;
-  if (!game || game.finishedAt || button.classList.contains("matched")) return;
+  if (!game) return;
   const { side, id } = button.dataset;
+  /* A matched Spanish card says itself again on a tap — asked for by Deb the
+     day Match shipped. The English stays inert. An explicit tap goes through
+     `sayAloud` whatever the voice is, like every Listen button, so a browser
+     voice that fails says so rather than nothing. */
+  if (button.classList.contains("matched")) {
+    if (side === "es") sayAloud(button, game.pairs.find((p) => p.id === id)?.text ?? button.textContent);
+    return;
+  }
+  if (game.finishedAt) return;
   const picked = game.picked;
 
   // Same side: a second tap on the same card unpicks it, any other switches.
@@ -5552,6 +5561,7 @@ function pickMatch(button) {
        Only with Azure: the browser voice on iOS fails silently and the toast
        that names that failure would fire on every pair. */
     if (settings.hasAzure) sayAloud(esButton, esButton.textContent, "");
+    esButton.setAttribute("aria-label", `${esButton.textContent} — tap to hear it again`);
     if (game.matched.size === game.pairs.length) finishMatch();
     else checkAwards();
   } else {

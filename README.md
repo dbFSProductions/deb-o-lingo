@@ -61,7 +61,9 @@ A few things worth knowing:
   number beside the dial) clears 70, 80, 90 and the perfect 100. **Match** is
   a pairs game — six Spanish cards, six English, tap them together — with
   medals at 50, 100, 250 and 500 pairs over all time, and a best clean-round
-  time to beat; it has its own gold square on the home screen. Tap the flame
+  time to beat; it has its own gold square on the home screen. A pair says
+  itself when it lands, and a matched Spanish card says itself again whenever
+  you tap it. Tap the flame
   or the dots to see **Prizes**. Everything counts from the day the prizes
   arrived, not before. The flame itself still counts finished lessons, as it
   always has.

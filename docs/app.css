@@ -1436,8 +1436,13 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
   background: color-mix(in srgb, var(--green) 16%, var(--surface));
   color: var(--text-3);
   cursor: default;
-  pointer-events: none;
 }
+/* The English half of a pair is done; the Spanish half stays a Listen
+   button, and wears a small speaker to say so. */
+.match-card.matched[data-side="en"] { pointer-events: none; }
+.match-card.matched[data-side="es"] { cursor: pointer; color: var(--text-2); }
+.match-card.matched[data-side="es"]::after { content: " 🔊"; font-size: 0.8em; }
+.match-card.matched[data-side="es"].busy { border-color: var(--green-dark); }
 .match-card.miss { animation: match-shake 0.4s; border-color: var(--red); }
 @keyframes match-shake {
   0%, 100% { transform: translateX(0); }
