@@ -937,6 +937,11 @@ export const awards = {
   study: {},
   match: { total: 0, rounds: 0, perfect: 0, bestTime: null },
   earned: {},
+  /* The day the counting started: the first day this ran, or the day a
+     backup without one is restored. Nothing before it counts — an Azure 85
+     from last month lights no medal — because the ask was to start from
+     today, and a cabinet with prizes in it on day one is not a challenge. */
+  since: null,
 
   load() {
     this.replace(readJSON(KEYS.awards, {}));
@@ -947,7 +952,7 @@ export const awards = {
   },
 
   get data() {
-    return { study: this.study, match: this.match, earned: this.earned };
+    return { study: this.study, match: this.match, earned: this.earned, since: this.since };
   },
 
   /** Take a stored or imported shape, forgivingly — an older backup has none. */
@@ -965,7 +970,13 @@ export const awards = {
       bestTime: typeof match.bestTime === "number" ? match.bestTime : null,
     };
     this.earned = data?.earned && typeof data.earned === "object" ? { ...data.earned } : {};
+    this.since = /^\d{4}-\d{2}-\d{2}$/.test(data?.since ?? "") ? data.since : localDay();
     this.save();
+  },
+
+  /** Attempts recorded since the counting started. */
+  counted(attempts = []) {
+    return attempts.filter((a) => a?.recordedAt && localDay(new Date(a.recordedAt)) >= this.since);
   },
 
   /** Seconds of study on to today (or a given day). Old days are let go. */
@@ -1066,7 +1077,7 @@ export const awards = {
       if (run && run % SEASON_MONTHS === 0) offer(`season-${key}`, nowISO);
     }
 
-    const scored = attempts
+    const scored = this.counted(attempts)
       .filter((a) => typeof a.overall === "number")
       .sort((a, b) => new Date(a.recordedAt) - new Date(b.recordedAt));
     for (const tier of PRO_TIERS) {
@@ -1090,7 +1101,7 @@ export const awards = {
 
   /** Best blended Azure score ever, and how many attempts cleared each tier. */
   proSummary(attempts = []) {
-    const scores = attempts.map((a) => a.overall).filter((s) => typeof s === "number");
+    const scores = this.counted(attempts).map((a) => a.overall).filter((s) => typeof s === "number");
     const best = scores.length ? Math.max(...scores) : null;
     const counts = Object.fromEntries(PRO_TIERS.map((tier) => [tier, scores.filter((s) => s >= tier).length]));
     return { best, counts };

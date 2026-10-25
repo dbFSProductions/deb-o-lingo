@@ -61,8 +61,10 @@ A few things worth knowing:
   number beside the dial) clears 70, 80, 90 and the perfect 100. **Match** is
   a pairs game — six Spanish cards, six English, tap them together — with
   medals at 50, 100, 250 and 500 pairs over all time, and a best clean-round
-  time to beat. Tap the flame or the dots to see **Premios**. The flame itself
-  still counts finished lessons, as it always has.
+  time to beat; it has its own gold square on the home screen. Tap the flame
+  or the dots to see **Premios**. Everything counts from the day the prizes
+  arrived, not before. The flame itself still counts finished lessons, as it
+  always has.
 - **Star anything.** Tap the star on a phrase and it gathers into a Favourites
   node next to Repaso, for the handful that keep tripping you up.
 - **Palabras — words with a picture nailed to them.** The purple unit near the

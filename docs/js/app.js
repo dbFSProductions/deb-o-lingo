@@ -927,8 +927,14 @@ function aboutUnit() {
    back to being the thing you are actually progressing along.
 
    They are still ordinary units: same shape, same lessons, same progress ticks,
-   drawn by the same `renderPath`. Only where you reach them changed. */
-const TILE_UNITS = { past: "pasado", words: "palabras" };
+   drawn by the same `renderPath`. Only where you reach them changed.
+
+   El pasado was behind a tile too, and came back onto the path when Match
+   took its square: four lessons she doesn't reach for is not worth a sixth of
+   the home screen, and on the path it sits in course order after El mercado
+   rather than vanishing. Palabras stays behind Words — thirty-one words is
+   the pile that buried the path. */
+const TILE_UNITS = { words: "palabras" };
 
 /* The course path is a section like the others now, rather than the thing the
    home screen *is*. Home is four tiles and the Phrases button; the winding
@@ -945,7 +951,6 @@ const PRACTICE = "practice";
    both the tile and the section head. */
 const SECTION_TITLES = {
   [PRACTICE]: { title: "Practice", sub: "Lesson by lesson, in order" },
-  past: { title: "The Past", sub: "Name the shape, then say it" },
   words: { title: "Words", sub: "A word, a sound, a picture" },
 };
 
@@ -1009,7 +1014,7 @@ function firstOpenLesson() {
 /* The home screen, and the two tiles that are the same path filtered.
 
    `section` null is home: the wordmark, the four tiles, then the everyday
-   path. `section` "past" or "words" is one unit drawn on its own, by this same
+   path. `section` "words" is one unit drawn on its own, by this same
    function — deliberately not a second renderer, because a copy would drift
    and the first thing to drift would be the node states. */
 function renderPath(section = null) {
@@ -1154,13 +1159,6 @@ function renderPath(section = null) {
                </div>`
             : ""
         }
-        <div class="node-slot" style="--offset:${offsets[((due ? 1 : 0) + 1 + (favourites.length ? 1 : 0)) % offsets.length]}">
-          <button class="node open" id="match"
-                  style="--node:var(--purple);--node-dark:var(--purple-dark)" aria-label="Match">
-            <svg viewBox="0 0 24 24"><path d="M4 6h7v5H4zM13 13h7v5h-7zM11 8.5h2M13 15.5h-2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="node-title">Match · <strong>${awards.match.total}</strong> pairs</div>
-        </div>
       </div>
     </section>`}
 
@@ -1209,7 +1207,6 @@ function renderPath(section = null) {
      the challenges it sits next to. It used to toast one line; the page says
      the same line and the rest. */
   document.getElementById("streak")?.addEventListener("click", openPrizes);
-  document.getElementById("match")?.addEventListener("click", startMatch);
 
   /* The six ways in. Counted from the course rather than hardcoded, so a tile
      says how much is behind it and Quick says whether it has ever been used.
@@ -1229,10 +1226,13 @@ function renderPath(section = null) {
      shown — a tile that comes and goes leaves a hole in a grid — and with no
      assistant it says so, and its page names Settings as the fix.
 
-     The order is Practice, Words, Sobre mí, Quick, The Past, Phrases. Sobre mí
+     The order is Practice, Words, Sobre mí, Quick, Match, Phrases. Sobre mí
      took The Past's place on the second row because it is asked for far more
      often than a grammar drill is, and the two you reach for should be above
-     the fold; The Past moved down beside Phrases rather than out.
+     the fold; The Past moved down beside Phrases, and then Match took that
+     square too — she doesn't use the grammar drill, and El pasado went back
+     onto the Practice path in course order rather than out of the app. Match
+     keeps the slot's gold, so the grid's palette is what it was.
 
      Phrases came in off the bottom row to make the sixth square. It was a
      wide button across the foot of the grid, on the argument that the whole
@@ -1307,9 +1307,9 @@ function renderPath(section = null) {
       { key: "quick", title: "Quick", blurb: "A phrase you need right now", colour: "orange",
         count: asked ? `${asked} asked for` : "Ask for one",
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>` },
-      { key: "past", title: SECTION_TITLES.past.title, blurb: SECTION_TITLES.past.sub, colour: "gold",
-        count: `${count("pasado")} phrases`,
-        mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h16"/><circle cx="8" cy="17" r="2.5"/><path d="M13 17V7h6"/></svg>` },
+      { key: "match", title: "Match", blurb: "Pair the Spanish with the English", colour: "gold",
+        count: awards.match.total ? `${awards.match.total} pair${awards.match.total === 1 ? "" : "s"} matched` : "Play a round",
+        mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v5H4zM13 13h7v5h-7zM11 8.5h2M13 15.5h-2"/></svg>` },
       { key: "phrases", title: "All Phrases", blurb: "Every card, searchable", colour: "blue",
         count: `${library.drillable().length} cards`,
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg>` },
@@ -1321,7 +1321,7 @@ function renderPath(section = null) {
           .map(
             (tile) => `
           <button class="tile tile-${tile.colour}" ${
-            tile.key === "about" ? `data-about="1"` : `data-section="${tile.key}"`
+            tile.key === "about" ? `data-about="1"` : tile.key === "match" ? `data-open-match="1"` : `data-section="${tile.key}"`
           }>
             <span class="tile-mark" aria-hidden="true">${tile.mark}</span>
             <span class="tile-title">${esc(tile.title)}</span>
@@ -5106,7 +5106,11 @@ async function showUsage() {
      beside the dial, not the weakest word the dial shows — over 70, 80, 90
      and 100, one attempt, each medal won once.
    - Match. English to Spanish, six pairs a round, any card in the app, and
-     medals for the number of pairs matched over all time.
+     medals for the number of pairs matched over all time. It has The Past's
+     square on the home screen.
+
+   Nothing before `awards.since` counts: the ask was to start from today, so
+   an attempt scored before the feature arrived lights no medal.
 
    What is here is the clock, the celebration and the two pages. The clock
    ticks study seconds while a drill or a round of Match is on screen, the tab
@@ -5344,7 +5348,8 @@ function renderPrizes() {
       <div class="wordmark">Premios</div>
       ${homeLink()}
     </header>
-    <p class="muted section-intro">Challenges you set yourself: beat the week, beat the month, beat your own best.</p>
+    <p class="muted section-intro">Challenges you set yourself: beat the week, beat the month, beat your own best.
+      Counting from ${esc(dateLabel(`${awards.since}T12:00:00`))}.</p>
 
     <div class="list-banner" style="--hue:var(--orange);--hue-dark:var(--orange-dark)">
       <span class="list-banner-name">Racha — the streak challenge</span>
@@ -5385,11 +5390,11 @@ function renderPrizes() {
         the dial, not the weakest-word score the dial shows. Each medal is won once, the first time you clear it.</p>
     </div>
 
-    <div class="list-banner" style="--hue:var(--purple);--hue-dark:var(--purple-dark)">
+    <div class="list-banner" style="--hue:var(--gold);--hue-dark:var(--gold-dark);--hue-on:#4b4b4b">
       <span class="list-banner-name">Match</span>
       <span class="list-banner-count">${match.total} pair${match.total === 1 ? "" : "s"}</span>
     </div>
-    <div class="card striped" style="--hue:var(--purple)">
+    <div class="card striped" style="--hue:var(--gold)">
       <div class="medal-grid">
         ${MATCH_TIERS.map((tier) => medalCell(`match-${tier}`, tier, `${Math.max(0, tier - match.total)} to go`)).join("")}
       </div>
@@ -5635,9 +5640,9 @@ progress.load();
 aboutMe.load();
 awards.load();
 state.showTranslation = settings.showTranslationUpFront;
-/* Prizes already earned before this existed — an Azure 85 from last month
-   clears two tiers — are written down with their real dates and not
-   celebrated: a fanfare for something she did weeks ago reads as a bug. */
+/* Anything won while the app was closed — the week turning over at
+   midnight is the usual case — is written down quietly rather than thrown
+   as a fanfare at boot. Nothing before `awards.since` counts at all. */
 checkAwards({ silent: true });
 render();
 
