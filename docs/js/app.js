@@ -11,6 +11,7 @@ import {
   library, settings, progress, audioStore, aboutMe, VOICES, uid, RECALL_AFTER, ABOUT_DECK, QUICK_DECK, WORDS_DECK,
   GENDERS, genderOf,
   attemptScore, ASPECTS, aspectOf, aspectChoices,
+  awards, localDay, monthPlus, DAY_DONE_SECONDS, WEEK_NEEDS, MONTH_MISSES, SEASON_MONTHS, WEEK_STARTS, PRO_TIERS, MATCH_TIERS,
 } from "./store.js";
 import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById } from "./content.js";
 import { Recorder, Player, analyse, relativeSemitones, resample } from "./audio.js";
@@ -94,6 +95,10 @@ const state = {
   scoringNow: false,
   levelTimer: null,
   banner: null, // { kind: great|ok|retry|neutral, score }
+
+  /* A round of Match — see `startMatch`. Null outside the game. */
+  match: null,
+  matchTimer: null,
 };
 
 // ------------------------------------------------------------------ helpers
@@ -800,7 +805,10 @@ view.addEventListener("click", (event) => {
     stopEverything();
     state.tab = "add-word";
     render();
+    return;
   }
+  if (event.target.closest("[data-open-prizes]")) return openPrizes();
+  if (event.target.closest("[data-open-match]")) return startMatch();
 });
 
 
@@ -810,6 +818,8 @@ function stopEverything() {
   if (recorder.isRecording) recorder.cancel();
   clearInterval(state.levelTimer);
   state.levelTimer = null;
+  clearInterval(state.matchTimer);
+  state.matchTimer = null;
 }
 
 // ------------------------------------------------------------------ render
@@ -834,6 +844,8 @@ function render() {
   }
   if (state.tab === "add") return renderAdd();
   if (state.tab === "add-word") return renderAddWord();
+  if (state.tab === "prizes") return renderPrizes();
+  if (state.tab === "match") return renderMatch();
   return renderSettings();
 }
 
@@ -1094,6 +1106,8 @@ function renderPath(section = null) {
 
            ${dueStrip()}
 
+           ${weekStrip()}
+
            ${tiles()}`
     }
 
@@ -1140,6 +1154,13 @@ function renderPath(section = null) {
                </div>`
             : ""
         }
+        <div class="node-slot" style="--offset:${offsets[((due ? 1 : 0) + 1 + (favourites.length ? 1 : 0)) % offsets.length]}">
+          <button class="node open" id="match"
+                  style="--node:var(--purple);--node-dark:var(--purple-dark)" aria-label="Match">
+            <svg viewBox="0 0 24 24"><path d="M4 6h7v5H4zM13 13h7v5h-7zM11 8.5h2M13 15.5h-2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="node-title">Match · <strong>${awards.match.total}</strong> pairs</div>
+        </div>
       </div>
     </section>`}
 
@@ -1184,13 +1205,11 @@ function renderPath(section = null) {
     startPractice(shuffle([...favourites]))
   );
 
-  document.getElementById("streak")?.addEventListener("click", () =>
-    toast(
-      streak > 0
-        ? `${streak} day${streak === 1 ? "" : "s"} in a row. One lesson a day keeps it burning.`
-        : "Finish a lesson to light the flame."
-    )
-  );
+  /* The flame opens the prizes page, where the streak is explained beside
+     the challenges it sits next to. It used to toast one line; the page says
+     the same line and the rest. */
+  document.getElementById("streak")?.addEventListener("click", openPrizes);
+  document.getElementById("match")?.addEventListener("click", startMatch);
 
   /* The six ways in. Counted from the course rather than hardcoded, so a tile
      says how much is behind it and Quick says whether it has ever been used.
@@ -1239,6 +1258,28 @@ function renderPath(section = null) {
           }</span>
         </span>
         <span class="due-go">Start ›</span>
+      </button>`;
+  }
+
+  /* The streak challenge's one surface on the home page: seven dots for the
+     week, under the Review strip and above the squares, because like the
+     strip it is the thing on this page that changes every day. It opens
+     Premios, where the rest of the challenges are. */
+  function weekStrip() {
+    const today = localDay();
+    const week = awards.weekOf(today);
+    const minutes = Math.floor(awards.secondsOn(today) / 60);
+    const sub = week.won
+      ? `Week won ✓ · ${minutes} min today`
+      : `${week.done} of ${WEEK_NEEDS} days · ${awards.dayDone(today) ? "today counts ✓" : `${minutes} min so far`}`;
+    return `
+      <button class="week-strip" data-open-prizes="1" aria-label="Prizes and challenges">
+        ${weekDots(week)}
+        <span class="week-main">
+          <span class="week-title">This week</span>
+          <span class="week-sub">${sub}</span>
+        </span>
+        <span class="week-go">Prizes ›</span>
       </button>`;
   }
 
@@ -2690,6 +2731,8 @@ async function handleRecording({ blob, duration }) {
   }
   render();
   announceLevelUp(phrase);
+  // The pronunciation prizes read Azure's blend off the attempt just saved.
+  checkAwards();
 }
 
 /* Say so the once, on the go that tips a card over. Silent if the card was
@@ -2962,17 +3005,12 @@ function renderComplete() {
     return render();
   }
 
-  const confetti = Array.from({ length: 36 }, (_, i) => {
-    const colors = ["var(--green)", "var(--blue)", "var(--gold)", "var(--orange)", "var(--purple)"];
-    const left = Math.random() * 100;
-    const delay = Math.random() * 0.9;
-    const duration = 2 + Math.random() * 1.6;
-    const size = 6 + Math.random() * 7;
-    return `<span class="confetto" style="left:${left}%;width:${size}px;height:${size * 0.5}px;background:${colors[i % colors.length]};animation-delay:${delay}s;animation-duration:${duration}s"></span>`;
-  }).join("");
+  const today = localDay();
+  const minutes = Math.floor(awards.secondsOn(today) / 60);
+  const dayDone = awards.dayDone(today);
 
   view.innerHTML = `
-    <div class="confetti">${confetti}</div>
+    ${confettiHTML()}
     <div class="complete">
       ${parrotSVG(120)}
       <h1 class="complete-title">${esc(c.title)}</h1>
@@ -2992,6 +3030,10 @@ function renderComplete() {
         <div class="stat ${c.streakGrew ? "grew" : ""}" style="--stat:var(--orange)">
           <div class="stat-label">Streak</div>
           <div class="stat-value">${flameSVG()} ${c.streak}</div>
+        </div>
+        <div class="stat" style="--stat:${dayDone ? "var(--green)" : "var(--gold)"}">
+          <div class="stat-label">Today</div>
+          <div class="stat-value">${minutes} min${dayDone ? " ✓" : ""}</div>
         </div>
       </div>
       ${c.streakGrew ? `<p class="small" style="color:var(--orange);font-weight:800">Streak extended — see you tomorrow at 6:30.</p>` : ""}
@@ -4822,6 +4864,15 @@ function renderSettings() {
         overdue cards; the rest wait for tomorrow.</p>
     </div>
 
+    <div class="section-label">Prizes</div>
+    <div class="card">
+      <p class="tiny muted" style="margin:0 0 10px">Three challenges, read off what you do: <strong>ten minutes of study</strong>
+        makes a day count, six days wins the week and a month with no more than ${MONTH_MISSES} days off wins the month;
+        <strong>Pronunciación Pro</strong> medals for an Azure score over ${PRO_TIERS.join(", ")}; and <strong>Match</strong>,
+        a pairs game that keeps count. The week's dots are on the home page; the flame opens the whole cabinet.</p>
+      <button class="btn" data-open-prizes style="width:100%">Open Premios</button>
+    </div>
+
     <div class="section-label">Audio</div>
     <div class="card">
       <button class="btn" id="s-prefetch" style="width:100%">Download all lesson audio</button>
@@ -5042,6 +5093,511 @@ async function showUsage() {
     : "";
 }
 
+// ------------------------------------------------------------------ prizes
+//
+/* Challenges, and the prizes for winning them. Asked for in these words: Deb
+   is competitive and wants rewarding for beating a challenge, even one against
+   herself. Three of them, and the rules all live in store.js (`awards`):
+
+   - The streak challenge. Ten minutes of study makes a day count; six days
+     wins the week; a month with no more than four days off wins the month;
+     three winning months in a row is the rung above that, the Trimestre.
+   - Pronunciación Pro. Azure's own blended score — the small "Azure" number
+     beside the dial, not the weakest word the dial shows — over 70, 80, 90
+     and 100, one attempt, each medal won once.
+   - Match. English to Spanish, six pairs a round, any card in the app, and
+     medals for the number of pairs matched over all time.
+
+   What is here is the clock, the celebration and the two pages. The clock
+   ticks study seconds while a drill or a round of Match is on screen, the tab
+   is visible and she has touched the phone inside the last minute and a
+   half — so a lesson left open on the table does not win the week. A prize is
+   celebrated the moment it is won, on whatever screen that happens to be, as
+   an overlay rather than a render: a render mid-drill would take the attempt
+   she is looking at off the screen. */
+
+const STUDY_TICK_MS = 5000;
+const IDLE_AFTER_MS = 90 * 1000;
+const MATCH_ROUND = 6;
+
+let lastTouch = Date.now();
+for (const type of ["pointerdown", "keydown", "touchstart"]) {
+  document.addEventListener(type, () => { lastTouch = Date.now(); }, { passive: true, capture: true });
+}
+
+/** Is what is on screen study? Any drill — lesson, Review, Repaso, quiet
+    mode — or a round of Match that is still going. */
+function studying() {
+  if (state.tab === "learn" && state.stage === "drill") return true;
+  return state.tab === "match" && Boolean(state.match) && !state.match.finishedAt;
+}
+
+function studyTick() {
+  if (document.visibilityState !== "visible") return;
+  if (Date.now() - lastTouch > IDLE_AFTER_MS) return;
+  if (!studying()) return;
+  const today = localDay();
+  const before = awards.dayDone(today);
+  awards.addStudy(STUDY_TICK_MS / 1000, today);
+  if (!before && awards.dayDone(today)) toast("Ten minutes — today counts towards the week.", 3200);
+  checkAwards();
+}
+setInterval(studyTick, STUDY_TICK_MS);
+
+/* Anything newly won: write it down, then celebrate it unless told not to.
+   The queue is for the rare double — a month and a Trimestre on the same
+   tick — so the second waits for the first's ¡Olé! rather than painting over
+   it. */
+const prizeQueue = [];
+
+function checkAwards({ silent = false } = {}) {
+  const fresh = awards.pending(library.attempts);
+  for (const { id, at } of fresh) {
+    if (!awards.grant(id, at)) continue;
+    if (!silent) prizeQueue.push(id);
+  }
+  if (prizeQueue.length && !document.getElementById("prize-overlay")) showNextPrize();
+  return fresh.length;
+}
+
+function openPrizes() {
+  stopEverything();
+  state.tab = "prizes";
+  render();
+}
+
+const MEDAL_TINTS = { bronze: "#cd7f32", silver: "#9aa5ad", gold: "var(--gold)", diamond: "var(--teal)" };
+const TIER_METALS = ["bronze", "silver", "gold", "diamond"];
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function medalSVG(tint, label, size = 64) {
+  const long = String(label).length > 2;
+  return `<svg class="medal-svg" width="${size}" height="${Math.round(size * 1.2)}" viewBox="0 0 100 120" aria-hidden="true">
+    <path d="M28 0h20l12 44-16 10z" fill="var(--red)"/>
+    <path d="M72 0H52L40 44l16 10z" fill="var(--blue)"/>
+    <circle cx="50" cy="78" r="36" fill="${tint}"/>
+    <circle cx="50" cy="78" r="28" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="3"/>
+    <text x="50" y="${long ? 85 : 88}" text-anchor="middle" font-size="${long ? 20 : 28}" font-weight="900"
+          fill="#fff" stroke="rgba(0,0,0,0.3)" stroke-width="3" paint-order="stroke">${esc(label)}</text>
+  </svg>`;
+}
+
+function monthName(key) {
+  const [y, m] = key.split("-").map(Number);
+  return `${MONTH_NAMES[m - 1]} ${y}`;
+}
+
+function dayLabel(day) {
+  const [, m, d] = day.split("-").map(Number);
+  return `${d} ${MONTH_NAMES[m - 1].slice(0, 3)}`;
+}
+
+function dateLabel(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`;
+}
+
+/** What a prize id means on screen: its title, one line, and its medal. */
+function prizeInfo(id) {
+  let m;
+  if ((m = id.match(/^pro-(\d+)$/))) {
+    const tier = Number(m[1]);
+    const metal = TIER_METALS[PRO_TIERS.indexOf(tier)] ?? "gold";
+    return {
+      group: "pro",
+      title: tier === 100 ? "¡Perfecto!" : "¡Pronunciación Pro!",
+      line: tier === 100 ? "Azure gave you a perfect 100." : `Azure scored you ${tier} or better.`,
+      medal: (size) => medalSVG(MEDAL_TINTS[metal], String(tier), size),
+    };
+  }
+  if ((m = id.match(/^match-(\d+)$/))) {
+    const tier = Number(m[1]);
+    const metal = TIER_METALS[MATCH_TIERS.indexOf(tier)] ?? "gold";
+    return {
+      group: "match",
+      title: "¡Emparejado!",
+      line: `${tier} pairs matched.`,
+      medal: (size) => medalSVG(MEDAL_TINTS[metal], String(tier), size),
+    };
+  }
+  if ((m = id.match(/^week-(\d{4}-\d{2}-\d{2})$/))) {
+    return {
+      group: "streak",
+      title: "¡Semana ganada!",
+      line: `${WEEK_NEEDS} days of study in the week of ${dayLabel(m[1])}.`,
+      medal: (size) => medalSVG("var(--orange)", `${WEEK_NEEDS}/7`, size),
+    };
+  }
+  if ((m = id.match(/^month-(\d{4}-\d{2})$/))) {
+    return {
+      group: "streak",
+      title: "¡Mes ganado!",
+      line: `${monthName(m[1])}, with no more than ${MONTH_MISSES} days off.`,
+      medal: (size) => medalSVG("var(--gold)", "MES", size),
+    };
+  }
+  if ((m = id.match(/^season-(\d{4}-\d{2})$/))) {
+    return {
+      group: "streak",
+      title: "¡Trimestre!",
+      line: `${SEASON_MONTHS} winning months in a row, ending ${monthName(m[1])}.`,
+      medal: (size) => medalSVG("var(--purple)", `×${SEASON_MONTHS}`, size),
+    };
+  }
+  return { group: "other", title: "Prize", line: id, medal: (size) => medalSVG("var(--text-3)", "?", size) };
+}
+
+function confettiHTML() {
+  const colors = ["var(--green)", "var(--blue)", "var(--gold)", "var(--orange)", "var(--purple)"];
+  const bits = Array.from({ length: 36 }, (_, i) => {
+    const left = Math.random() * 100;
+    const delay = Math.random() * 0.9;
+    const duration = 2 + Math.random() * 1.6;
+    const size = 6 + Math.random() * 7;
+    return `<span class="confetto" style="left:${left}%;width:${size}px;height:${size * 0.5}px;background:${colors[i % colors.length]};animation-delay:${delay}s;animation-duration:${duration}s"></span>`;
+  }).join("");
+  return `<div class="confetti">${bits}</div>`;
+}
+
+/* The celebration: an overlay on whatever is underneath, so a medal won
+   mid-lesson leaves the lesson exactly as it was. "See all your prizes" is
+   kept off it while a drill is on screen, because that would quit the lesson
+   on one tap. */
+function showNextPrize() {
+  const id = prizeQueue.shift();
+  if (!id) return;
+  const info = prizeInfo(id);
+  const overlay = document.createElement("div");
+  overlay.className = "prize-overlay";
+  overlay.id = "prize-overlay";
+  overlay.innerHTML = `
+    ${confettiHTML()}
+    <div class="prize-card" role="dialog" aria-modal="true" aria-labelledby="prize-title">
+      <div class="prize-medal">${info.medal(120)}</div>
+      <div class="prize-kicker">New prize</div>
+      <h1 class="prize-title" id="prize-title">${esc(info.title)}</h1>
+      <p class="prize-line">${esc(info.line)}</p>
+      <button class="btn btn-primary btn-big" id="prize-continue">¡Olé!</button>
+      ${studying() ? "" : `<button class="link prize-all" id="prize-all">See all your prizes</button>`}
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector("#prize-continue").onclick = () => {
+    overlay.remove();
+    if (prizeQueue.length) showNextPrize();
+  };
+  overlay.querySelector("#prize-all")?.addEventListener("click", () => {
+    prizeQueue.length = 0;
+    overlay.remove();
+    openPrizes();
+  });
+}
+
+/** Seven dots, Monday to Sunday: done, today, missed or still to come. */
+function weekDots(week, { labels = false } = {}) {
+  const names = ["S", "M", "T", "W", "T", "F", "S"];
+  return `<span class="week-dots ${labels ? "labelled" : ""}">${week.days
+    .map((d, i) => {
+      const kind = d.done ? "done" : d.today ? "today" : d.future ? "future" : "missed";
+      return `<span class="day-dot ${kind}" title="${d.day}">${labels ? names[(WEEK_STARTS + i) % 7] : ""}</span>`;
+    })
+    .join("")}</span>`;
+}
+
+function minutesOf(seconds) {
+  return Math.floor(seconds / 60);
+}
+
+function renderPrizes() {
+  const today = localDay();
+  const week = awards.weekOf(today);
+  const month = awards.monthOf(today);
+  const todaySeconds = awards.secondsOn(today);
+  const todayDone = awards.dayDone(today);
+  const minutesLeft = Math.ceil((DAY_DONE_SECONDS - todaySeconds) / 60);
+  /* Winning months in a row, counting this one if it is already won and the
+     ones before it otherwise — what the Trimestre is being built out of. */
+  const run = month.won ? awards.seasonRun(month.key) : awards.seasonRun(monthPlus(month.key, -1));
+  const pro = awards.proSummary(library.attempts);
+  const flame = progress.currentStreak();
+  const earned = Object.entries(awards.earned).sort((a, b) => new Date(b[1]) - new Date(a[1]));
+  const match = awards.match;
+  const nextMatch = MATCH_TIERS.find((tier) => tier > match.total);
+  const monthOut = !month.won && month.done + month.left + 1 < month.needs;
+
+  const medalCell = (id, label, sub) => {
+    const when = awards.earned[id];
+    const info = prizeInfo(id);
+    return `
+      <div class="medal ${when ? "won" : "locked"}">
+        ${info.medal(56)}
+        <div class="medal-label">${esc(String(label))}</div>
+        <div class="medal-sub">${when ? esc(dateLabel(when)) : esc(sub)}</div>
+      </div>`;
+  };
+
+  view.innerHTML = `
+    <header class="home-head section-head">
+      <div class="wordmark">Premios</div>
+      ${homeLink()}
+    </header>
+    <p class="muted section-intro">Challenges you set yourself: beat the week, beat the month, beat your own best.</p>
+
+    <div class="list-banner" style="--hue:var(--orange);--hue-dark:var(--orange-dark)">
+      <span class="list-banner-name">Racha — the streak challenge</span>
+      <span class="list-banner-count">${week.done} of 7 days</span>
+    </div>
+    <div class="card striped" style="--hue:var(--orange)">
+      ${weekDots(week, { labels: true })}
+      <p class="prize-stat"><strong>Today</strong> ${minutesOf(todaySeconds)} min${
+        todayDone ? " — counts ✓" : ` — ${minutesLeft} more to make it count`
+      }</p>
+      <p class="prize-stat"><strong>This week</strong> ${
+        week.won ? "won ✓" : `${week.done} of ${WEEK_NEEDS} days · ${WEEK_NEEDS - week.done} to go`
+      }</p>
+      <p class="prize-stat"><strong>${esc(monthName(month.key))}</strong> ${
+        month.won
+          ? "won ✓"
+          : monthOut
+          ? `${month.done} days — out of reach this month; next month starts fresh`
+          : `${month.done} of ${month.needs} days · ${month.left} day${month.left === 1 ? "" : "s"} left`
+      }</p>
+      <p class="prize-stat"><strong>Trimestre</strong> ${run} winning month${run === 1 ? "" : "s"} in a row · ${SEASON_MONTHS} wins it</p>
+      <p class="tiny muted" style="margin:10px 0 0">A day counts after ten minutes in a lesson, a review, Repaso or Match.
+        The flame on the home page is a different count — finished lessons, ${flame} day${flame === 1 ? "" : "s"} in a row right now.</p>
+    </div>
+
+    <div class="list-banner" style="--hue:var(--blue);--hue-dark:var(--blue-dark)">
+      <span class="list-banner-name">Pronunciación Pro</span>
+      <span class="list-banner-count">${pro.best != null ? `best ${Math.round(pro.best)}` : "no score yet"}</span>
+    </div>
+    <div class="card striped" style="--hue:var(--blue)">
+      <div class="medal-grid">
+        ${PRO_TIERS.map((tier) =>
+          medalCell(`pro-${tier}`, tier, pro.best != null ? `best ${Math.round(pro.best)}` : "not yet")
+        ).join("")}
+      </div>
+      <p class="prize-stat">${PRO_TIERS.map((tier) => `over ${tier}: <strong>${pro.counts[tier]}</strong>`).join(" · ")}</p>
+      <p class="tiny muted" style="margin:10px 0 0">Azure's own blended score for one attempt — the small <em>Azure</em> number beside
+        the dial, not the weakest-word score the dial shows. Each medal is won once, the first time you clear it.</p>
+    </div>
+
+    <div class="list-banner" style="--hue:var(--purple);--hue-dark:var(--purple-dark)">
+      <span class="list-banner-name">Match</span>
+      <span class="list-banner-count">${match.total} pair${match.total === 1 ? "" : "s"}</span>
+    </div>
+    <div class="card striped" style="--hue:var(--purple)">
+      <div class="medal-grid">
+        ${MATCH_TIERS.map((tier) => medalCell(`match-${tier}`, tier, `${Math.max(0, tier - match.total)} to go`)).join("")}
+      </div>
+      <p class="prize-stat">rounds <strong>${match.rounds}</strong> · clean rounds <strong>${match.perfect}</strong>${
+        match.bestTime != null ? ` · best clean round <strong>${match.bestTime}s</strong>` : ""
+      }${nextMatch ? ` · next medal in <strong>${nextMatch - match.total}</strong>` : ""}</p>
+      <button class="btn btn-primary" data-open-match style="width:100%;margin-top:6px">Play a round</button>
+    </div>
+
+    <div class="list-banner" style="--hue:var(--gold);--hue-dark:var(--gold-dark);--hue-on:#4b4b4b">
+      <span class="list-banner-name">Vitrina — everything you've won</span>
+      <span class="list-banner-count">${earned.length}</span>
+    </div>
+    ${
+      earned.length
+        ? `<div class="rows rows-spaced">${earned
+            .map(([id, at]) => {
+              const info = prizeInfo(id);
+              return `
+              <div class="row striped cabinet-row" style="--hue:var(--gold)">
+                ${info.medal(34)}
+                <div class="row-main">
+                  <div class="row-title">${esc(info.title)}</div>
+                  <div class="row-sub">${esc(info.line)}</div>
+                </div>
+                <div class="tiny muted cabinet-date">${esc(dateLabel(at))}</div>
+              </div>`;
+            })
+            .join("")}</div>`
+        : `<div class="empty"><p>Nothing in the cabinet yet. The first week is the easiest one to win.</p></div>`
+    }`;
+}
+
+// ------------------------------------------------------------------- match
+
+/* Six pairs from everything drillable, Spanish down the left and the English
+   shuffled down the right. Tap one of each: a pair turns green and is said
+   aloud, a miss shakes and is forgotten. A pair never leaves its slot, so the
+   columns stay still under her thumb. Two cards with the same English (or the
+   same Spanish) can't share a round — that would be a question with two right
+   answers. */
+function startMatch() {
+  stopEverything();
+  const pool = shuffle(library.drillable().filter((p) => p.text.trim() && (p.translation ?? "").trim()));
+  const seen = new Set();
+  const pairs = [];
+  for (const p of pool) {
+    const es = `es:${normaliseSentence(p.text)}`;
+    const en = `en:${normaliseSentence(p.translation)}`;
+    if (seen.has(es) || seen.has(en)) continue;
+    seen.add(es);
+    seen.add(en);
+    pairs.push({ id: p.id, text: p.text, translation: p.translation });
+    if (pairs.length === MATCH_ROUND) break;
+  }
+  if (pairs.length < 2) {
+    toast("Not enough cards to play Match yet.");
+    return;
+  }
+  state.match = {
+    pairs,
+    right: shuffle([...pairs]),
+    picked: null,
+    matched: new Set(),
+    misses: 0,
+    startedAt: Date.now(),
+    finishedAt: null,
+  };
+  state.tab = "match";
+  render();
+}
+
+function renderMatch() {
+  const game = state.match;
+  if (!game) {
+    state.tab = "learn";
+    return render();
+  }
+  const card = (side, p) =>
+    `<button class="match-card ${game.matched.has(p.id) ? "matched" : ""}" data-side="${side}" data-id="${esc(p.id)}"
+             lang="${side === "es" ? "es-ES" : "en"}">${esc(side === "es" ? p.text : p.translation)}</button>`;
+
+  view.innerHTML = `
+    <header class="home-head section-head">
+      <div class="wordmark">Match</div>
+      ${homeLink()}
+    </header>
+    <p class="muted section-intro">Tap a Spanish card, then its English. ${game.pairs.length} pairs a round.</p>
+    <div class="match-bar">
+      <span><strong id="match-count">${game.matched.size}</strong> of ${game.pairs.length}</span>
+      <span id="match-clock" class="match-clock">0:00</span>
+      <span>total <strong id="match-total">${awards.match.total}</strong></span>
+    </div>
+    <div class="match-grid">
+      <div class="match-col">${game.pairs.map((p) => card("es", p)).join("")}</div>
+      <div class="match-col">${game.right.map((p) => card("en", p)).join("")}</div>
+    </div>
+    <div id="match-done"></div>`;
+
+  view.querySelector(".match-grid").addEventListener("click", (event) => {
+    const button = event.target.closest(".match-card");
+    if (button) pickMatch(button);
+  });
+
+  clearInterval(state.matchTimer);
+  state.matchTimer = setInterval(paintMatchClock, 1000);
+  paintMatchClock();
+  if (game.finishedAt) paintMatchDone();
+}
+
+function paintMatchClock() {
+  const el = document.getElementById("match-clock");
+  const game = state.match;
+  if (!el || !game) {
+    clearInterval(state.matchTimer);
+    state.matchTimer = null;
+    return;
+  }
+  const s = Math.floor(((game.finishedAt ?? Date.now()) - game.startedAt) / 1000);
+  el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function pickMatch(button) {
+  const game = state.match;
+  if (!game || game.finishedAt || button.classList.contains("matched")) return;
+  const { side, id } = button.dataset;
+  const picked = game.picked;
+
+  // Same side: a second tap on the same card unpicks it, any other switches.
+  if (!picked || picked.side === side) {
+    picked?.button.classList.remove("picked");
+    if (picked && picked.id === id && picked.side === side) {
+      game.picked = null;
+      return;
+    }
+    button.classList.add("picked");
+    game.picked = { side, id, button };
+    return;
+  }
+
+  picked.button.classList.remove("picked");
+  game.picked = null;
+  if (picked.id === id) {
+    const esButton = side === "es" ? button : picked.button;
+    for (const b of [picked.button, button]) b.classList.add("matched");
+    game.matched.add(id);
+    awards.recordPair();
+    const count = document.getElementById("match-count");
+    const total = document.getElementById("match-total");
+    if (count) count.textContent = game.matched.size;
+    if (total) total.textContent = awards.match.total;
+    /* Hear it as it lands — the pair is a card, and a card is for saying.
+       Only with Azure: the browser voice on iOS fails silently and the toast
+       that names that failure would fire on every pair. */
+    if (settings.hasAzure) sayAloud(esButton, esButton.textContent, "");
+    if (game.matched.size === game.pairs.length) finishMatch();
+    else checkAwards();
+  } else {
+    game.misses += 1;
+    for (const b of [picked.button, button]) {
+      b.classList.remove("miss");
+      void b.offsetWidth; // restart the shake
+      b.classList.add("miss");
+      setTimeout(() => b.classList.remove("miss"), 500);
+    }
+  }
+}
+
+function finishMatch() {
+  const game = state.match;
+  game.finishedAt = Date.now();
+  const seconds = Math.round((game.finishedAt - game.startedAt) / 1000);
+  awards.recordRound({ misses: game.misses, seconds });
+  clearInterval(state.matchTimer);
+  state.matchTimer = null;
+  paintMatchClock();
+  paintMatchDone();
+  checkAwards();
+}
+
+function paintMatchDone() {
+  const game = state.match;
+  const host = document.getElementById("match-done");
+  if (!game?.finishedAt || !host) return;
+  const seconds = Math.round((game.finishedAt - game.startedAt) / 1000);
+  const clean = game.misses === 0;
+  const best = awards.match.bestTime;
+  const total = awards.match.total;
+  const next = MATCH_TIERS.find((tier) => tier > total);
+  host.innerHTML = `
+    <div class="card match-result">
+      <h2>${
+        clean
+          ? `¡Perfecto! ${game.pairs.length} of ${game.pairs.length}, no misses.`
+          : `Done — ${game.misses} miss${game.misses === 1 ? "" : "es"}.`
+      }</h2>
+      <p class="muted" style="margin:6px 0 12px">${seconds}s${
+        clean && best === seconds ? " — your best clean round" : best != null ? ` · best clean round ${best}s` : ""
+      }. ${total} pair${total === 1 ? "" : "s"} matched all told${next ? `, ${next - total} to the next medal` : ""}.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="match-again">Another round</button>
+        <button class="btn btn-ghost" data-open-prizes>Prizes</button>
+      </div>
+    </div>`;
+  document.getElementById("match-again").onclick = startMatch;
+  host.scrollIntoView({ behavior: "smooth", block: "end" });
+}
+
 // ------------------------------------------------------------------ mascot
 //
 // Perico the parrot. Parrots repeat what they hear, which is the entire
@@ -5077,7 +5633,12 @@ settings.load();
 library.load();
 progress.load();
 aboutMe.load();
+awards.load();
 state.showTranslation = settings.showTranslationUpFront;
+/* Prizes already earned before this existed — an Azure 85 from last month
+   clears two tiers — are written down with their real dates and not
+   celebrated: a fanfare for something she did weeks ago reads as a bug. */
+checkAwards({ silent: true });
 render();
 
 // Voice list on Safari populates asynchronously.

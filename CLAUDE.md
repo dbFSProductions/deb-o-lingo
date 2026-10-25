@@ -442,11 +442,12 @@ is stored beside it, keyed by phrase id:
 | `debolingo.notes` | Answers she kept from a card chat, by phrase id. |
 | `debolingo.replies` | What she might hear back, by phrase id. |
 | `debolingo.aboutMe` | The Sobre mí interview transcript (not keyed by phrase). |
+| `debolingo.awards` | Study seconds per local day, the Match tallies, and prize id → date won. See *Premios*. |
 
 `library.decorate()` is what merges an override, the star flag, the kept notes
 and the replies onto a stored phrase — anything that reads a phrase for display
 or for drilling must go through it, or Deb's edit will be invisible in that one
-place. Export/import carries all seven stores plus the transcript.
+place. Export/import carries all eight stores plus the transcript.
 
 **The keyword pictures *are* edits, and that is the whole reason they cost no
 new store.** A picture is a field on a card like `focusNote` is — `sounds` and
@@ -1305,6 +1306,75 @@ finishing it ticks no lesson; fifteen due read *10 cards to review today · 5
 more waiting* and drill ten; one due reads *1 card*.
 
 ---
+
+## Premios: three challenges, read off what she did
+
+Asked for in these words: Deb is competitive and wants rewarding for beating a
+challenge, even against herself. The answers she gave to the four questions
+that mattered are the constants at the top of the `awards` section of
+store.js, and nothing about them is hidden in app.js.
+
+- **Ten minutes of study makes a day count** (`DAY_DONE_SECONDS`). Her own
+  number, not a lesson: a lesson is about five, so a day is two, or one and
+  the review. The clock is in app.js — `studyTick` adds five seconds while a
+  drill of any kind or a round of Match is on screen, the tab is visible and
+  she has touched the phone inside the last ninety seconds. The idle guard is
+  the whole reason a lesson left open on the table does not win the week.
+  Browsing Phrases, the interview and the Add page are not study.
+- **Calendar week and calendar month, not rolling windows.** Monday to Sunday
+  (`WEEK_STARTS`, the one place that is decided), 1st to last. Six days wins
+  the week (`WEEK_NEEDS`); a month with no more than four days off wins the
+  month (`MONTH_MISSES`, so 27 of 31 and 26 of 30). A target she can see
+  coming, one shot per period. **The next rung is mine to have picked: three
+  winning months in a row is a *Trimestre*** (`SEASON_MONTHS`), awarded on
+  every third month of a run.
+- **Pronunciación Pro reads Azure's blend, not the weakest word.** Her choice,
+  made knowing the dial shows the harder number. `attempt.overall` ≥ 70, 80,
+  90, 100 on one attempt, each medal once. The page says which number it is,
+  because the two sit beside each other on the score card.
+- **Match counts pairs over all time**, any card in the app, medals at 50,
+  100, 250 and 500 (`MATCH_TIERS`). Rounds, clean rounds and the best clean
+  time are kept to be beaten and win nothing. Two cards with the same English
+  can't share a round. The Spanish is said aloud on a match only with an
+  Azure key — the browser-voice toast would otherwise fire on every pair.
+- **Whether a prize is won is computed; only *when* is stored.** `study` is
+  the one thing written as it happens; weeks, months and seasons are read
+  off it the way `reviewOf` reads the attempts, and the pronunciation tiers
+  are read off the attempts themselves. `earned` exists so a prize is
+  celebrated once and the cabinet can date it. `awards.pending()` is the one
+  reader; `checkAwards()` in app.js grants and celebrates whatever it returns.
+- **Prizes earned before the feature existed are granted silently at boot**,
+  dated by the attempt that earned them (an Azure 85 from September lights 70
+  and 80 with September's date). A fanfare on first launch for something she
+  did weeks ago reads as a bug.
+- **The celebration is an overlay, never a render.** A medal won mid-lesson
+  must leave the attempt on the screen; `showNextPrize` appends to `body` and
+  queues the rare double. *See all your prizes* is left off it while a drill
+  is on screen, because that tap would quit the lesson.
+- **The flame is a different count and deliberately still is.** It counts
+  finished lessons, as it always has; the challenge counts minutes. Premios
+  says so in one line rather than making the two agree, which would have
+  meant either changing what the flame has meant since the first version or
+  counting a five-minute lesson as a ten-minute day. Tapping the flame now
+  opens Premios instead of toasting one line.
+- **Two surfaces, like Review.** The `.week-strip` under the Review strip on
+  the home page — seven dots, the one other thing on that page that changes
+  every day — and a Match node in Mézclalo, purple. Everything else is on
+  the Premios page: the week, the month, the Trimestre run, the two medal
+  grids and the *Vitrina*, every prize with its date. Settings describes it
+  and links to it; there is no switch to turn it off.
+
+Worth asserting: six tiles and seven dots on a clean boot, no overlay; five
+done days plus 595 s today, then one tick inside a drill, paints
+`#prize-overlay` reading *¡Semana ganada!* with no `#prize-all` and the
+`.drill-text` still underneath; 200 s with no input adds at most 95 s;
+three 27-day months seeded grant `month-2026-10` and `season-2026-10` with no
+overlay; attempts at 72 and 85 grant `pro-70` and `pro-80` dated by those
+attempts; a stubbed 93 celebrates 70, 80 and 90 in turn with the score card
+still on screen; a round of Match with `total: 49` planted celebrates
+*¡Emparejado!* on the first pair, reports its miss, and a clean second round
+counts as `perfect`; export carries `awards`. The smoke script is in the
+session scratchpad, like the others.
 
 ## Quiet mode: the lesson with the speaking taken off it
 

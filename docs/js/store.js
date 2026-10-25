@@ -24,6 +24,7 @@ const KEYS = {
   notes: "debolingo.notes",
   replies: "debolingo.replies",
   aboutMe: "debolingo.aboutMe",
+  awards: "debolingo.awards",
 };
 
 // The fields an edit can touch. Course phrases are code, so editing one is
@@ -357,7 +358,7 @@ export function uid() {
 }
 
 /** Local calendar day as YYYY-MM-DD — streaks care about Deb's days, not UTC's. */
-function localDay(date = new Date()) {
+export function localDay(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
@@ -713,6 +714,8 @@ export const library = {
         // were made out of: restore a backup without it and the assistant
         // starts the life story over, asking what it has already been told.
         aboutMe: aboutMe.turns,
+        // Study minutes, the matching tallies and the prizes won, with dates.
+        awards: awards.data,
       },
       null,
       2
@@ -738,6 +741,7 @@ export const library = {
     this.saveNotes();
     this.saveReplies();
     aboutMe.replace(Array.isArray(parsed.aboutMe) ? parsed.aboutMe : []);
+    awards.replace(parsed.awards ?? {});
     if (parsed.progress) {
       progress.lessons = parsed.progress.lessons ?? {};
       progress.streak = parsed.progress.streak ?? { count: 0, lastDay: null };
@@ -862,6 +866,234 @@ export const progress = {
   /** True if today's lesson is still owed — drives the home-screen nudge. */
   owedToday() {
     return this.streak.lastDay !== localDay();
+  },
+};
+
+// ------------------------------------------------------------------- awards
+//
+/* Challenges and prizes. Deb is competitive, and the ask was somewhere to
+   compete with herself: a week with six days of study in it, a month with no
+   more than four missed, a pronunciation score over 70, 80, 90 and 100, and a
+   matching game that keeps count. Three things live here and nothing else:
+
+   - `study`: seconds of study per local day. The one thing written as it
+     happens (app.js ticks it while a drill or a round of Match is on screen
+     and she is touching the phone). Whether a day counts, a week is won or a
+     month is won is *computed* from it, never stored — the same arrangement as
+     `reviewOf` over the attempts, and for the same reason: a stored verdict
+     drifts from the facts it was made from.
+   - `match`: the matching game's lifetime tallies. Pairs matched is the number
+     the prizes are read off; rounds, perfect rounds and the best time are
+     there to be beaten.
+   - `earned`: prize id → when it was won. This record exists so a prize is
+     celebrated once and the cabinet can say when; whether it *has* been won
+     is always recomputable, so a lost record costs the date and nothing else.
+
+   The week and the month are calendar ones — Monday to Sunday, 1st to last —
+   rather than rolling windows, because a target she can see coming is what
+   makes it a challenge, and one shot per period is what makes winning it
+   mean something. `WEEK_STARTS` is the one place Monday is decided. Ten
+   minutes is her own number; a lesson is about five, so a day is two lessons,
+   or one and the review. The flame on the home page is a different thing and
+   deliberately still is: it counts finished lessons, as it always has. */
+
+export const DAY_DONE_SECONDS = 10 * 60;
+export const WEEK_NEEDS = 6; // days out of seven
+export const MONTH_MISSES = 4; // days a winning month may skip
+export const SEASON_MONTHS = 3; // winning months in a row for the rung above
+export const WEEK_STARTS = 1; // Monday, as Date#getDay counts
+export const PRO_TIERS = [70, 80, 90, 100]; // Azure's blended score, one attempt
+export const MATCH_TIERS = [50, 100, 250, 500]; // pairs matched, lifetime
+const STUDY_KEEP_DAYS = 400; // enough for a year of months and a little over
+
+/** A YYYY-MM-DD shifted by n local days. */
+export function dayPlus(day, n) {
+  const [y, m, d] = day.split("-").map(Number);
+  return localDay(new Date(y, m - 1, d + n));
+}
+
+/** The Monday (see WEEK_STARTS) on or before a day. */
+export function weekStart(day) {
+  const [y, m, d] = day.split("-").map(Number);
+  const weekday = new Date(y, m - 1, d).getDay();
+  return dayPlus(day, -((weekday - WEEK_STARTS + 7) % 7));
+}
+
+function monthKey(day) {
+  return day.slice(0, 7);
+}
+
+function daysInMonth(key) {
+  const [y, m] = key.split("-").map(Number);
+  return new Date(y, m, 0).getDate();
+}
+
+export function monthPlus(key, n) {
+  const [y, m] = key.split("-").map(Number);
+  return localDay(new Date(y, m - 1 + n, 1)).slice(0, 7);
+}
+
+export const awards = {
+  study: {},
+  match: { total: 0, rounds: 0, perfect: 0, bestTime: null },
+  earned: {},
+
+  load() {
+    this.replace(readJSON(KEYS.awards, {}));
+  },
+
+  save() {
+    writeJSON(KEYS.awards, this.data);
+  },
+
+  get data() {
+    return { study: this.study, match: this.match, earned: this.earned };
+  },
+
+  /** Take a stored or imported shape, forgivingly — an older backup has none. */
+  replace(data) {
+    const study = data?.study && typeof data.study === "object" ? data.study : {};
+    this.study = {};
+    for (const [day, seconds] of Object.entries(study)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(day) && typeof seconds === "number" && seconds > 0) this.study[day] = seconds;
+    }
+    const match = data?.match && typeof data.match === "object" ? data.match : {};
+    this.match = {
+      total: Number(match.total) || 0,
+      rounds: Number(match.rounds) || 0,
+      perfect: Number(match.perfect) || 0,
+      bestTime: typeof match.bestTime === "number" ? match.bestTime : null,
+    };
+    this.earned = data?.earned && typeof data.earned === "object" ? { ...data.earned } : {};
+    this.save();
+  },
+
+  /** Seconds of study on to today (or a given day). Old days are let go. */
+  addStudy(seconds, day = localDay()) {
+    this.study[day] = (this.study[day] ?? 0) + seconds;
+    const oldest = dayPlus(day, -STUDY_KEEP_DAYS);
+    for (const key of Object.keys(this.study)) if (key < oldest) delete this.study[key];
+    this.save();
+  },
+
+  secondsOn(day) {
+    return this.study[day] ?? 0;
+  },
+
+  dayDone(day) {
+    return this.secondsOn(day) >= DAY_DONE_SECONDS;
+  },
+
+  /** The week a day falls in: its seven days, how many count, and whether
+      it is won. `today` is passed in so the page can say which dot is now. */
+  weekOf(day = localDay()) {
+    const start = weekStart(day);
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const id = dayPlus(start, i);
+      return { day: id, seconds: this.secondsOn(id), done: this.dayDone(id), today: id === day, future: id > day };
+    });
+    const done = days.filter((d) => d.done).length;
+    return { id: `week-${start}`, start, days, done, needs: WEEK_NEEDS, won: done >= WEEK_NEEDS };
+  },
+
+  /** The month a day falls in: days done against the number a win needs. */
+  monthOf(day = localDay()) {
+    const key = monthKey(day);
+    const length = daysInMonth(key);
+    let done = 0;
+    for (let i = 1; i <= length; i += 1) {
+      if (this.dayDone(`${key}-${String(i).padStart(2, "0")}`)) done += 1;
+    }
+    const needs = length - MONTH_MISSES;
+    const passed = Number(day.slice(8, 10));
+    return { id: `month-${key}`, key, length, done, needs, won: done >= needs, left: length - passed };
+  },
+
+  /** How many winning months in a row end at this one — 0 if it isn't won. */
+  seasonRun(key) {
+    let run = 0;
+    let at = key;
+    while (this.monthOf(`${at}-01`).won) {
+      run += 1;
+      at = monthPlus(at, -1);
+    }
+    return run;
+  },
+
+  /** One pair matched in the game. */
+  recordPair() {
+    this.match.total += 1;
+    this.save();
+  },
+
+  /** A round finished: how clean it was and how long it took. */
+  recordRound({ misses, seconds }) {
+    this.match.rounds += 1;
+    if (!misses) {
+      this.match.perfect += 1;
+      if (this.match.bestTime == null || seconds < this.match.bestTime) this.match.bestTime = seconds;
+    }
+    this.save();
+  },
+
+  /* Everything won that has not been written down yet, with when it was won.
+     Weeks, months and seasons are read off `study`; the pronunciation tiers
+     off the attempts' Azure blend, dated by the attempt that first cleared
+     them, so a tier reached before this existed is recorded on its real day
+     rather than today. app.js grants these silently at boot and with a
+     celebration from then on. */
+  pending(attempts = [], now = new Date()) {
+    const found = [];
+    const seen = new Set();
+    const offer = (id, at) => {
+      if (this.earned[id] || seen.has(id)) return;
+      seen.add(id);
+      found.push({ id, at });
+    };
+    const nowISO = now.toISOString();
+
+    const weeks = new Set(Object.keys(this.study).map(weekStart));
+    for (const start of weeks) {
+      const week = this.weekOf(start);
+      if (week.won) offer(week.id, nowISO);
+    }
+    const months = new Set(Object.keys(this.study).map(monthKey));
+    for (const key of months) {
+      const month = this.monthOf(`${key}-01`);
+      if (!month.won) continue;
+      offer(month.id, nowISO);
+      const run = this.seasonRun(key);
+      if (run && run % SEASON_MONTHS === 0) offer(`season-${key}`, nowISO);
+    }
+
+    const scored = attempts
+      .filter((a) => typeof a.overall === "number")
+      .sort((a, b) => new Date(a.recordedAt) - new Date(b.recordedAt));
+    for (const tier of PRO_TIERS) {
+      const first = scored.find((a) => a.overall >= tier);
+      if (first) offer(`pro-${tier}`, first.recordedAt);
+    }
+
+    for (const tier of MATCH_TIERS) {
+      if (this.match.total >= tier) offer(`match-${tier}`, nowISO);
+    }
+
+    return found.sort((a, b) => new Date(a.at) - new Date(b.at));
+  },
+
+  grant(id, at = new Date().toISOString()) {
+    if (this.earned[id]) return false;
+    this.earned[id] = at;
+    this.save();
+    return true;
+  },
+
+  /** Best blended Azure score ever, and how many attempts cleared each tier. */
+  proSummary(attempts = []) {
+    const scores = attempts.map((a) => a.overall).filter((s) => typeof s === "number");
+    const best = scores.length ? Math.max(...scores) : null;
+    const counts = Object.fromEntries(PRO_TIERS.map((tier) => [tier, scores.filter((s) => s >= tier).length]));
+    return { best, counts };
   },
 };
 
