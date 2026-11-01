@@ -378,33 +378,6 @@ p { margin: 0 0 10px; }
 
 /* ------------------------------------------------------------------ review */
 
-/* What has come round, on the home page under the parrot: a filled strip with
-   the solid slab, so it presses like a tile does. Teal, because it sits above
-   six squares and every other strong colour is one of them. Absent when
-   nothing is due. */
-.due-strip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin: 0 0 16px;
-  padding: 10px 14px;
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--teal);
-  color: #fff;
-  box-shadow: 0 4px 0 var(--teal-dark);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.due-strip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--teal-dark); }
-.due-mark svg { width: 26px; height: 26px; display: block; }
-.due-main { flex: 1; min-width: 0; display: grid; }
-.due-title { font-weight: 900; font-size: 1.02rem; }
-.due-sub { font-size: 0.8rem; font-weight: 700; opacity: 0.92; }
-.due-go { font-weight: 900; font-size: 0.85rem; white-space: nowrap; }
-
 /* ------------------------------------------------------------------ cards */
 
 .card {
@@ -672,6 +645,8 @@ button { font: inherit; }
 .tile-purple { background: var(--purple); box-shadow: 0 4px 0 var(--purple-dark); }
 .tile-orange { background: var(--orange); box-shadow: 0 4px 0 var(--orange-dark); }
 .tile-green { background: var(--green); box-shadow: 0 4px 0 var(--green-dark); }
+.tile-teal { background: var(--teal); box-shadow: 0 4px 0 var(--teal-dark); }
+.tile-red { background: var(--red); box-shadow: 0 4px 0 var(--red-dark); }
 
 /* Quick's answer. The phrase is the biggest thing on the page because it is
    the only thing you came for, and Listen is full width under it — this is a
@@ -1688,3 +1663,65 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
   font-weight: 600;
 }
 .version-row strong { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- stories */
+
+/* The list: numbered rows in Stories' red, the best score at the end of the
+   row once there is one — a full score wears a tick, so "which are left"
+   can be read down the list. */
+.story-row { align-items: center; }
+.story-num {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--red) 16%, var(--surface));
+  color: var(--red-dark);
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+.story-best { flex: none; font-weight: 900; font-variant-numeric: tabular-nums; color: var(--text-2); }
+.story-best.full { color: var(--ok-ink, var(--green-dark)); }
+
+/* The scene. Each line is a reply-shaped row — the same play button, the
+   Spanish, and the English under it once it's allowed out. */
+.story-card { padding: 14px 14px 12px; }
+.story-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.story-line { display: flex; align-items: flex-start; gap: 12px; }
+.story-main { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.story-es { font-size: 1.12rem; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+.story-en { font-size: 0.9rem; color: var(--text-2); font-weight: 600; }
+.story-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.story-read { flex: none; }
+.story-tools .link { white-space: nowrap; }
+
+/* A question: the English, then the Spanish options stacked full width,
+   because they are sentences and a row of three would wrap on a phone. The
+   verdict colours the card's edge rather than the options, and the right
+   answer is lit green whether or not it was the one picked. */
+.story-q { border-width: 2px; }
+.story-q.right { border-color: var(--green); }
+.story-q.wrong { border-color: var(--red); }
+.story-question { margin: 0 0 10px; font-weight: 800; }
+.story-options { display: grid; gap: 8px; }
+.story-opt {
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.story-opt:active { transform: translateY(2px); border-bottom-width: 2px; }
+.story-opt[disabled] { cursor: default; opacity: 0.7; }
+.story-opt.is-right { opacity: 1; border-color: var(--green); background: color-mix(in srgb, var(--green) 14%, var(--surface)); color: var(--ok-ink, var(--green-dark)); }
+.story-opt.is-wrong { opacity: 1; border-color: var(--red); background: color-mix(in srgb, var(--red) 10%, var(--surface)); color: var(--red-dark); text-decoration: line-through; }
+.story-verdict { margin: 10px 0 0; font-size: 0.9rem; font-weight: 700; color: var(--text-2); }
+.story-result h2 { margin: 0; font-size: 1.2rem; }

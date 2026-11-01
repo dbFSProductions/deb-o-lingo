@@ -12,8 +12,9 @@ import {
   GENDERS, genderOf,
   attemptScore, ASPECTS, aspectOf, aspectChoices,
   awards, localDay, monthPlus, DAY_DONE_SECONDS, WEEK_NEEDS, MONTH_MISSES, SEASON_MONTHS, WEEK_STARTS, PRO_TIERS, MATCH_TIERS,
+  stories,
 } from "./store.js";
-import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById } from "./content.js";
+import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById, STORIES, storyById } from "./content.js";
 import { Recorder, Player, analyse, relativeSemitones, resample } from "./audio.js";
 import { speech, browserSpeech, scoring } from "./speech.js";
 import { cardAssistant } from "./card-assistant.js";
@@ -99,6 +100,10 @@ const state = {
   /* A round of Match — see `startMatch`. Null outside the game. */
   match: null,
   matchTimer: null,
+
+  /* The story being read — see `openStory`. Null on the list of stories and
+     everywhere else. */
+  story: null,
 };
 
 // ------------------------------------------------------------------ helpers
@@ -809,6 +814,9 @@ view.addEventListener("click", (event) => {
   }
   if (event.target.closest("[data-open-prizes]")) return openPrizes();
   if (event.target.closest("[data-open-match]")) return startMatch();
+  if (event.target.closest("[data-open-stories]")) return openStories();
+  const story = event.target.closest("[data-open-story]");
+  if (story) return openStory(story.dataset.openStory);
 });
 
 
@@ -846,6 +854,7 @@ function render() {
   if (state.tab === "add-word") return renderAddWord();
   if (state.tab === "prizes") return renderPrizes();
   if (state.tab === "match") return renderMatch();
+  if (state.tab === "stories") return state.story ? renderStory() : renderStories();
   return renderSettings();
 }
 
@@ -1109,8 +1118,6 @@ function renderPath(section = null) {
              <div class="bubble">${esc(greeting)}</div>
            </div>
 
-           ${dueStrip()}
-
            ${weekStrip()}
 
            ${tiles()}`
@@ -1194,7 +1201,7 @@ function renderPath(section = null) {
   const practice = document.getElementById("practice");
   if (practice) practice.onclick = () => startPractice();
 
-  // The strip on the home page and the node on the path start the same queue.
+  // The tile on the home page and the node on the path start the same queue.
   view.querySelectorAll("[data-review], #review").forEach((button) =>
     button.addEventListener("click", startReview)
   );
@@ -1226,45 +1233,32 @@ function renderPath(section = null) {
      shown — a tile that comes and goes leaves a hole in a grid — and with no
      assistant it says so, and its page names Settings as the fix.
 
-     The order is Practice, Words, Sobre mí, Quick, Match, Phrases. Sobre mí
-     took The Past's place on the second row because it is asked for far more
-     often than a grammar drill is, and the two you reach for should be above
-     the fold; The Past moved down beside Phrases, and then Match took that
-     square too — she doesn't use the grammar drill, and El pasado went back
-     onto the Practice path in course order rather than out of the app. Match
-     keeps the slot's gold, so the grid's palette is what it was.
+     The order is Practice, Words, Sobre mí, Quick, Match, Stories, Review,
+     Phrases — eight squares. Sobre mí took The Past's place on the second
+     row because it is asked for far more often than a grammar drill is, and
+     the two you reach for should be above the fold; The Past moved down
+     beside Phrases, and then Match took that square too — she doesn't use
+     the grammar drill, and El pasado went back onto the Practice path in
+     course order rather than out of the app. Match keeps the slot's gold.
 
      Phrases came in off the bottom row to make the sixth square. It was a
      wide button across the foot of the grid, on the argument that the whole
      library outranks a slice of it; five squares and a strip read worse than
-     six squares, and the argument was never strong. */
-  /* Spaced repetition's one visible surface on the home page: how many cards
-     have come round, and a way to start on them. Under the parrot, above the
-     tiles — it is the one thing on the home page that changes day to day, so
-     it sits where the greeting does rather than among the six squares. Nothing
-     when nothing is due: a strip reading "0 due" would be a nag. Teal, the one
-     strong colour no tile wears; it is quiet mode's in the lesson, and the two
-     never share a screen. The headline is the session — what Start actually
-     starts — and the backlog is a quieter clause after it. */
-  function dueStrip() {
-    if (!due) return "";
-    return `
-      <button class="due-strip" data-review="1">
-        <span class="due-mark" aria-hidden="true">${CLOCK_SVG}</span>
-        <span class="due-main">
-          <span class="due-title">Review</span>
-          <span class="due-sub">${due} card${due === 1 ? "" : "s"} to review today${
-            waiting ? ` · ${waiting} more waiting` : ""
-          }</span>
-        </span>
-        <span class="due-go">Start ›</span>
-      </button>`;
-  }
+     six squares, and the argument was never strong.
+
+     Stories and Review made it eight, asked for together: "add these as two
+     new cards on the front page — move Review down to be one of the cards
+     and add Stories as the other". Review was a teal strip under the parrot
+     until then, shown only when something was due; as a square it is always
+     there, because a tile that comes and goes leaves a hole in the grid, and
+     with nothing due it says so quietly rather than nagging. It keeps the
+     strip's teal. Stories is red, the one strong colour left; the two games
+     sit together on the third row and the two lists on the fourth. */
 
   /* The streak challenge's one surface on the home page: seven dots for the
-     week, under the Review strip and above the squares, because like the
-     strip it is the thing on this page that changes every day. It opens
-     the Prizes page, where the rest of the challenges are. */
+     week, under the parrot and above the squares, because it is the thing
+     on this page that changes every day. It opens the Prizes page, where the
+     rest of the challenges are. */
   function weekStrip() {
     const today = localDay();
     const week = awards.weekOf(today);
@@ -1290,6 +1284,7 @@ function renderPath(section = null) {
       return found ? found.lessons.reduce((n, l) => n + l.phrases.length, 0) : 0;
     };
     const asked = library.ownPhrases().filter((p) => p.deck === QUICK_DECK && p.text.trim()).length;
+    const read = STORIES.filter((story) => stories.isRead(story.id)).length;
     const rows = [
       { key: PRACTICE, title: SECTION_TITLES[PRACTICE].title, blurb: SECTION_TITLES[PRACTICE].sub, colour: "blue",
         count: `${pathUnits().reduce((n, u) => n + u.lessons.reduce((m, l) => m + l.phrases.length, 0), 0)} phrases`,
@@ -1310,6 +1305,19 @@ function renderPath(section = null) {
       { key: "match", title: "Match", blurb: "Pair the Spanish with the English", colour: "gold",
         count: awards.match.total ? `${awards.match.total} pair${awards.match.total === 1 ? "" : "s"} matched` : "Play a round",
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v5H4zM13 13h7v5h-7zM11 8.5h2M13 15.5h-2"/></svg>` },
+      { key: "stories", title: "Stories", blurb: "A tiny scene, then three questions", colour: "red",
+        count: read ? `${read} of ${STORIES.length} read` : `${STORIES.length} stories`,
+        mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>` },
+      /* Always shown, unlike the strip it replaced: the count is the one
+         thing on the tile that changes, and "nothing due" is still an answer
+         to the question the tile is there to ask. The headline is the
+         session — what a tap actually starts — and the backlog is the
+         quieter clause after it. */
+      { key: "review", title: "Review", blurb: "Cards that have come round", colour: "teal",
+        count: due
+          ? `${due} card${due === 1 ? "" : "s"} to review today${waiting ? ` · ${waiting} more waiting` : ""}`
+          : "Nothing due today",
+        mark: CLOCK_SVG },
       { key: "phrases", title: "All Phrases", blurb: "Every card, searchable", colour: "blue",
         count: `${library.drillable().length} cards`,
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg>` },
@@ -1321,7 +1329,15 @@ function renderPath(section = null) {
           .map(
             (tile) => `
           <button class="tile tile-${tile.colour}" ${
-            tile.key === "about" ? `data-about="1"` : tile.key === "match" ? `data-open-match="1"` : `data-section="${tile.key}"`
+            tile.key === "about"
+              ? `data-about="1"`
+              : tile.key === "match"
+              ? `data-open-match="1"`
+              : tile.key === "stories"
+              ? `data-open-stories="1"`
+              : tile.key === "review"
+              ? `data-review="1"`
+              : `data-section="${tile.key}"`
           }>
             <span class="tile-mark" aria-hidden="true">${tile.mark}</span>
             <span class="tile-title">${esc(tile.title)}</span>
@@ -1695,7 +1711,12 @@ function startPractice(queueOverride = null, { title = "Repaso" } = {}) {
    queue like Repaso's, so nothing ticks and the streak is untouched; the
    attempts it records are what move the cards' next review. */
 function startReview() {
-  startPractice(library.due().slice(0, REVIEW_CAP), { title: "Review" });
+  const due = library.due();
+  if (!due.length) {
+    toast("Nothing to review today — cards come round once you've said them well.");
+    return;
+  }
+  startPractice(due.slice(0, REVIEW_CAP), { title: "Review" });
 }
 
 // ------------------------------------------------------------------- drill
@@ -4859,9 +4880,12 @@ function renderSettings() {
         or kept — the ${RECALL_AFTER} good goes to Level 2 are spoken ones — so it's practice rather than progress.
         There's a Quiet pill on the lesson bar to switch it on and off from there.</p>
       <p class="tiny muted" style="margin:12px 0 0"><strong>Review.</strong> A card you've said well comes back to be said again — after a day,
-        then two, four, eight, and so on; get it wrong and it comes back tomorrow. When something is due there's a
-        Review strip on the home page and a Review node behind Practice, and a session is the ${REVIEW_CAP} most
-        overdue cards; the rest wait for tomorrow.</p>
+        then two, four, eight, and so on; get it wrong and it comes back tomorrow. The Review square on the home
+        page says how many are due, and there's a Review node behind Practice too; a session is the ${REVIEW_CAP} most
+        overdue cards, and the rest wait for tomorrow.</p>
+      <p class="tiny muted" style="margin:12px 0 0"><strong>Stories.</strong> ${STORIES.length} tiny scenes of three or four sentences,
+        each followed by three questions — the question in English, the answers in Spanish. Tap a line to hear it;
+        the English appears once you've answered. Your best score on each is kept beside it.</p>
     </div>
 
     <div class="section-label">Prizes</div>
@@ -5130,10 +5154,12 @@ for (const type of ["pointerdown", "keydown", "touchstart"]) {
 }
 
 /** Is what is on screen study? Any drill — lesson, Review, Repaso, quiet
-    mode — or a round of Match that is still going. */
+    mode — a round of Match that is still going, or a story whose questions
+    are still being answered. */
 function studying() {
   if (state.tab === "learn" && state.stage === "drill") return true;
-  return state.tab === "match" && Boolean(state.match) && !state.match.finishedAt;
+  if (state.tab === "match") return Boolean(state.match) && !state.match.finishedAt;
+  return state.tab === "stories" && Boolean(state.story) && !state.story.finishedAt;
 }
 
 function studyTick() {
@@ -5373,7 +5399,7 @@ function renderPrizes() {
           : `${month.done} of ${month.needs} days · ${month.left} day${month.left === 1 ? "" : "s"} left`
       }</p>
       <p class="prize-stat"><strong>Three in a row</strong> ${run} winning month${run === 1 ? "" : "s"} in a row · ${SEASON_MONTHS} wins it</p>
-      <p class="tiny muted" style="margin:10px 0 0">A day counts after ten minutes in a lesson, a review, Repaso or Match.
+      <p class="tiny muted" style="margin:10px 0 0">A day counts after ten minutes in a lesson, a review, Repaso, Match or a story.
         The flame on the home page is a different count — finished lessons, ${flame} day${flame === 1 ? "" : "s"} in a row right now.</p>
     </div>
 
@@ -5615,6 +5641,208 @@ function paintMatchDone() {
   host.scrollIntoView({ behavior: "smooth", block: "end" });
 }
 
+// ----------------------------------------------------------------- stories
+
+/* Tiny scenes with questions — `STORIES` in content.js. Three or four
+   sentences, then three multiple-choice questions, asked for as "a kind of
+   comprehension test". A story is reading, not speaking: nothing here records,
+   scores pronunciation or touches the attempts. What it does count is study
+   time — `studying()` is true while the questions are still open — and the
+   best score, kept by id in `debolingo.stories` so the list can show it.
+
+   The story is behind a square on the home screen, like Match, and the page
+   is laid out the way the lesson is: the thing to read first, then the
+   questions, then the result. The English is held back until every question
+   has been answered, because the questions *are* the reading — shown up
+   front they would be answered off the English, and a tap on any line says
+   it aloud, which is the help that isn't an answer.
+
+   Each option set is shuffled once when the story opens (`order`), so the
+   right answer isn't wherever content.js happened to put it; a second read
+   shuffles again. A wrong pick costs nothing — the right one is shown and the
+   question closes — and the result is written once, when the last question
+   is answered, whatever the score. */
+const PLAY_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>`;
+
+function openStories() {
+  stopEverything();
+  state.tab = "stories";
+  state.story = null;
+  render();
+}
+
+function openStory(id) {
+  const story = storyById(id);
+  if (!story) return;
+  stopEverything();
+  state.tab = "stories";
+  state.story = {
+    id,
+    order: story.questions.map((q) => shuffle(q.options.map((_, i) => i))),
+    picks: {},
+    english: false,
+    finishedAt: null,
+    result: null,
+  };
+  render();
+}
+
+function renderStories() {
+  const read = STORIES.filter((story) => stories.isRead(story.id)).length;
+  view.innerHTML = `
+    <header class="home-head section-head">
+      <div class="wordmark">Stories</div>
+      ${homeLink()}
+    </header>
+    <p class="muted section-intro">A tiny scene — three or four sentences — then three questions.
+      ${read ? `${read} of ${STORIES.length} read.` : `${STORIES.length} to read, easiest first.`}</p>
+    <div class="rows rows-spaced">
+      ${STORIES.map((story, i) => {
+        const r = stories.results[story.id];
+        const full = r && r.best === r.of;
+        return `
+        <button class="row striped story-row" style="--hue:var(--red)" data-open-story="${esc(story.id)}">
+          <span class="story-num">${i + 1}</span>
+          <span class="row-main">
+            <span class="row-title" lang="es-ES">${esc(story.title)}</span><br>
+            <span class="row-sub">${esc(story.teaser)}</span>
+          </span>
+          ${r ? `<span class="story-best ${full ? "full" : ""}">${r.best}/${r.of}${full ? " ✓" : ""}</span>` : ""}
+          <span class="chev">›</span>
+        </button>`;
+      }).join("")}
+    </div>`;
+}
+
+function renderStory() {
+  const story = storyById(state.story?.id);
+  if (!story) {
+    state.story = null;
+    return render();
+  }
+  const session = state.story;
+  const total = story.questions.length;
+  const done = Object.keys(session.picks).length === total;
+  const at = STORIES.indexOf(story);
+  const next = STORIES[at + 1] ?? null;
+  const score = story.questions.filter((q, i) => session.picks[i] === q.answer).length;
+
+  view.innerHTML = `
+    <header class="home-head section-head">
+      <div class="wordmark" lang="es-ES">${esc(story.title)}</div>
+      <button class="link" data-open-stories="1">‹ Stories</button>
+    </header>
+    <p class="muted section-intro">Story ${at + 1} of ${STORIES.length}. Tap a line to hear it${
+      done ? "." : " — the English appears once you've answered."
+    }</p>
+
+    <div class="card story-card striped" style="--hue:var(--red)">
+      <ol class="story-lines">
+        ${story.lines
+          .map(
+            (line, i) => `
+          <li class="story-line">
+            <button class="reply-play" data-line="${i}" aria-label="Listen to this line">${PLAY_SVG}</button>
+            <span class="story-main">
+              <span class="story-es" lang="es-ES">${esc(line.es)}</span>
+              ${session.english ? `<span class="story-en">${esc(line.en)}</span>` : ""}
+            </span>
+          </li>`
+          )
+          .join("")}
+      </ol>
+      <div class="story-tools">
+        <button class="btn btn-ghost story-read" id="story-read">Read it all to me</button>
+        ${
+          done
+            ? `<button class="link" id="story-english">${session.english ? "Hide the English" : "Show the English"}</button>`
+            : ""
+        }
+      </div>
+    </div>
+
+    <div class="section-label">Questions</div>
+    ${story.questions
+      .map((q, qi) => {
+        const picked = session.picks[qi];
+        const open = picked == null;
+        return `
+        <div class="card story-q ${open ? "" : picked === q.answer ? "right" : "wrong"}" data-question="${qi}">
+          <p class="story-question">${qi + 1}. ${esc(q.q)}</p>
+          <div class="story-options">
+            ${session.order[qi]
+              .map((oi) => {
+                const cls = open ? "" : oi === q.answer ? "is-right" : oi === picked ? "is-wrong" : "";
+                return `<button class="story-opt ${cls}" data-q="${qi}" data-o="${oi}" lang="es-ES" ${
+                  open ? "" : "disabled"
+                }>${esc(q.options[oi])}</button>`;
+              })
+              .join("")}
+          </div>
+          ${
+            open
+              ? ""
+              : `<p class="story-verdict">${
+                  picked === q.answer ? "¡Eso es!" : `Not quite — it's <strong lang="es-ES">${esc(q.options[q.answer])}</strong>.`
+                }</p>`
+          }
+        </div>`;
+      })
+      .join("")}
+
+    <div id="story-done">${
+      done
+        ? `<div class="card story-result">
+             <h2>${score} of ${total} — ${score === total ? "¡perfecto!" : score >= total - 1 ? "¡muy bien!" : "read it again, it'll come."}</h2>
+             <p class="muted" style="margin:6px 0 12px">${
+               session.result?.improved && session.result.times > 1
+                 ? "Your best on this one so far."
+                 : session.result?.times > 1
+                 ? `Best so far ${session.result.best} of ${session.result.of}.`
+                 : "First read. The English is under the story now."
+             }</p>
+             <div class="btn-row">
+               ${next ? `<button class="btn btn-primary" data-open-story="${esc(next.id)}">Next story</button>` : ""}
+               <button class="btn ${next ? "btn-ghost" : "btn-primary"}" data-open-story="${esc(story.id)}">Read it again</button>
+             </div>
+           </div>`
+        : ""
+    }</div>`;
+
+  view.querySelectorAll("[data-line]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const line = story.lines[Number(button.dataset.line)];
+      if (line) sayAloud(button, line.es, "Couldn't play that line.");
+    })
+  );
+  /* The whole scene as one utterance, so the lines run on the way a voice
+     would read them. Keyed on the joined text, it is cached like any phrase. */
+  document.getElementById("story-read").onclick = (event) =>
+    sayAloud(event.currentTarget, story.lines.map((line) => line.es).join(" "), "Couldn't read the story.");
+
+  document.getElementById("story-english")?.addEventListener("click", () => {
+    session.english = !session.english;
+    render();
+  });
+
+  view.querySelectorAll(".story-opt:not([disabled])").forEach((button) =>
+    button.addEventListener("click", () => {
+      const qi = Number(button.dataset.q);
+      if (session.picks[qi] != null) return;
+      session.picks[qi] = Number(button.dataset.o);
+      if (Object.keys(session.picks).length === total) {
+        session.finishedAt = Date.now();
+        const right = story.questions.filter((q, i) => session.picks[i] === q.answer).length;
+        session.result = stories.record(story.id, right, total);
+      }
+      render();
+      if (session.finishedAt) {
+        document.getElementById("story-done")?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
+    })
+  );
+}
+
 // ------------------------------------------------------------------ mascot
 //
 // Perico the parrot. Parrots repeat what they hear, which is the entire
@@ -5651,6 +5879,7 @@ library.load();
 progress.load();
 aboutMe.load();
 awards.load();
+stories.load();
 state.showTranslation = settings.showTranslationUpFront;
 /* Anything won while the app was closed — the week turning over at
    midnight is the usual case — is written down quietly rather than thrown

@@ -25,6 +25,7 @@ const KEYS = {
   replies: "debolingo.replies",
   aboutMe: "debolingo.aboutMe",
   awards: "debolingo.awards",
+  stories: "debolingo.stories",
 };
 
 // The fields an edit can touch. Course phrases are code, so editing one is
@@ -716,6 +717,8 @@ export const library = {
         aboutMe: aboutMe.turns,
         // Study minutes, the matching tallies and the prizes won, with dates.
         awards: awards.data,
+        // Which stories have been read, and the best score on each.
+        stories: stories.results,
       },
       null,
       2
@@ -742,11 +745,66 @@ export const library = {
     this.saveReplies();
     aboutMe.replace(Array.isArray(parsed.aboutMe) ? parsed.aboutMe : []);
     awards.replace(parsed.awards ?? {});
+    stories.replace(parsed.stories ?? {});
     if (parsed.progress) {
       progress.lessons = parsed.progress.lessons ?? {};
       progress.streak = parsed.progress.streak ?? { count: 0, lastDay: null };
       progress.save();
     }
+  },
+};
+
+// ----------------------------------------------------------------- stories
+//
+/* How each story went: the best score, how many questions it has, how many
+   times it has been read and when. Keyed by story id the way progress is
+   keyed by lesson id — the stories themselves are code in content.js, so
+   this is the one thing about them that is data. A story counts as read once
+   its questions have all been answered, whatever the score; the best is
+   what the list shows beside it. */
+export const stories = {
+  results: {},
+
+  load() {
+    this.replace(readJSON(KEYS.stories, {}));
+  },
+
+  save() {
+    writeJSON(KEYS.stories, this.results);
+  },
+
+  /** Take a stored or imported shape, forgivingly — an older backup has none. */
+  replace(data) {
+    this.results = {};
+    const entries = data && typeof data === "object" ? data : {};
+    for (const [id, r] of Object.entries(entries)) {
+      if (!r || typeof r !== "object") continue;
+      this.results[id] = {
+        best: Number(r.best) || 0,
+        of: Number(r.of) || 0,
+        times: Number(r.times) || 0,
+        lastAt: typeof r.lastAt === "string" ? r.lastAt : null,
+      };
+    }
+    this.save();
+  },
+
+  isRead(id) {
+    return Boolean(this.results[id]);
+  },
+
+  /** Record a finished story. Returns the entry, with `improved` set when the
+      best moved, so the page can say so. */
+  record(id, score, of) {
+    const entry = this.results[id] ?? { best: 0, of, times: 0, lastAt: null };
+    const improved = entry.times === 0 || score > entry.best;
+    if (improved) entry.best = score;
+    entry.of = of;
+    entry.times += 1;
+    entry.lastAt = new Date().toISOString();
+    this.results[id] = entry;
+    this.save();
+    return { ...entry, improved };
   },
 };
 
