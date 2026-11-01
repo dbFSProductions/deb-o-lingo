@@ -543,6 +543,582 @@ export const COURSE = [
     ],
   },
   {
+    // Four everyday units added together, asked for as "more words and
+    // sentences covering a wider variety to keep the game going" — Match
+    // draws from every card in the app, so the way to keep it fresh is more
+    // course. Prices first (asked for by name), then the restaurant, more
+    // food shopping, and the day-to-day. Same rules as the units above: five
+    // phrases a lesson, nothing already on a card elsewhere in the course,
+    // and every focusNote written for an American mouth learning Castilian.
+    id: "precios",
+    title: "Precios y números",
+    subtitle: "Counting, prices and the time",
+    color: "#00c2b2",
+    colorDark: "#00a294",
+    lessons: [
+      {
+        id: "precios-1",
+        title: "One to ten",
+        phrases: [
+          {
+            id: "precios-1-1",
+            text: "Uno, dos, tres.",
+            translation: "One, two, three.",
+            focusNote:
+              "OO-no, dos, tres. Pure vowels, and 'tres' rhymes with 'press' — never 'trays'. The r is a single tap.",
+          },
+          {
+            id: "precios-1-2",
+            text: "Cuatro, cinco, seis.",
+            translation: "Four, five, six.",
+            focusNote:
+              "KWA-tro, THEEN-ko, says. In Spain 'cinco' opens on the 'th' of 'thin'; 'seis' is one syllable, like 'says'.",
+          },
+          {
+            id: "precios-1-3",
+            text: "Siete, ocho, nueve, diez.",
+            translation: "Seven, eight, nine, ten.",
+            focusNote:
+              "SYEH-te, O-cho, NWEH-be, dyeth. 'Diez' ends on Spain's soft 'th' — 'dyeth', not 'dee-ez'.",
+          },
+          {
+            id: "precios-1-4",
+            text: "Dos, por favor.",
+            translation: "Two, please.",
+            focusNote:
+              "'Dos' is a short 'dose' with no 'oh-oo' glide on the end. Stress on fa-VOR, final r one light tap.",
+          },
+          {
+            id: "precios-1-5",
+            text: "Media docena de huevos.",
+            translation: "Half a dozen eggs.",
+            focusNote:
+              "MEH-dya do-THE-na de WEH-bos. The h in 'huevos' is silent and the v is a soft b — it starts 'weh'.",
+          },
+        ],
+      },
+      {
+        id: "precios-2",
+        title: "How much?",
+        phrases: [
+          {
+            id: "precios-2-1",
+            text: "¿Cuánto cuesta esto?",
+            translation: "How much does this cost?",
+            focusNote:
+              "KWAN-to KWES-ta ES-to. Three plain 'o' endings — short, with no 'oh-oo' tail on any of them.",
+          },
+          {
+            id: "precios-2-2",
+            text: "Son tres euros con cincuenta.",
+            translation: "That's three euros fifty.",
+            focusNote:
+              "'Euros' is EH-oo-ros, two quick vowels, not 'YOU-rohs'. 'Cincuenta' opens on the Spain 'th': theen-KWEN-ta.",
+          },
+          {
+            id: "precios-2-3",
+            text: "Es muy caro.",
+            translation: "It's very expensive.",
+            focusNote:
+              "KA-ro with a single tapped r — one flick of the tongue, like the tt in 'butter'. Not an American 'car'.",
+          },
+          {
+            id: "precios-2-4",
+            text: "¿Tiene algo más barato?",
+            translation: "Do you have anything cheaper?",
+            focusNote:
+              "TYEH-ne AL-go mas ba-RA-to. 'Barato' — soft b, one tapped r, stress in the middle.",
+          },
+          {
+            id: "precios-2-5",
+            text: "Me lo quedo.",
+            translation: "I'll take it.",
+            focusNote:
+              "me lo KEH-do. The qu in 'quedo' is a plain k, and the d is the soft one, tongue against the teeth.",
+          },
+        ],
+      },
+      {
+        id: "precios-3",
+        title: "Bigger numbers",
+        phrases: [
+          {
+            id: "precios-3-1",
+            text: "Quince euros.",
+            translation: "Fifteen euros.",
+            focusNote:
+              "KEEN-the. Spain's 'th' on the c; the qu is a plain k, no 'kw'. Two syllables.",
+          },
+          {
+            id: "precios-3-2",
+            text: "Veinticinco euros.",
+            translation: "Twenty-five euros.",
+            focusNote:
+              "bayn-tee-THEEN-ko. Soft b at the start (v = b), 'th' in the middle. Five even syllables.",
+          },
+          {
+            id: "precios-3-3",
+            text: "Cincuenta euros.",
+            translation: "Fifty euros.",
+            focusNote:
+              "theen-KWEN-ta — 'th' first, then the stress on KWEN. 'Euros' stays EH-oo-ros.",
+          },
+          {
+            id: "precios-3-4",
+            text: "Cien euros.",
+            translation: "A hundred euros.",
+            focusNote:
+              "THYEN — one syllable, 'th' as in 'thin'. Not 'see-en'.",
+          },
+          {
+            id: "precios-3-5",
+            text: "¿Tiene cambio?",
+            translation: "Do you have change?",
+            focusNote:
+              "TYEH-ne KAM-byo. 'Cambio' is two syllables, KAM-byo, not three.",
+          },
+        ],
+      },
+      {
+        id: "precios-4",
+        title: "What time?",
+        phrases: [
+          {
+            id: "precios-4-1",
+            text: "¿Qué hora es?",
+            translation: "What time is it?",
+            focusNote:
+              "ke O-ra es. The h in 'hora' is silent — the word starts on the vowel. 'Qué' is 'keh', not 'kway'.",
+          },
+          {
+            id: "precios-4-2",
+            text: "Son las diez.",
+            translation: "It's ten o'clock.",
+            focusNote:
+              "son las dyeth. Plural 'son' for every hour after one o'clock. 'Diez' ends on Spain's soft 'th'.",
+          },
+          {
+            id: "precios-4-3",
+            text: "A las ocho y media.",
+            translation: "At half past eight.",
+            focusNote:
+              "a las O-cho ee MEH-dya. The 'y' is just 'ee'; 'media' is two syllables, MEH-dya.",
+          },
+          {
+            id: "precios-4-4",
+            text: "¿A qué hora abren?",
+            translation: "What time do they open?",
+            focusNote:
+              "a ke O-ra A-bren. Silent h in 'hora'; soft b in 'abren', the lips barely closing.",
+          },
+          {
+            id: "precios-4-5",
+            text: "Cierran a las dos.",
+            translation: "They close at two.",
+            focusNote:
+              "THYEH-rran. 'th' at the start, and the double rr is a rolled r — a tap if the roll won't come, never an American r.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "restaurante",
+    title: "El restaurante",
+    subtitle: "A table, the menu and the bill",
+    color: "#ff4b4b",
+    colorDark: "#d63d3d",
+    lessons: [
+      {
+        id: "restaurante-1",
+        title: "Getting a table",
+        phrases: [
+          {
+            id: "restaurante-1-1",
+            text: "Una mesa para dos, por favor.",
+            translation: "A table for two, please.",
+            focusNote:
+              "OO-na MEH-sa PA-ra dos. 'Mesa' with a pure 'eh', and the s stays an s — never a z as in 'mezza'.",
+          },
+          {
+            id: "restaurante-1-2",
+            text: "Tengo una reserva.",
+            translation: "I have a reservation.",
+            focusNote:
+              "TEN-go OO-na re-SER-ba. The v in 'reserva' is a soft b; stress on SER.",
+          },
+          {
+            id: "restaurante-1-3",
+            text: "A nombre de Deb.",
+            translation: "Under the name Deb.",
+            focusNote:
+              "a NOM-bre de Deb. 'Nombre' — straight from the m into 'bre', with no vowel between them.",
+          },
+          {
+            id: "restaurante-1-4",
+            text: "¿Podemos sentarnos fuera?",
+            translation: "Can we sit outside?",
+            focusNote:
+              "po-DEH-mos sen-TAR-nos FWEH-ra. The d in 'podemos' is soft; 'fuera' starts 'fweh', one syllable.",
+          },
+          {
+            id: "restaurante-1-5",
+            text: "¿Cuánto hay que esperar?",
+            translation: "How long is the wait?",
+            focusNote:
+              "KWAN-to eye ke es-pe-RAR. 'Hay' sounds like the English 'eye' — silent h. The final r is one light tap.",
+          },
+        ],
+      },
+      {
+        id: "restaurante-2",
+        title: "Ordering",
+        phrases: [
+          {
+            id: "restaurante-2-1",
+            text: "La carta, por favor.",
+            translation: "The menu, please.",
+            focusNote:
+              "la KAR-ta. One tapped r, then a crisp t. 'La carta' is the menu you read — 'el menú' is the set lunch.",
+          },
+          {
+            id: "restaurante-2-2",
+            text: "¿Hay menú del día?",
+            translation: "Is there a set lunch menu?",
+            focusNote:
+              "eye me-NOO del DEE-a. Stress on the end of 'menú' — the accent says so. 'Día' is two syllables.",
+          },
+          {
+            id: "restaurante-2-3",
+            text: "De primero, la ensalada.",
+            translation: "To start, the salad.",
+            focusNote:
+              "de pree-MEH-ro, la en-sa-LA-da. Every d is the soft one, tongue to the teeth; pure vowels in 'ensalada'.",
+          },
+          {
+            id: "restaurante-2-4",
+            text: "De segundo, el pescado.",
+            translation: "For the main, the fish.",
+            focusNote:
+              "de se-GOON-do, el pes-KA-do. Hard g in 'segundo', as in 'go'; soft d at the end of 'pescado'.",
+          },
+          {
+            id: "restaurante-2-5",
+            text: "Para beber, agua.",
+            translation: "To drink, water.",
+            focusNote:
+              "PA-ra be-BER, A-gwa. 'Beber' — both b's soft, stress on the end. 'Agua' is A-gwa, two syllables.",
+          },
+        ],
+      },
+      {
+        id: "restaurante-3",
+        title: "At the table",
+        phrases: [
+          {
+            id: "restaurante-3-1",
+            text: "¿Me trae más pan?",
+            translation: "Could you bring me more bread?",
+            focusNote:
+              "me TRA-e mas pan. 'Trae' is two syllables, TRA-eh, with a tapped r. Pure a in 'pan' — not the English 'pan'.",
+          },
+          {
+            id: "restaurante-3-2",
+            text: "Soy alérgica a los frutos secos.",
+            translation: "I'm allergic to nuts.",
+            focusNote:
+              "soy a-LER-hee-ka a los FROO-tos SEH-kos. The g before i is a throaty h: a-LER-hee-ka. The -a ending because it's Deb saying it.",
+          },
+          {
+            id: "restaurante-3-3",
+            text: "¿Qué hay de postre?",
+            translation: "What is there for dessert?",
+            focusNote:
+              "ke eye de POS-tre. 'Postre' — POS, then a quick 'tre' with a tapped r.",
+          },
+          {
+            id: "restaurante-3-4",
+            text: "Estaba todo muy rico.",
+            translation: "It was all delicious.",
+            focusNote:
+              "es-TA-ba TO-do mwee RREE-ko. The b in 'estaba' is soft; the r in 'rico' starts the word, so it rolls.",
+          },
+          {
+            id: "restaurante-3-5",
+            text: "¿Nos trae la cuenta?",
+            translation: "Could you bring us the bill?",
+            focusNote:
+              "nos TRA-e la KWEN-ta. 'Cuenta' is KWEN-ta — the u is a quick w, not a syllable of its own.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "compras",
+    title: "De compras",
+    subtitle: "The supermarket, the bakery and the fish counter",
+    color: "#58cc02",
+    colorDark: "#46a302",
+    lessons: [
+      {
+        id: "compras-1",
+        title: "At the supermarket",
+        phrases: [
+          {
+            id: "compras-1-1",
+            text: "¿Dónde está la leche?",
+            translation: "Where is the milk?",
+            focusNote:
+              "DON-de es-TA la LEH-che. 'Leche' — pure 'eh', then ch as in 'church'. Not 'letch-ay'.",
+          },
+          {
+            id: "compras-1-2",
+            text: "¿Tienen bolsas?",
+            translation: "Do you have bags?",
+            focusNote:
+              "TYEH-nen BOL-sas. The l in 'bolsas' is a light, front-of-the-mouth l — not the thick American one.",
+          },
+          {
+            id: "compras-1-3",
+            text: "¿Dónde está la caja?",
+            translation: "Where is the checkout?",
+            focusNote:
+              "la KA-ha. The j is a throaty h, like gently clearing your throat: KA-ha.",
+          },
+          {
+            id: "compras-1-4",
+            text: "Con tarjeta, por favor.",
+            translation: "By card, please.",
+            focusNote:
+              "kon tar-HEH-ta. The j again — tar-HEH-ta — with a tapped r just before it.",
+          },
+          {
+            id: "compras-1-5",
+            text: "¿Me da el tique?",
+            translation: "Can I have the receipt?",
+            focusNote:
+              "me da el TEE-ke. 'Tique' is TEE-keh — the qu is a plain k, and the final e is said, not dropped.",
+          },
+        ],
+      },
+      {
+        id: "compras-2",
+        title: "At the bakery",
+        phrases: [
+          {
+            id: "compras-2-1",
+            text: "¿Está recién hecho?",
+            translation: "Is it freshly made?",
+            focusNote:
+              "es-TA re-THYEN EH-cho. 'Recién' has the Spain 'th' and its stress on the end; the h in 'hecho' is silent.",
+          },
+          {
+            id: "compras-2-2",
+            text: "Dos cruasanes, por favor.",
+            translation: "Two croissants, please.",
+            focusNote:
+              "dos krwa-SA-nes. Spanish spells it as it says it: krwa-SA-nes, stress in the middle, every letter sounded.",
+          },
+          {
+            id: "compras-2-3",
+            text: "¿Qué lleva esto?",
+            translation: "What's in this?",
+            focusNote:
+              "ke YEH-ba ES-to. 'Lleva' starts with a y sound in Spain — YEH-ba — and the v is a soft b.",
+          },
+          {
+            id: "compras-2-4",
+            text: "Me llevo este.",
+            translation: "I'll take this one.",
+            focusNote:
+              "me YEH-bo ES-te. The same ll — YEH-bo. 'Este' with a pure 'eh', not 'es-tay'.",
+          },
+          {
+            id: "compras-2-5",
+            text: "Un trozo de tarta, por favor.",
+            translation: "A slice of cake, please.",
+            focusNote:
+              "oon TRO-tho de TAR-ta. 'Trozo' — tapped r, then Spain's 'th' on the z: TRO-tho.",
+          },
+        ],
+      },
+      {
+        id: "compras-3",
+        title: "At the fish counter",
+        phrases: [
+          {
+            id: "compras-3-1",
+            text: "¿Está fresco el pescado?",
+            translation: "Is the fish fresh?",
+            focusNote:
+              "es-TA FRES-ko el pes-KA-do. Both s's are crisp, and the final d is soft, almost a 'th'.",
+          },
+          {
+            id: "compras-3-2",
+            text: "Medio kilo de gambas.",
+            translation: "Half a kilo of prawns.",
+            focusNote:
+              "MEH-dyo KEE-lo de GAM-bas. 'Kilo' is KEE-lo, a pure 'ee'. Hard g in 'gambas'.",
+          },
+          {
+            id: "compras-3-3",
+            text: "¿Me lo puede limpiar?",
+            translation: "Can you clean it for me?",
+            focusNote:
+              "me lo PWEH-de leem-PYAR. 'Limpiar' ends on 'PYAR', one syllable, with a tapped r.",
+          },
+          {
+            id: "compras-3-4",
+            text: "Cuatro filetes, finos.",
+            translation: "Four fillets, thin.",
+            focusNote:
+              "KWA-tro fee-LEH-tes, FEE-nos. Spanish 'filete' says every letter: fee-LEH-te.",
+          },
+          {
+            id: "compras-3-5",
+            text: "¿Me lo envuelve, por favor?",
+            translation: "Could you wrap it for me, please?",
+            focusNote:
+              "me lo en-BWEL-be. Both v's are soft b's: en-BWEL-be, stress on BWEL.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "diario",
+    title: "Cada día",
+    subtitle: "Weather, neighbours and the lift",
+    color: "#1cb0f6",
+    colorDark: "#1899d6",
+    lessons: [
+      {
+        id: "diario-1",
+        title: "The weather",
+        phrases: [
+          {
+            id: "diario-1-1",
+            text: "Hace buen tiempo.",
+            translation: "It's nice weather.",
+            focusNote:
+              "A-the bwen TYEM-po. Silent h and Spain's 'th' on the c: A-the. 'Tiempo' is two syllables, TYEM-po.",
+          },
+          {
+            id: "diario-1-2",
+            text: "Está lloviendo.",
+            translation: "It's raining.",
+            focusNote:
+              "es-TA yo-BYEN-do. The ll is a y in Spain — yo-BYEN-do — and the v is a soft b.",
+          },
+          {
+            id: "diario-1-3",
+            text: "Hace mucho viento.",
+            translation: "It's very windy.",
+            focusNote:
+              "A-the MOO-cho BYEN-to. 'Viento' starts with a soft b: BYEN-to, lips barely touching.",
+          },
+          {
+            id: "diario-1-4",
+            text: "Mañana va a llover.",
+            translation: "It's going to rain tomorrow.",
+            focusNote:
+              "ma-NYA-na ba a yo-BER. The ñ is 'ny' as in 'canyon'; 'llover' is yo-BER, stress on the end.",
+          },
+          {
+            id: "diario-1-5",
+            text: "Hace sol.",
+            translation: "It's sunny.",
+            focusNote:
+              "A-the sol — literally 'it makes sun'. Short o in 'sol', as in 'doll', not 'soul'.",
+          },
+        ],
+      },
+      {
+        id: "diario-2",
+        title: "The neighbours",
+        phrases: [
+          {
+            id: "diario-2-1",
+            text: "¿Sube o baja?",
+            translation: "Going up or down?",
+            focusNote:
+              "SOO-be o BA-ha. Soft b in 'sube'; the j in 'baja' is a throaty h: BA-ha.",
+          },
+          {
+            id: "diario-2-2",
+            text: "Soy la vecina del tercero.",
+            translation: "I'm the neighbour from the third floor.",
+            focusNote:
+              "soy la be-THEE-na del ter-THEH-ro. Two Spain 'th's — be-THEE-na, ter-THEH-ro — and the v is a soft b.",
+          },
+          {
+            id: "diario-2-3",
+            text: "Hasta mañana.",
+            translation: "See you tomorrow.",
+            focusNote:
+              "AS-ta ma-NYA-na. Silent h; the ñ is 'ny'. Four even syllables, no rush.",
+          },
+          {
+            id: "diario-2-4",
+            text: "¿Me ayuda con esto?",
+            translation: "Could you help me with this?",
+            focusNote:
+              "me a-YOO-da kon ES-to. 'Ayuda' — stress on YOO, and the d is the soft one.",
+          },
+          {
+            id: "diario-2-5",
+            text: "Buenas noches.",
+            translation: "Good night.",
+            focusNote:
+              "BWEH-nas NO-ches. Said arriving as well as leaving, once it's dark. 'ch' as in 'church'.",
+          },
+        ],
+      },
+      {
+        id: "diario-3",
+        title: "At home",
+        phrases: [
+          {
+            id: "diario-3-1",
+            text: "No funciona el ascensor.",
+            translation: "The lift isn't working.",
+            focusNote:
+              "no foon-THYO-na el as-then-SOR. Two 'th's: foon-THYO-na, as-then-SOR. Stress on the very end of 'ascensor'.",
+          },
+          {
+            id: "diario-3-2",
+            text: "¿Ha llegado el paquete?",
+            translation: "Has the parcel arrived?",
+            focusNote:
+              "a ye-GA-do el pa-KEH-te. Silent h in 'ha'; the ll is y: ye-GA-do. Soft d.",
+          },
+          {
+            id: "diario-3-3",
+            text: "Tengo pilates a las diez.",
+            translation: "I have Pilates at ten.",
+            focusNote:
+              "TEN-go pee-LA-tes a las dyeth. 'Pilates' is pee-LA-tes in Spain, every vowel pure.",
+          },
+          {
+            id: "diario-3-4",
+            text: "Voy a regar las plantas.",
+            translation: "I'm going to water the plants.",
+            focusNote:
+              "boy a re-GAR las PLAN-tas. 'Voy' starts with a soft b — boy. 'Regar' ends on a tapped r.",
+          },
+          {
+            id: "diario-3-5",
+            text: "Estoy en casa.",
+            translation: "I'm at home.",
+            focusNote:
+              "es-TOY en KA-sa. 'Casa' with a crisp s, never a z — it's not 'kah-za'.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     // The past, drilled Xerra-style: before a card will show its Spanish, the
     // lesson asks which SHAPE the sentence is — a dot in a box (preterite), a
     // line (imperfect), or a line reaching now (present perfect) — and the
@@ -1220,6 +1796,123 @@ export const COURSE = [
           },
         ],
       },
+      {
+        /* Two lessons added with the four everyday units, for the same
+           reason: Match draws from every card and the pile was thin. The
+           phrase ids carry on from where the numbering had got to
+           (palabras-12-n, palabras-13-n) — which lesson a card sits in is
+           free to change, its id is not. */
+        id: "palabras-7",
+        title: "Food shopping",
+        phrases: [
+          {
+            id: "palabras-12-1",
+            text: "el queso",
+            translation: "the cheese",
+            sounds: "K… so?",
+            picture:
+              "You ask for cheese and get handed a giant letter K carved out of it. 'K?' you say. The shopkeeper shrugs: 'K… so?'",
+            focusNote:
+              "KEH-so. The qu is a plain k and the e is pure — not 'kay'. Two short syllables.",
+          },
+          {
+            id: "palabras-12-2",
+            text: "el huevo",
+            translation: "the egg",
+            sounds: "web-o",
+            picture:
+              "A spider has spun a web around every egg in the box — a web-o on each one — and charges you extra for the silk.",
+            focusNote:
+              "WEH-bo. The h is silent, so it starts on 'weh'; the v is a soft b, lips barely touching.",
+          },
+          {
+            id: "palabras-12-3",
+            text: "el pollo",
+            translation: "the chicken",
+            sounds: "po-YO",
+            picture:
+              "A chicken on a pogo stick, shouting 'yo!' at every bounce — po-yo, po-yo — all the way down the aisle.",
+            focusNote:
+              "PO-yo. Spain's ll is a y, so it's PO-yo — never with an l, which would make it 'polo'.",
+          },
+          {
+            id: "palabras-12-4",
+            text: "el pescado",
+            translation: "the fish",
+            sounds: "pesky cod-oh",
+            picture:
+              "A pesky cod keeps leaping out of your trolley and flopping back to the counter: 'oh, that pesky cod!'",
+            focusNote:
+              "pes-KA-do. Stress on KA; the final d is soft, tongue to the teeth. 'Pescado' is fish on a plate — 'pez' is fish in the sea.",
+          },
+          {
+            id: "palabras-12-5",
+            text: "la bolsa",
+            translation: "the bag",
+            sounds: "bowl-sa",
+            picture:
+              "Your shopping bag is a salad bowl with two handles — a bowl-sa — and the oranges roll round and round in it.",
+            focusNote:
+              "BOL-sa. Short o, light front l, crisp s. Stress on the first syllable.",
+          },
+        ],
+      },
+      {
+        id: "palabras-8",
+        title: "Around the day",
+        phrases: [
+          {
+            id: "palabras-13-1",
+            text: "el sol",
+            translation: "the sun",
+            sounds: "sole",
+            picture:
+              "The sun is the sole of a huge flip-flop, slapping across the sky every morning.",
+            focusNote:
+              "sol — short o, as in 'doll', not the long 'soul' the picture leans on. The l is light.",
+          },
+          {
+            id: "palabras-13-2",
+            text: "la hora",
+            translation: "the hour, the time",
+            sounds: "oar-a",
+            picture:
+              "The clock's hands are two oars — oar-a — rowing you round the hour.",
+            focusNote:
+              "O-ra. The h is silent, so the word starts on the vowel. One tapped r.",
+          },
+          {
+            id: "palabras-13-3",
+            text: "el ascensor",
+            translation: "the lift",
+            sounds: "as… then… sore",
+            picture:
+              "The lift shoots up so fast you land on your backside — as… then… sore.",
+            focusNote:
+              "as-then-SOR. The sc gives you an s and then Spain's 'th' — as-then — and the stress is right at the end.",
+          },
+          {
+            id: "palabras-13-4",
+            text: "la noche",
+            translation: "the night",
+            sounds: "notch-eh",
+            picture:
+              "Each night you carve a notch in the bedpost — notch-eh — and by the weekend it's sawn clean through.",
+            focusNote:
+              "NO-che. Pure o, then ch as in 'church'; the final e is 'eh', said, not swallowed.",
+          },
+          {
+            id: "palabras-13-5",
+            text: "la lluvia",
+            translation: "the rain",
+            sounds: "YOU-bya",
+            picture:
+              "A tiny cloud follows only you down the street, raining — 'you! bye-ah!' it shouts, YOU-bya — and nobody else gets wet.",
+            focusNote:
+              "YOO-bya. Spain's ll is a y and the v is a soft b: YOO-bya, two syllables.",
+          },
+        ],
+      },
     ],
   },
 ];
@@ -1235,4 +1928,188 @@ export const COURSE_PHRASES = LESSONS.flatMap((lesson) =>
 
 export function lessonById(id) {
   return LESSONS.find((l) => l.id === id) ?? null;
+}
+
+// ------------------------------------------------------------------ stories
+//
+// Tiny scenes: three or four sentences, then a few comprehension questions.
+// Asked for in those words — "tiny mini stories … followed by a few questions
+// that are multiple-choice, as a kind of comprehension test". Hand-written
+// like the rest of this file, and deliberately out of the course's own
+// vocabulary: a story is where the cards get met again in a sentence that
+// isn't the card, which is the reading half of knowing a phrase.
+//
+// The question is in English and the answers are in Spanish, lifted from the
+// story — so the question is never the obstacle, and answering means reading
+// the Spanish rather than remembering the English. `answer` is the index of
+// the right option here; the page shuffles the order it shows them in.
+//
+// Scores are kept by id in `debolingo.stories` (store.js), so ids are stable
+// like phrase ids are: never renumber, append. Easy ones first.
+
+export const STORIES = [
+  {
+    id: "historia-1",
+    title: "El portero",
+    teaser: "Seven in the morning, and it's cold",
+    lines: [
+      { es: "Son las siete de la mañana.", en: "It's seven in the morning." },
+      { es: "Deb sale de casa y ve al portero.", en: "Deb leaves the house and sees the doorman." },
+      { es: "—Buenos días —dice Deb—. ¡Qué frío!", en: "'Good morning,' says Deb. 'It's so cold!'" },
+      { es: "—Muy frío. Que tenga un buen día —dice él.", en: "'Very cold. Have a good day,' he says." },
+    ],
+    questions: [
+      { q: "What time is it?", options: ["Las diez", "Las siete", "Las dos"], answer: 1 },
+      { q: "What does Deb say about the weather?", options: ["Qué frío", "Qué calor", "Está lloviendo"], answer: 0 },
+      { q: "What does the doorman wish her?", options: ["Buenas noches", "Hasta el sábado", "Un buen día"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-2",
+    title: "Un café",
+    teaser: "The café on the corner",
+    lines: [
+      { es: "Deb entra en el café de la esquina.", en: "Deb goes into the café on the corner." },
+      { es: "—Un café con leche, por favor —dice.", en: "'A coffee with milk, please,' she says." },
+      { es: "El camarero pregunta: —¿Algo más?", en: "The waiter asks: 'Anything else?'" },
+      { es: "—No, gracias. ¿Me cobra? —Son dos euros.", en: "'No, thanks. Can I pay?' 'That's two euros.'" },
+    ],
+    questions: [
+      { q: "What does Deb order?", options: ["Un cortado", "Un vaso de agua", "Un café con leche"], answer: 2 },
+      { q: "What does the waiter ask her?", options: ["¿Algo más?", "¿Cuánto es?", "¿Está maduro?"], answer: 0 },
+      { q: "How much is it?", options: ["Tres euros", "Dos euros", "Diez euros"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-3",
+    title: "En el mercado",
+    teaser: "Saturday, tomatoes, and are they ripe?",
+    lines: [
+      { es: "El sábado Deb va al mercado.", en: "On Saturday Deb goes to the market." },
+      { es: "—Medio kilo de tomates, por favor. ¿Están maduros?", en: "'Half a kilo of tomatoes, please. Are they ripe?'" },
+      { es: "—Sí, son para hoy —dice la mujer.", en: "'Yes, they're for today,' says the woman." },
+      { es: "Deb paga tres euros y dice: —Hasta el sábado.", en: "Deb pays three euros and says: 'See you Saturday.'" },
+    ],
+    questions: [
+      { q: "What day does Deb go to the market?", options: ["El domingo", "El sábado", "El viernes"], answer: 1 },
+      { q: "What does she buy?", options: ["Medio kilo de tomates", "Un cuarto de jamón", "Una barra de pan"], answer: 0 },
+      { q: "How much does she pay?", options: ["Dos euros", "Cinco euros", "Tres euros"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-4",
+    title: "Tapas con una amiga",
+    teaser: "Bravas, tortilla and two glasses of red",
+    lines: [
+      { es: "Esta noche Deb cena tapas con una amiga.", en: "Tonight Deb is having tapas with a friend." },
+      { es: "Piden unas bravas, una de tortilla y dos copas de vino tinto.", en: "They order some bravas, a tortilla and two glasses of red wine." },
+      { es: "—Es para compartir —dice Deb al camarero.", en: "'It's to share,' Deb says to the waiter." },
+      { es: "Al final sobra tortilla. —¿Me lo pone para llevar?", en: "At the end there's tortilla left over. 'Can I have it to take away?'" },
+    ],
+    questions: [
+      { q: "What do they drink?", options: ["Vino blanco", "Vino tinto", "Cava"], answer: 1 },
+      { q: "What does Deb tell the waiter?", options: ["Es para compartir", "Es muy caro", "Está buenísimo"], answer: 0 },
+      { q: "What is left over?", options: ["Bravas", "Aceitunas", "Tortilla"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-5",
+    title: "Pilates",
+    teaser: "A hard class, and water afterwards",
+    lines: [
+      { es: "Deb tiene pilates a las diez.", en: "Deb has Pilates at ten." },
+      { es: "Hoy la clase es dura y Deb está cansada.", en: "Today the class is hard and Deb is tired." },
+      { es: "Después toma un vaso de agua con gas.", en: "Afterwards she has a glass of sparkling water." },
+      { es: "—Mañana vuelvo —dice. Va todos los días.", en: "'I'll be back tomorrow,' she says. She goes every day." },
+    ],
+    questions: [
+      { q: "What time is Pilates?", options: ["A las ocho", "A las diez", "A las dos"], answer: 1 },
+      { q: "How is today's class?", options: ["Dura", "Fácil", "Corta"], answer: 0 },
+      { q: "What does she drink afterwards?", options: ["Un café solo", "Una copa de cava", "Agua con gas"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-6",
+    title: "Llueve",
+    teaser: "A day at home with the plants",
+    lines: [
+      { es: "Hoy está lloviendo.", en: "Today it's raining." },
+      { es: "Deb no va al mercado. Se queda en casa.", en: "Deb doesn't go to the market. She stays at home." },
+      { es: "Riega las plantas y toma un café.", en: "She waters the plants and has a coffee." },
+      { es: "Mañana va a hacer sol.", en: "Tomorrow it's going to be sunny." },
+    ],
+    questions: [
+      { q: "What's the weather like today?", options: ["Hace sol", "Está lloviendo", "Hace calor"], answer: 1 },
+      { q: "What does Deb do at home?", options: ["Riega las plantas", "Compra una planta", "Va a pilates"], answer: 0 },
+      { q: "What will the weather be tomorrow?", options: ["Va a llover", "Va a hacer frío", "Va a hacer sol"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-7",
+    title: "En el ascensor",
+    teaser: "Going up, with a neighbour",
+    lines: [
+      { es: "Deb entra en el ascensor con una vecina.", en: "Deb gets into the lift with a neighbour." },
+      { es: "—¿Sube o baja? —pregunta la vecina. —Subo, al tercero.", en: "'Going up or down?' asks the neighbour. 'Up, to the third floor.'" },
+      { es: "—Yo soy la vecina del quinto. Hablo un poquito de inglés.", en: "'I'm the neighbour from the fifth. I speak a little English.'" },
+      { es: "—Y yo hablo un poquito de español —dice Deb. Las dos ríen.", en: "'And I speak a little Spanish,' says Deb. They both laugh." },
+    ],
+    questions: [
+      { q: "Which floor is Deb going to?", options: ["Al quinto", "Al tercero", "Al segundo"], answer: 1 },
+      { q: "Where does the neighbour live?", options: ["En el tercero", "En la calle", "En el quinto"], answer: 2 },
+      { q: "What does the neighbour speak a little of?", options: ["Inglés", "Español", "Catalán"], answer: 0 },
+    ],
+  },
+  {
+    id: "historia-8",
+    title: "En el restaurante",
+    teaser: "A reservation at nine, outside",
+    lines: [
+      { es: "Deb tiene una reserva a las nueve, a nombre de Deb.", en: "Deb has a reservation at nine, under the name Deb." },
+      { es: "—¿Podemos sentarnos fuera? —pregunta. —Claro.", en: "'Can we sit outside?' she asks. 'Of course.'" },
+      { es: "De primero pide la ensalada y de segundo, el pescado.", en: "To start she orders the salad and for the main, the fish." },
+      { es: "—Soy alérgica a los frutos secos —dice al camarero.", en: "'I'm allergic to nuts,' she tells the waiter." },
+    ],
+    questions: [
+      { q: "What time is the reservation?", options: ["A las nueve", "A las diez", "A las siete"], answer: 0 },
+      { q: "Where does she want to sit?", options: ["Dentro", "Fuera", "En la barra"], answer: 1 },
+      { q: "What is she allergic to?", options: ["El pescado", "La leche", "Los frutos secos"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-9",
+    title: "La panadería",
+    teaser: "Bread, croissants, paying by card",
+    lines: [
+      { es: "Por la mañana Deb va a la panadería.", en: "In the morning Deb goes to the bakery." },
+      { es: "—¿Me da una barra de pan? ¿Está recién hecha?", en: "'Can I have a loaf of bread? Is it freshly made?'" },
+      { es: "—Sí, recién hecha. ¿Algo más? —Dos cruasanes, por favor.", en: "'Yes, freshly made. Anything else?' 'Two croissants, please.'" },
+      { es: "Deb paga con tarjeta y dice: —Muy amable, gracias.", en: "Deb pays by card and says: 'Very kind, thank you.'" },
+    ],
+    questions: [
+      { q: "When does Deb go to the bakery?", options: ["Por la noche", "El sábado", "Por la mañana"], answer: 2 },
+      { q: "What else does she buy?", options: ["Dos cruasanes", "Un trozo de tarta", "Media docena de huevos"], answer: 0 },
+      { q: "How does she pay?", options: ["Con cambio", "Con tarjeta", "Con cien euros"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-10",
+    title: "El paquete",
+    teaser: "The lift is broken and something has arrived",
+    lines: [
+      { es: "Deb vuelve a casa a las seis. El ascensor no funciona.", en: "Deb gets home at six. The lift isn't working." },
+      { es: "Sube por la escalera, cansada.", en: "She goes up the stairs, tired." },
+      { es: "—¿Ha llegado el paquete? —pregunta al portero.", en: "'Has the parcel arrived?' she asks the doorman." },
+      { es: "—Sí, aquí está. Es muy grande —dice él. Deb ríe: —Es una planta.", en: "'Yes, here it is. It's very big,' he says. Deb laughs: 'It's a plant.'" },
+    ],
+    questions: [
+      { q: "What time does Deb get home?", options: ["A las seis", "A las siete", "A las diez"], answer: 0 },
+      { q: "Why does she take the stairs?", options: ["Está lloviendo", "El ascensor no funciona", "Tiene pilates"], answer: 1 },
+      { q: "What is in the parcel?", options: ["Una maleta", "Un paquete de pan", "Una planta"], answer: 2 },
+    ],
+  },
+];
+
+export function storyById(id) {
+  return STORIES.find((s) => s.id === id) ?? null;
 }

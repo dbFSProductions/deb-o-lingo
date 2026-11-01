@@ -64,7 +64,7 @@ scripts it names. **Don't undo either one for "fewer requests."**
 
 ---
 
-## The home screen: a wordmark, six tiles, and the path
+## The home screen: a wordmark, eight tiles, and the path
 
 The tab bar is gone. Four buttons for four things that were never peers —
 Learn was the home screen, Phrases and Add things you do occasionally, Settings
@@ -80,11 +80,28 @@ rarer still. Ported from Xerra, where the same bar had the same problem.
 - **Every page below home prints `homeLink()`** — *‹ Home* — behind one
   delegated listener on `view`, so a page only has to print the link.
 
-### Home is six tiles; the path is one tap in
+### Home is eight tiles; the path is one tap in
 
 The first cut put the tiles *above* the path, so the home screen was still the
 winding course with four squares on top of it. Now home is the header, the
-greeting and six tiles, and nothing else — the path lives behind **Practice**.
+greeting, the week strip and eight tiles, and nothing else — the path lives
+behind **Practice**. (It was six tiles for a long while, and most of what
+follows was written then; Stories and Review are the two that made it eight.)
+
+- **Review and Stories are the seventh and eighth squares**, asked for
+  together: *"add these as two new cards on the front page — move Review down
+  to be one of the cards and add Stories as the other one"*. Review had been
+  a teal strip under the parrot, shown only when something was due. As a
+  square it is **always shown** — a tile that comes and goes leaves a hole in
+  a grid — and reads *Nothing due today* when there is nothing, with a tap
+  then toasting rather than opening an empty drill (`startReview` checks).
+  It carries `data-review`, the same attribute the strip did, so the one
+  listener that starts the review queue didn't change; `.due-strip` and its
+  CSS are gone. Stories is red, the one strong colour no other tile wore, and
+  carries `data-open-stories`. The order is Practice, Words, Sobre mí, Quick,
+  Match, Stories, Review, All Phrases: the two games on the third row, the
+  two lists on the fourth. The week strip stays under the parrot — it is
+  still the thing on that page that changes every day.
 
 - **`PRACTICE` is a section like the others**, not a special case of "no
   section". Three places test for it, which is why it is a named constant: a
@@ -400,6 +417,22 @@ quieter than the word but no longer hiding under it.
   or pink; it is almost always read off the article instead and is written on a
   card only where the article lies.
 - A lesson is ~5 phrases — one 6:30am coffee. Keep them that size.
+- **Precios y números, El restaurante, De compras and Cada día** came in
+  together, with two more Palabras lessons, for Match's sake: the game draws
+  from every drillable card, and 111 cards was six pairs a round coming back
+  round too soon. Asked for as *"more words and sentences covering a wider
+  variety … prices definitely, but still more food shopping, restaurants, and
+  everyday stuff"*. They sit on the path in course order after El mercado and
+  before El pasado, and they are ordinary units — the deliberate choice was
+  proper lessons over a Match-only pile, because a card that can't be
+  drilled, scored or reviewed is a card in only one place. Nothing in them
+  repeats a phrase already on a card elsewhere: Match refuses two cards with
+  the same text in one round, and a duplicate would also be the same phrase
+  twice on the path.
+- **`STORIES` is the other export**, and it is not course content: a story
+  is three or four sentences and three questions, read rather than said, and
+  nothing in it is a phrase. See *Stories* below. Ids are stable for the
+  same reason phrase ids are — `debolingo.stories` is keyed by them.
 - Every phrase has a `focusNote` written for an American English speaker
   learning **Castilian** Spanish — soft d's, silent h, b=v, the 'th' in
   ce/ci/z, tapped r. The notes are the pedagogy, not decoration.
@@ -451,11 +484,12 @@ is stored beside it, keyed by phrase id:
 | `debolingo.replies` | What she might hear back, by phrase id. |
 | `debolingo.aboutMe` | The Sobre mí interview transcript (not keyed by phrase). |
 | `debolingo.awards` | Study seconds per local day, the Match tallies, and prize id → date won. See *Prizes*. |
+| `debolingo.stories` | Best score, times read and when, by story id. See *Stories*. |
 
 `library.decorate()` is what merges an override, the star flag, the kept notes
 and the replies onto a stored phrase — anything that reads a phrase for display
 or for drilling must go through it, or Deb's edit will be invisible in that one
-place. Export/import carries all eight stores plus the transcript.
+place. Export/import carries all nine stores plus the transcript.
 
 **The keyword pictures *are* edits, and that is the whole reason they cost no
 new store.** A picture is a field on a card like `focusNote` is — `sounds` and
@@ -744,7 +778,7 @@ and they are the answer to "AI-generated content from life context".
   path; this one opens the interview, because the interview is the only way
   cards get into the unit, and the page lists the cards. It was a workshop
   node at the head of a unit on the path before it was a square on the home
-  screen — see *Home is six tiles* above for why it moved.
+  screen — see *Home is eight tiles* above for why it moved.
 - **Two endpoints, not one, and for the established reason.** `/interview` asks
   the next question, `/about-cards` turns the transcript into a batch of them.
   Writing a batch is the big slow call and asking one question is not, so they
@@ -1296,20 +1330,21 @@ was not: nothing ever brought a card back except Repaso's random seven.
   first, and a title.** So it is a practice queue like Repaso's: no lesson
   ticks, no streak, *¡Repaso completado!* at the end. `startPractice` took a
   `{ title }` option for it; nothing else reads the title yet.
-- **Two surfaces, both absent when nothing is due.** The `.due-strip` under
-  the parrot on the home page — it is the one thing on that page that changes
-  day to day, so it sits with the greeting rather than among the six squares
-  — and a Review node first in Mézclalo behind Practice. Teal, the one strong
-  colour no tile wears; it is quiet mode's in the lesson, and the two never
-  share a screen. A strip reading *0 due* would be a nag.
+- **Two surfaces.** The Review tile on the home page — it was a `.due-strip`
+  under the parrot until it was asked down into the grid, see *Home is eight
+  tiles* — and a Review node first in Mézclalo behind Practice, which is still
+  absent when nothing is due. The tile is always there and says *Nothing due
+  today* instead; a tap then only toasts. Teal, kept from the strip; it is
+  quiet mode's colour in the lesson, and the two never share a screen.
 - **Settings only describes it.** There is no switch: a review you can turn
   off is a review you forget you turned off, and with nothing due it costs
   nothing to be on.
 
-Worth asserting: no strip and no node with no attempts; a good attempt three
-days old, a good one today and a failed one yesterday give a strip reading
-*2 cards to review today* and a node reading *Review · 2 today*, the strip
-and the node both start a queue with the three-day-old card first, and
+Worth asserting: a tile reading *Nothing due today* and no node with no
+attempts, and the tile's tap toasting; a good attempt three days old, a good
+one today and a failed one yesterday give a tile reading *2 cards to review
+today* and a node reading *Review · 2 today*, the tile and the node both
+start a queue with the three-day-old card first, and
 finishing it ticks no lesson; fifteen due read *10 cards to review today · 5
 more waiting* and drill ten; one due reads *1 card*.
 
@@ -1375,14 +1410,14 @@ store.js, and nothing about them is hidden in app.js.
   Vitrina and ¡Semana ganada!, on the app's habit of Spanish names; asked
   what they meant, Fin chose English. The ¡Olé! on the button stays, as it
   does on the Add and Sobre mí toasts.
-- **Two surfaces, like Review.** The `.week-strip` under the Review strip on
-  the home page — seven dots, the one other thing on that page that changes
-  every day — and the Match tile, in The Past's old square. Everything else is on
+- **Two surfaces, like Review.** The `.week-strip` under the parrot on the
+  home page — seven dots, the thing on that page that changes every day —
+  and the Match tile, in The Past's old square. Everything else is on
   the Prizes page: the week, the month, the three-in-a-row run, the two medal
   grids and the *Trophy cabinet*, every prize with its date. Settings describes it
   and links to it; there is no switch to turn it off.
 
-Worth asserting: six tiles, one of them `[data-open-match]` and none
+Worth asserting: eight tiles, one of them `[data-open-match]` and none
 `[data-section="past"]`, `pasado-1` on the Practice path, seven dots and
 `since` set to today on a clean boot, no overlay; attempts from September
 seeded beside one from this morning grant only what today's score clears; five
@@ -1395,6 +1430,69 @@ still on screen; a round of Match with `total: 49` planted celebrates
 *Matched!* on the first pair, reports its miss, and a clean second round
 counts as `perfect`; export carries `awards`. The smoke script is in the
 session scratchpad, like the others.
+
+## Stories: a scene, then three questions
+
+Asked for as *"tiny mini stories — three or four sentences that make up a
+scene, followed by a few questions that are multiple-choice, as a kind of
+comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
+`stories` tab in app.js (`renderStories`, `renderStory`, `openStory`).
+
+- **Hand-written, like everything else in content.js.** Ten scenes from
+  Deb's own week — the doorman, the café, the market, tapas, Pilates, rain
+  and plants, the lift, the restaurant, the bakery, a parcel that is a plant
+  — written out of the course's own vocabulary, easiest first. The Worker
+  could write these, and deliberately doesn't: a story is where the cards
+  are met again in a sentence that isn't the card, and that only works if
+  the sentences use the cards. Add a story by appending; never renumber.
+- **The question is English and the answers are Spanish.** Deb's choice, of
+  three offered. The question is never the obstacle; reading the Spanish is.
+  The options are lifted from the story, so the distractors are things that
+  were said too. `answer` is an index into `options` as written, and
+  **`openStory` shuffles each option set once** (`order`) so the right one
+  isn't wherever the file put it.
+- **The English is held back until every question is answered**, and a tap
+  on any line says it aloud — the help that isn't an answer. *Read it all to
+  me* says the joined lines as one utterance through `sayAloud`, so it is
+  cached like a phrase and works on the browser voice. Once answered, *Show
+  the English* prints each line's English under it; the toggle re-renders,
+  which is safe here because nothing on the page is an attempt.
+- **A wrong pick costs nothing and closes the question**, with the right
+  answer lit green whether or not it was picked and the verdict naming it.
+  The result card appears when the last question closes, the score is
+  recorded once (`stories.record`, which also says whether the best moved),
+  and *Next story* or *Read it again* opens a fresh session with a fresh
+  shuffle.
+- **A story is reading, not speaking.** Nothing records, nothing is scored
+  for pronunciation and **no attempt is written** — a story counting toward
+  level two or the review schedule would be the quiet-mode mistake again.
+  What it does count is **study time**: `studying()` is true while the
+  questions are still open (`state.story.finishedAt` null), so ten minutes of
+  stories wins a day like ten minutes of lessons. It stops counting at the
+  result card, as Match stops at the end of a round.
+- **It is a tab, like Match and Prizes**, not a stage of `learn`: `state.tab
+  === "stories"` with `state.story` null for the list and set for a story.
+  `homeLink()` on the list, *‹ Stories* on a story, and `[data-open-story]`
+  is handled by the delegated listener on `view` so the result card's
+  buttons and the list's rows share one handler.
+- **Not in Xerra yet.** The machinery ports as is; the stories don't — they
+  are Deb's week in Castilian, and Xerra's would be someone else's in
+  Catalan, the same way the keyword pictures are.
+
+Worth asserting: ten `.story-row`s and no `.story-best` on a clean boot;
+a story opens with four `.story-line`s, four `[data-line]` play buttons,
+`#story-read`, no `.story-en` and no `#story-english`, three `.story-q`s
+and nine `.story-opt`s all `lang="es-ES"`, the question text English; a
+right pick paints `.story-q.right` with `.story-opt.is-right` and three
+disabled options, a wrong one `.story-q.wrong` with the picked option
+`.is-wrong`, the right one `.is-right` and a verdict naming it; the result
+appears only after the third answer, reading *2 of 3*, with `#story-english`
+and a *Next story* button; the store holds `best: 2, of: 3, times: 1` and
+`debolingo.attempts` is still empty; a second read scoring 3 moves `best` to
+3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 10 read*; the
+last story offers only *Read it again*; an open story ticks `awards.study`
+and export carries `stories`. The smoke script is in the session scratchpad
+with the others.
 
 ## Quiet mode: the lesson with the speaking taken off it
 
@@ -1581,8 +1679,12 @@ empty list for a card that has none.
 For Sobre mí: `[data-about]` is a home tile before the unit has cards and is
 still there with no assistant configured, reading *Needs the card builder* and
 opening a page that links to Settings; there is no `#about-open` and no
-`[data-lesson^="about-"]` on the path, seeded or not; home has six `.tile`s and
-no `.tile-wide`; with an assistant, opening the tile fires exactly one
+`[data-lesson^="about-"]` on the path, seeded or not; home has eight `.tile`s
+in the order Practice, Words, Sobre mí, Quick, Match, Stories, Review, All
+Phrases, one `[data-review]`, one `[data-open-stories]`, no `.due-strip` and
+no `.tile-wide`; the Practice path draws Precios y números, El restaurante, De
+compras and Cada día between El mercado and El pasado, and `library.drillable()`
+is 186 on a clean boot; with an assistant, opening the tile fires exactly one
 `/interview` by itself, `#about-make` is disabled until a learner turn exists,
 a batch containing a punctuation-only repeat adds one fewer than it returned,
 the made cards are ordinary phrases with `deck === "Sobre mí"` that the Sobre mí
@@ -1746,7 +1848,12 @@ tell you which one you forgot.
 
 ### Where the two forks still differ
 
-Nothing is waiting to be ported now. What's left is deliberate:
+Two things here are waiting to be offered to Xerra rather than ported from it:
+the Stories machinery (the scenes themselves don't port — see *Stories*), and
+the Review-as-a-tile shape, if a home screen that always shows Review is
+wanted there too. The four everyday units are situations worth offering, as
+the first four were, with Catalan focusNotes written fresh. What's left is
+deliberate:
 
 - **The composer's dictate buttons.** Xerra has them; here they are gone,
   because Safari has no `SpeechRecognition` and they only ever pointed at the
