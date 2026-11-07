@@ -1438,10 +1438,10 @@ scene, followed by a few questions that are multiple-choice, as a kind of
 comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
 `stories` tab in app.js (`renderStories`, `renderStory`, `openStory`).
 
-- **Hand-written, like everything else in content.js.** Fifteen scenes from
+- **Hand-written, like everything else in content.js.** Sixteen scenes from
   Deb's own week — the doorman, the café, the market, tapas, Pilates, rain
   and plants, the lift, the restaurant, the bakery, a parcel that is a plant
-  — written out of the course's own vocabulary, easiest first. **The five
+  — written out of the course's own vocabulary, easiest first. **The six
   from `historia-11` on are harder on purpose**, asked for as *"make those
   stories a little bit more difficult"* once the ten had been used up: five
   longer sentences rather than four, the past tenses El pasado drills,
@@ -1489,7 +1489,7 @@ comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
   are Deb's week in Castilian, and Xerra's would be someone else's in
   Catalan, the same way the keyword pictures are.
 
-Worth asserting: fifteen `.story-row`s and no `.story-best` on a clean boot;
+Worth asserting: sixteen `.story-row`s and no `.story-best` on a clean boot;
 a story opens with four `.story-line`s, four `[data-line]` play buttons,
 `#story-read`, no `.story-en` and no `#story-english`, three `.story-q`s
 and nine `.story-opt`s all `lang="es-ES"`, the question text English; a
@@ -1499,7 +1499,7 @@ disabled options, a wrong one `.story-q.wrong` with the picked option
 appears only after the third answer, reading *2 of 3*, with `#story-english`
 and a *Next story* button; the store holds `best: 2, of: 3, times: 1` and
 `debolingo.attempts` is still empty; a second read scoring 3 moves `best` to
-3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 15 read*; the
+3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 16 read*; the
 last story offers only *Read it again*; an open story ticks `awards.study`
 and export carries `stories`. The smoke script is in the session scratchpad
 with the others.

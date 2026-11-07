@@ -2436,6 +2436,24 @@ export const STORIES = [
       { q: "Where were the keys?", options: ["En casa de la vecina", "En el bolso", "En el bolsillo de la chaqueta"], answer: 2 },
     ],
   },
+  {
+    id: "historia-16",
+    title: "Atrapada en el ascensor",
+    teaser: "Between the third and the fourth floor",
+    lines: [
+      { es: "El lunes por la noche Deb subía a casa en el ascensor cuando, de repente, se paró entre el tercero y el cuarto.", en: "On Monday night Deb was going up to her flat in the lift when, suddenly, it stopped between the third and the fourth floor." },
+      { es: "Apretó el botón de alarma dos veces, pero no pasó nada, y el móvil no tenía cobertura.", en: "She pressed the alarm button twice, but nothing happened, and her phone had no signal." },
+      { es: "—¡Hola! ¿Hay alguien? —gritó. Desde la escalera, la vecina del quinto contestó: —¡Tranquila, voy a avisar al portero!", en: "'Hello! Is anyone there?' she shouted. From the stairs, the neighbour from the fifth floor answered: 'Don't worry, I'll go and tell the doorman!'" },
+      { es: "El portero llamó al técnico, y mientras esperaban, la vecina le pasó una botella de agua por la rendija de la puerta.", en: "The doorman called the technician, and while they waited, the neighbour passed her a bottle of water through the gap in the door." },
+      { es: "Cuarenta minutos después, las puertas se abrieron. —Mañana subo por la escalera —dijo Deb—. Y bajo también.", en: "Forty minutes later, the doors opened. 'Tomorrow I'm taking the stairs up,' said Deb. 'And down too.'" },
+    ],
+    questions: [
+      { q: "Where did the lift stop?", options: ["Entre el tercero y el cuarto", "En el quinto", "En la planta baja"], answer: 0 },
+      { q: "Why couldn't she phone anyone?", options: ["El botón no funcionaba", "El móvil no tenía cobertura", "No tenía móvil"], answer: 1 },
+      { q: "Who did the neighbour go and tell?", options: ["Al técnico", "A la vecina del quinto", "Al portero"], answer: 2 },
+      { q: "How long was she stuck?", options: ["Dos veces", "Cuarenta minutos", "Media hora"], answer: 1 },
+    ],
+  },
 ];
 
 export function storyById(id) {
