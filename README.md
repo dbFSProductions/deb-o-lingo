@@ -6,7 +6,7 @@ Five-minute lessons for real life — greeting the doorman, ordering coffee and
 cava, tapas, *para llevar*, holding your own at a market counter, prices and
 the time, booking a table, the bakery and the fish counter, the weather and
 the neighbours — plus the past tense in dots and lines, sixty-one everyday
-words with a ridiculous picture nailed to each one, and fifteen tiny stories
+words with a ridiculous picture nailed to each one, and sixteen tiny stories
 with questions. You hear a native voice, record yourself saying the
 same thing, and the app shows you how close you got: side-by-side waveforms, an
 intonation comparison, and a word-by-word pronunciation score.
@@ -48,11 +48,11 @@ A few things worth knowing:
   tomorrow. The teal **Review** square on the home page says how many are
   due (there's a clock node next to Repaso too): ten cards at most, the rest
   wait for tomorrow. Nothing due, and it says so.
-- **Stories.** The red square. Fifteen tiny scenes — three or four sentences
+- **Stories.** The red square. Sixteen tiny scenes — three or four sentences
   from your own week, the doorman, the market, Pilates, a parcel that turns
   out to be a plant — each followed by three questions, and then five harder
   ones: five longer sentences in the past tenses, four questions, and the
-  shop, the supermarket, the pharmacy, the doctor and a lost key. The question is in English,
+  shop, the supermarket, the pharmacy, the doctor, a lost key and a lift stuck between floors. The question is in English,
   the answers are in Spanish, and the English of the story appears once
   you've answered. Tap any line to hear it, or have the whole thing read to
   you. Your best score sits beside each one; read them again whenever you
