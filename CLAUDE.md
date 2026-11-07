@@ -130,7 +130,7 @@ follows was written then; Stories and Review are the two that made it eight.)
   carries `data-open-match`. El pasado is not gone: `TILE_UNITS` lost `past`,
   which is all it takes to put the unit back on the Practice path in course
   order, after El mercado and before Mézclalo. Four lessons on the path is
-  not the burial that Palabras's thirty-one words were.
+  not the burial that Palabras's thirty-one (now sixty-one) words were.
 - **Phrases is a square too, and that is what makes six.** It was `.tile-wide`,
   a button across the bottom on the argument that the whole library outranks a
   slice of it; five squares and a strip read worse than six squares, and the
@@ -850,7 +850,7 @@ them in step; the divergences that are deliberate are the deck-vs-unit shape
 
 ## A word, a sound and one ridiculous picture
 
-The **Palabras** unit (six lessons, thirty-one words, purple) is vocabulary by
+The **Palabras** unit (twelve lessons, sixty-one words, purple) is vocabulary by
 the keyword method: you hear an English sound inside the Spanish word, and you
 build one absurd scene out of that sound and the meaning. `tenedor` sounds like
 "ten-a-door", so a ten-dollar bill is nailed to your front door and the nail is a fork. It is
@@ -1438,10 +1438,20 @@ scene, followed by a few questions that are multiple-choice, as a kind of
 comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
 `stories` tab in app.js (`renderStories`, `renderStory`, `openStory`).
 
-- **Hand-written, like everything else in content.js.** Ten scenes from
+- **Hand-written, like everything else in content.js.** Fifteen scenes from
   Deb's own week — the doorman, the café, the market, tapas, Pilates, rain
   and plants, the lift, the restaurant, the bakery, a parcel that is a plant
-  — written out of the course's own vocabulary, easiest first. The Worker
+  — written out of the course's own vocabulary, easiest first. **The five
+  from `historia-11` on are harder on purpose**, asked for as *"make those
+  stories a little bit more difficult"* once the ten had been used up: five
+  longer sentences rather than four, the past tenses El pasado drills,
+  subordinate clauses, and four questions rather than three. The page
+  iterates lines and questions, so nothing in app.js knows a story's size.
+  They lean on the four Palabras lessons that arrived with them (the till,
+  the shelf, the flat and the street, out and about — `palabras-9` to
+  `palabras-12`, phrase ids from `palabras-14-1`), asked for as *"more
+  everyday words that I would need to use in a store or just in everyday
+  life"*. The Worker
   could write these, and deliberately doesn't: a story is where the cards
   are met again in a sentence that isn't the card, and that only works if
   the sentences use the cards. Add a story by appending; never renumber.
@@ -1479,7 +1489,7 @@ comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
   are Deb's week in Castilian, and Xerra's would be someone else's in
   Catalan, the same way the keyword pictures are.
 
-Worth asserting: ten `.story-row`s and no `.story-best` on a clean boot;
+Worth asserting: fifteen `.story-row`s and no `.story-best` on a clean boot;
 a story opens with four `.story-line`s, four `[data-line]` play buttons,
 `#story-read`, no `.story-en` and no `#story-english`, three `.story-q`s
 and nine `.story-opt`s all `lang="es-ES"`, the question text English; a
@@ -1489,7 +1499,7 @@ disabled options, a wrong one `.story-q.wrong` with the picked option
 appears only after the third answer, reading *2 of 3*, with `#story-english`
 and a *Next story* button; the store holds `best: 2, of: 3, times: 1` and
 `debolingo.attempts` is still empty; a second read scoring 3 moves `best` to
-3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 10 read*; the
+3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 15 read*; the
 last story offers only *Read it again*; an open story ticks `awards.study`
 and export carries `stories`. The smoke script is in the session scratchpad
 with the others.
@@ -1684,7 +1694,7 @@ in the order Practice, Words, Sobre mí, Quick, Match, Stories, Review, All
 Phrases, one `[data-review]`, one `[data-open-stories]`, no `.due-strip` and
 no `.tile-wide`; the Practice path draws Precios y números, El restaurante, De
 compras and Cada día between El mercado and El pasado, and `library.drillable()`
-is 186 on a clean boot; with an assistant, opening the tile fires exactly one
+is 206 on a clean boot; with an assistant, opening the tile fires exactly one
 `/interview` by itself, `#about-make` is disabled until a learner turn exists,
 a batch containing a punctuation-only repeat adds one fewer than it returned,
 the made cards are ordinary phrases with `deck === "Sobre mí"` that the Sobre mí

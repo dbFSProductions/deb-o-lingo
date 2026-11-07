@@ -1913,6 +1913,237 @@ export const COURSE = [
           },
         ],
       },
+      /* Four more lessons, asked for from the phone as "more everyday words
+         that I would need to use in a store or just in everyday life", once
+         the forty-one above had all been drilled. Ids carry on from 14, since
+         13 was the highest in use; the lessons are 9 to 12. Same rules as
+         above: the bridge is a sound the word actually has, the scene holds
+         the sound and the meaning both, and the colour carries the gender so
+         the words don't have to. */
+      {
+        id: "palabras-9",
+        title: "At the till",
+        phrases: [
+          {
+            id: "palabras-14-1",
+            text: "la caja",
+            translation: "the till, the checkout",
+            sounds: "car-ha",
+            picture:
+              "You drive your car right up to the till and the cashier just points and goes 'HA!' — car-ha.",
+            focusNote:
+              "KA-ha. The j is a rasp from the back of the throat, like clearing it; stress on the first syllable.",
+          },
+          {
+            id: "palabras-14-2",
+            text: "la tarjeta",
+            translation: "the card (bank card)",
+            sounds: "tar-HEY-ta",
+            picture:
+              "Your bank card is dripping with hot tar — 'HEY!' yells the cashier as it sticks to the till — tar-HEY-ta.",
+            focusNote:
+              "tar-HE-ta. One tapped r, then the throaty j of 'caja' again; the stress sits on HE.",
+          },
+          {
+            id: "palabras-14-3",
+            text: "el cambio",
+            translation: "the change (money)",
+            sounds: "cam-bee-oh",
+            picture:
+              "Instead of a drawer, the till has a camera, and it fires your change out of the lens — cam-bee-oh! — coin by coin.",
+            focusNote:
+              "KAM-byo. The b is soft, almost a v, and the io runs together as one 'byo'.",
+          },
+          {
+            id: "palabras-14-4",
+            text: "la talla",
+            translation: "the size (clothes)",
+            sounds: "TA-ya",
+            picture:
+              "You karate-chop the clothes rail — TA-YA! — and only the shirts in your size fall off.",
+            focusNote:
+              "TA-ya. Spain's ll is a y, never an l — nothing to do with 'tall'. Stress on the first syllable.",
+          },
+          {
+            id: "palabras-14-5",
+            text: "el descuento",
+            translation: "the discount",
+            sounds: "desk-WHEN-toe",
+            picture:
+              "A queen sits on the shop's desk, points her toe at the price tag — desk, when, toe — and the price drops a fifth.",
+            focusNote:
+              "des-KWEN-to. The ue is one glide, 'kwen'; stress on it. The final o is pure, not 'oh-w'.",
+          },
+        ],
+      },
+      {
+        id: "palabras-10",
+        title: "On the shelf",
+        phrases: [
+          {
+            id: "palabras-15-1",
+            text: "la leche",
+            translation: "the milk",
+            sounds: "LEH-cheh",
+            picture:
+              "Every carton of milk gives you a lecture — LEH-cheh, LEH-cheh — and you drink it just to shut it up.",
+            focusNote:
+              "LE-che. The ch is 'church'; the final e is said, 'eh', not swallowed.",
+          },
+          {
+            id: "palabras-15-2",
+            text: "el aceite",
+            translation: "the oil (olive oil)",
+            sounds: "a-THAY-tay",
+            picture:
+              "The olive oil is so slippery the shop has to tape every bottle to the shelf — 'ah, they tape it' — a-THAY-tay.",
+            focusNote:
+              "a-THEI-te. The c before e is Spain's 'th' as in 'think'; stress on THEI, and the last e is said.",
+          },
+          {
+            id: "palabras-15-3",
+            text: "el azúcar",
+            translation: "the sugar",
+            sounds: "a-THOO-car",
+            picture:
+              "A car built from sugar cubes drives up the aisle — a-THOO-car — and melts into a puddle at the till.",
+            focusNote:
+              "a-THU-kar. The z is 'th'; stress on the middle; the r at the end is one light tap.",
+          },
+          {
+            id: "palabras-15-4",
+            text: "la manzana",
+            translation: "the apple",
+            sounds: "man-THAN-ah",
+            picture:
+              "A man throws an apple at you and shouts 'man, THANKS, nah!' as it bounces off your head — man-THAN-ah.",
+            focusNote:
+              "man-THA-na. The z is 'th' as in 'think', not a buzz; stress on THA.",
+          },
+          {
+            id: "palabras-15-5",
+            text: "la carne",
+            translation: "the meat",
+            sounds: "CAR-neh",
+            picture:
+              "Parked outside the butcher's is a car made of raw meat — CAR-neh — and a dog is eating the bumper.",
+            focusNote:
+              "KAR-ne. One tapped r; the final e is a short 'eh', said.",
+          },
+        ],
+      },
+      {
+        id: "palabras-11",
+        title: "Around the flat and the street",
+        phrases: [
+          {
+            id: "palabras-16-1",
+            text: "la llave",
+            translation: "the key",
+            sounds: "YA-beh",
+            picture:
+              "Fred Flintstone yells 'YABBA!' — ya-beh — every time he turns the key in his stone front door.",
+            focusNote:
+              "YA-be. Spain's ll is a y, and the v is a soft b: YA-be, two syllables. Not 'lava'.",
+          },
+          {
+            id: "palabras-16-2",
+            text: "la cocina",
+            translation: "the kitchen",
+            sounds: "co-THEE-na",
+            picture:
+              "In the kitchen the goddess Athena — co-THEE-na — is frying eggs in full armour.",
+            focusNote:
+              "ko-THI-na. The c before i is 'th'; stress on THI. The first c is a hard k.",
+          },
+          {
+            id: "palabras-16-3",
+            text: "el baño",
+            translation: "the bathroom, the toilet",
+            sounds: "BAN-yo",
+            picture:
+              "The bathroom door has a sign reading BAN, YO — you are banned — and it stays locked when you need it most.",
+            focusNote:
+              "BA-nyo. The ñ is the ny of 'canyon', one sound; stress on the first syllable.",
+          },
+          {
+            id: "palabras-16-4",
+            text: "la tienda",
+            translation: "the shop",
+            sounds: "tea-EN-da",
+            picture:
+              "A shop that sells only tea and a dartboard — tea 'n' da… — with nothing else on the shelves.",
+            focusNote:
+              "TYEN-da. The ie is one glide, so it is two syllables, stress on the first; the d is soft.",
+          },
+          {
+            id: "palabras-16-5",
+            text: "la farmacia",
+            translation: "the pharmacy, the chemist's",
+            sounds: "far-MA-thya",
+            picture:
+              "A farm where Martha — far-MA-thya — grows pills in rows instead of potatoes.",
+            focusNote:
+              "far-MA-thya. The c before i is 'th'; stress on MA; the ia at the end is one quick 'thya'.",
+          },
+        ],
+      },
+      {
+        id: "palabras-12",
+        title: "Out and about",
+        phrases: [
+          {
+            id: "palabras-17-1",
+            text: "el médico",
+            translation: "the doctor",
+            sounds: "MEH-dee-co",
+            picture:
+              "The doctor shrugs 'meh', pokes you and says 'd'you know?' — MEH-dee-co — then charges you anyway.",
+            focusNote:
+              "ME-di-ko. Stress on the first syllable, as the accent says; the d is soft, almost 'th' in 'this'.",
+          },
+          {
+            id: "palabras-17-2",
+            text: "la cita",
+            translation: "the appointment",
+            sounds: "THEE-ta",
+            picture:
+              "The receptionist books your appointment with a wedding vow — 'I THEE… ta!' — THEE-ta.",
+            focusNote:
+              "THI-ta. The c before i is 'th' as in 'think'; two syllables, stress on the first.",
+          },
+          {
+            id: "palabras-17-3",
+            text: "el autobús",
+            translation: "the bus",
+            sounds: "ow-toe-BOOS",
+            picture:
+              "The bus runs over your toe — 'OW! TOE!' — and the passengers boo you for it — ow-toe-BOOS.",
+            focusNote:
+              "au-to-BUS. The au is 'ow'; the stress is right at the end, where the accent is.",
+          },
+          {
+            id: "palabras-17-4",
+            text: "el billete",
+            translation: "the ticket (bus, train)",
+            sounds: "bee-YEH-teh",
+            picture:
+              "A bee in a tiny booth sells you your bus ticket, yelling 'YEH! TEH!' — bee-YEH-teh — as it stamps it.",
+            focusNote:
+              "bi-YE-te. The ll is y; stress on YE; the final e is said.",
+          },
+          {
+            id: "palabras-17-5",
+            text: "la entrada",
+            translation: "the entrance; the ticket (to get in)",
+            sounds: "en-TRA-da",
+            picture:
+              "The entrance to the museum is a trapdoor — en-TRA-da — and everyone with a ticket falls straight through it.",
+            focusNote:
+              "en-TRA-da. One tapped r; the d is soft; stress on TRA.",
+          },
+        ],
+      },
     ],
   },
 ];
@@ -1945,7 +2176,8 @@ export function lessonById(id) {
 // the right option here; the page shuffles the order it shows them in.
 //
 // Scores are kept by id in `debolingo.stories` (store.js), so ids are stable
-// like phrase ids are: never renumber, append. Easy ones first.
+// like phrase ids are: never renumber, append. Easy ones first; the five
+// from historia-11 on are deliberately harder — see the comment above them.
 
 export const STORIES = [
   {
@@ -2106,6 +2338,102 @@ export const STORIES = [
       { q: "What time does Deb get home?", options: ["A las seis", "A las siete", "A las diez"], answer: 0 },
       { q: "Why does she take the stairs?", options: ["Está lloviendo", "El ascensor no funciona", "Tiene pilates"], answer: 1 },
       { q: "What is in the parcel?", options: ["Una maleta", "Un paquete de pan", "Una planta"], answer: 2 },
+    ],
+  },
+  /* Five harder ones, asked for from the phone as "could you make those
+     stories a little bit more difficult too". Five sentences rather than
+     four, longer ones, the past tenses El pasado drills, a subordinate
+     clause or two, and four questions. They lean on the four new Palabras
+     lessons — the till, the shelf, the flat, out and about — so the words
+     are met again in a sentence that isn't the card. */
+  {
+    id: "historia-11",
+    title: "La farmacia",
+    teaser: "A headache, and no prescription",
+    lines: [
+      { es: "Esta mañana Deb se ha levantado con dolor de cabeza y ha ido a la farmacia de la esquina.", en: "This morning Deb woke up with a headache and went to the pharmacy on the corner." },
+      { es: "—¿Tiene algo para el dolor de cabeza? —pregunta. —¿Tiene receta? —No, no tengo.", en: "'Do you have something for a headache?' she asks. 'Do you have a prescription?' 'No, I don't.'" },
+      { es: "La farmacéutica le da una caja pequeña: —Una cada ocho horas, y no más de tres al día.", en: "The pharmacist gives her a small box: 'One every eight hours, and no more than three a day.'" },
+      { es: "—¿Cuánto es? —Cuatro euros con cincuenta. —¿Puedo pagar con tarjeta? —Claro.", en: "'How much is it?' 'Four euros fifty.' 'Can I pay by card?' 'Of course.'" },
+      { es: "Deb paga, guarda la caja en el bolso y la farmacéutica le dice: —Que se mejore.", en: "Deb pays, puts the box in her bag, and the pharmacist says: 'Get well soon.'" },
+    ],
+    questions: [
+      { q: "Why does Deb go to the pharmacy?", options: ["Tiene dolor de cabeza", "Tiene una receta", "Tiene pilates"], answer: 0 },
+      { q: "How often should she take one?", options: ["Tres cada hora", "Una cada ocho horas", "Una al día"], answer: 1 },
+      { q: "How much does it cost?", options: ["Cuatro euros", "Cinco euros con cuarenta", "Cuatro euros con cincuenta"], answer: 2 },
+      { q: "What does the pharmacist say as she leaves?", options: ["Hasta el sábado", "Que se mejore", "Que tenga un buen día"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-12",
+    title: "La chaqueta",
+    teaser: "The right size, and a discount",
+    lines: [
+      { es: "El jueves por la tarde Deb vio una chaqueta azul en el escaparate de una tienda y entró.", en: "On Thursday afternoon Deb saw a blue jacket in a shop window and went in." },
+      { es: "—¿La tiene en una talla más pequeña? Esta me queda grande —le dijo a la dependienta.", en: "'Do you have it in a smaller size? This one is too big on me,' she said to the shop assistant." },
+      { es: "—Sí, un momento. Y hoy, además, tiene un veinte por ciento de descuento.", en: "'Yes, one moment. And today, what's more, it has a twenty per cent discount.'" },
+      { es: "La chaqueta costaba sesenta euros; con el descuento, cuarenta y ocho.", en: "The jacket cost sixty euros; with the discount, forty-eight." },
+      { es: "Deb pagó con tarjeta y guardó el tique en el bolso, por si acaso.", en: "Deb paid by card and kept the receipt in her bag, just in case." },
+    ],
+    questions: [
+      { q: "What did Deb see in the shop window?", options: ["Una maleta", "Un bolso", "Una chaqueta azul"], answer: 2 },
+      { q: "What was wrong with the first one?", options: ["Le quedaba grande", "Era muy cara", "No tenía descuento"], answer: 0 },
+      { q: "What did she pay in the end?", options: ["Sesenta euros", "Cuarenta y ocho euros", "Veinte euros"], answer: 1 },
+      { q: "Why did she keep the receipt?", options: ["Para la dependienta", "Por si acaso", "Para pagar con tarjeta"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-13",
+    title: "El supermercado",
+    teaser: "No milk at home, and where is the oil?",
+    lines: [
+      { es: "Después de pilates, Deb ha pasado por el supermercado porque no quedaba leche en casa.", en: "After Pilates, Deb stopped by the supermarket because there was no milk left at home." },
+      { es: "Ha cogido dos litros de leche, un kilo de azúcar y seis manzanas, pero no encontraba el aceite.", en: "She picked up two litres of milk, a kilo of sugar and six apples, but she couldn't find the oil." },
+      { es: "—Perdone, ¿dónde está el aceite? —Al fondo, a la derecha, al lado del arroz.", en: "'Excuse me, where is the oil?' 'At the back, on the right, next to the rice.'" },
+      { es: "En la caja, la cajera le ha preguntado: —¿Necesita bolsa? Son diez céntimos. —Sí, una, por favor.", en: "At the till, the cashier asked her: 'Do you need a bag? It's ten cents.' 'Yes, one, please.'" },
+      { es: "Al salir, Deb se ha dado cuenta de que se ha olvidado de los huevos. —Bueno, mañana.", en: "On the way out, Deb realised she had forgotten the eggs. 'Oh well, tomorrow.'" },
+    ],
+    questions: [
+      { q: "Why did Deb go to the supermarket?", options: ["Tenía una cita", "No quedaba leche en casa", "Quería manzanas"], answer: 1 },
+      { q: "Where is the oil?", options: ["Al lado de la leche", "En la caja", "Al fondo, a la derecha"], answer: 2 },
+      { q: "How much is a bag?", options: ["Diez céntimos", "Un euro", "Dos litros"], answer: 0 },
+      { q: "What did she forget?", options: ["El azúcar", "El aceite", "Los huevos"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-14",
+    title: "La cita con el médico",
+    teaser: "The number seven bus, and nothing serious",
+    lines: [
+      { es: "Deb tenía cita con el médico a las once y media, así que cogió el autobús número siete.", en: "Deb had an appointment with the doctor at half past eleven, so she took the number seven bus." },
+      { es: "Compró el billete al conductor —un euro con cincuenta— y se sentó al lado de la ventana.", en: "She bought the ticket from the driver — one euro fifty — and sat by the window." },
+      { es: "Llegó pronto, pero tuvo que esperar veinte minutos en la sala de espera.", en: "She arrived early, but had to wait twenty minutes in the waiting room." },
+      { es: "—No es nada grave —le dijo el médico—. Descanse, beba mucha agua y vuelva en dos semanas si no mejora.", en: "'It's nothing serious,' the doctor told her. 'Rest, drink plenty of water and come back in two weeks if it doesn't get better.'" },
+      { es: "Deb salió contenta y, como hacía sol, volvió a casa andando.", en: "Deb left happy and, as it was sunny, walked home." },
+    ],
+    questions: [
+      { q: "What time was the appointment?", options: ["A las once y media", "A las dos", "A las siete"], answer: 0 },
+      { q: "How much was the bus ticket?", options: ["Veinte euros", "Un euro con cincuenta", "Dos euros"], answer: 1 },
+      { q: "How long did she have to wait?", options: ["Dos semanas", "Siete minutos", "Veinte minutos"], answer: 2 },
+      { q: "How did she get home?", options: ["En el autobús número siete", "Andando", "En taxi"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-15",
+    title: "Las llaves",
+    teaser: "Not in the bag, not with the doorman…",
+    lines: [
+      { es: "Anoche, al volver a casa, Deb buscó las llaves en el bolso y no las encontró.", en: "Last night, coming home, Deb looked for her keys in her bag and couldn't find them." },
+      { es: "—¿Tiene usted una copia? —le preguntó al portero. —Lo siento, no tengo ninguna.", en: "'Do you have a copy?' she asked the doorman. 'I'm sorry, I don't have one.'" },
+      { es: "La vecina del quinto, que bajaba por la escalera, le dijo: —Suba a mi casa y tómese un café mientras piensa.", en: "The neighbour from the fifth floor, who was coming down the stairs, said: 'Come up to my place and have a coffee while you think.'" },
+      { es: "Media hora después, Deb metió la mano en el bolsillo de la chaqueta… y allí estaban las llaves.", en: "Half an hour later, Deb put her hand in her jacket pocket… and there were the keys." },
+      { es: "—¡Qué tonta! —dijo riendo—. Pues otro café, y esta vez lo pago yo.", en: "'How silly of me!' she said, laughing. 'Well then, another coffee, and this time I'm paying.'" },
+    ],
+    questions: [
+      { q: "Where did Deb look for the keys first?", options: ["En la chaqueta", "En el bolso", "En el ascensor"], answer: 1 },
+      { q: "Did the doorman have a copy?", options: ["Sí, una", "Sí, dos", "No, ninguna"], answer: 2 },
+      { q: "What did the neighbour offer her?", options: ["Un café", "Una copia", "Una chaqueta"], answer: 0 },
+      { q: "Where were the keys?", options: ["En casa de la vecina", "En el bolso", "En el bolsillo de la chaqueta"], answer: 2 },
     ],
   },
 ];
