@@ -14,7 +14,7 @@ import {
   awards, localDay, monthPlus, DAY_DONE_SECONDS, WEEK_NEEDS, MONTH_MISSES, SEASON_MONTHS, WEEK_STARTS, PRO_TIERS, MATCH_TIERS,
   stories,
 } from "./store.js";
-import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById, STORIES, storyById } from "./content.js";
+import { COURSE, COURSE_LANGUAGE, LESSONS, lessonById, STORIES, STORY_TIERS, storyById, tierOf } from "./content.js";
 import { Recorder, Player, analyse, relativeSemitones, resample } from "./audio.js";
 import { speech, browserSpeech, scoring } from "./speech.js";
 import { cardAssistant } from "./card-assistant.js";
@@ -1305,7 +1305,7 @@ function renderPath(section = null) {
       { key: "match", title: "Match", blurb: "Pair the Spanish with the English", colour: "gold",
         count: awards.match.total ? `${awards.match.total} pair${awards.match.total === 1 ? "" : "s"} matched` : "Play a round",
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v5H4zM13 13h7v5h-7zM11 8.5h2M13 15.5h-2"/></svg>` },
-      { key: "stories", title: "Stories", blurb: "A tiny scene, then three questions", colour: "red",
+      { key: "stories", title: "Stories", blurb: "A little scene, then some questions", colour: "red",
         count: read ? `${read} of ${STORIES.length} read` : `${STORIES.length} stories`,
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>` },
       /* Always shown, unlike the strip it replaced: the count is the one
@@ -4883,8 +4883,8 @@ function renderSettings() {
         then two, four, eight, and so on; get it wrong and it comes back tomorrow. The Review square on the home
         page says how many are due, and there's a Review node behind Practice too; a session is the ${REVIEW_CAP} most
         overdue cards, and the rest wait for tomorrow.</p>
-      <p class="tiny muted" style="margin:12px 0 0"><strong>Stories.</strong> ${STORIES.length} tiny scenes of three or four sentences,
-        each followed by three questions — the question in English, the answers in Spanish. Tap a line to hear it;
+      <p class="tiny muted" style="margin:12px 0 0"><strong>Stories.</strong> ${STORIES.length} little scenes, in ${STORY_TIERS.length} steps from four lines
+        and three questions up to eight lines and five — the question in English, the answers in Spanish. Tap a line to hear it;
         the English appears once you've answered. Your best score on each is kept beside it.</p>
     </div>
 
@@ -5687,31 +5687,45 @@ function openStory(id) {
   render();
 }
 
+/* The list, grouped by tier under a banner each — the same banner-and-
+   striped-rows shape as Phrases, in Stories' red — so the climb from four
+   lines to eight is visible before a story is opened. The numbering runs on
+   through the groups, because "story 17" is how a story gets referred to. */
 function renderStories() {
   const read = STORIES.filter((story) => stories.isRead(story.id)).length;
+  const row = (story, i) => {
+    const r = stories.results[story.id];
+    const full = r && r.best === r.of;
+    return `
+      <button class="row striped story-row" style="--hue:var(--red)" data-open-story="${esc(story.id)}">
+        <span class="story-num">${i + 1}</span>
+        <span class="row-main">
+          <span class="row-title" lang="es-ES">${esc(story.title)}</span><br>
+          <span class="row-sub">${esc(story.teaser)}</span>
+        </span>
+        ${r ? `<span class="story-best ${full ? "full" : ""}">${r.best}/${r.of}${full ? " ✓" : ""}</span>` : ""}
+        <span class="chev">›</span>
+      </button>`;
+  };
+  const groups = STORY_TIERS.map((tier) => {
+    const members = STORIES.map((story, i) => ({ story, i })).filter(({ story }) => tierOf(story) === tier.id);
+    if (!members.length) return "";
+    const done = members.filter(({ story }) => stories.isRead(story.id)).length;
+    return `
+      <div class="list-banner" style="--hue:var(--red);--hue-dark:var(--red-dark)">
+        <span class="list-banner-name">${esc(tier.title)} <span class="list-banner-sub">${esc(tier.sub)}</span></span>
+        <span class="list-banner-count">${done} of ${members.length}</span>
+      </div>
+      <div class="rows rows-spaced">${members.map(({ story, i }) => row(story, i)).join("")}</div>`;
+  });
   view.innerHTML = `
     <header class="home-head section-head">
       <div class="wordmark">Stories</div>
       ${homeLink()}
     </header>
-    <p class="muted section-intro">A tiny scene — three or four sentences — then three questions.
+    <p class="muted section-intro">A little scene, then some questions about it. They get longer and harder as they go.
       ${read ? `${read} of ${STORIES.length} read.` : `${STORIES.length} to read, easiest first.`}</p>
-    <div class="rows rows-spaced">
-      ${STORIES.map((story, i) => {
-        const r = stories.results[story.id];
-        const full = r && r.best === r.of;
-        return `
-        <button class="row striped story-row" style="--hue:var(--red)" data-open-story="${esc(story.id)}">
-          <span class="story-num">${i + 1}</span>
-          <span class="row-main">
-            <span class="row-title" lang="es-ES">${esc(story.title)}</span><br>
-            <span class="row-sub">${esc(story.teaser)}</span>
-          </span>
-          ${r ? `<span class="story-best ${full ? "full" : ""}">${r.best}/${r.of}${full ? " ✓" : ""}</span>` : ""}
-          <span class="chev">›</span>
-        </button>`;
-      }).join("")}
-    </div>`;
+    ${groups.join("")}`;
 }
 
 function renderStory() {
@@ -5732,7 +5746,9 @@ function renderStory() {
       <div class="wordmark" lang="es-ES">${esc(story.title)}</div>
       <button class="link" data-open-stories="1">‹ Stories</button>
     </header>
-    <p class="muted section-intro">Story ${at + 1} of ${STORIES.length}. Tap a line to hear it${
+    <p class="muted section-intro">Story ${at + 1} of ${STORIES.length} · ${esc(
+      STORY_TIERS.find((tier) => tier.id === tierOf(story))?.title ?? ""
+    )}. Tap a line to hear it${
       done ? "." : " — the English appears once you've answered."
     }</p>
 

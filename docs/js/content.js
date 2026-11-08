@@ -2176,8 +2176,9 @@ export function lessonById(id) {
 // the right option here; the page shuffles the order it shows them in.
 //
 // Scores are kept by id in `debolingo.stories` (store.js), so ids are stable
-// like phrase ids are: never renumber, append. Easy ones first; the five
-// from historia-11 on are deliberately harder — see the comment above them.
+// like phrase ids are: never renumber, append. Easy ones first, and then a
+// climb in tiers — see STORY_TIERS at the bottom and the comments above
+// historia-11 and historia-17 for what each step adds.
 
 export const STORIES = [
   {
@@ -2454,7 +2455,249 @@ export const STORIES = [
       { q: "How long was she stuck?", options: ["Dos veces", "Cuarenta minutos", "Media hora"], answer: 1 },
     ],
   },
+  /* Ten more, asked for as "more please — maybe slowly make them
+     progressively harder and longer". So they climb: four at six lines
+     and four questions, four at seven lines and five questions, and two at
+     eight lines with a twist at the end. The grammar climbs with them —
+     the conditional, "cuando" with the subjunctive, reported speech,
+     "se le rompió", object pronouns doing real work — and the neighbour
+     from the fifth and the doorman get names, Carmen and Manolo, because
+     at this length "la vecina del quinto" four times a story is a mouthful.
+     Every tier is declared in STORY_TIERS below, and the list groups by it,
+     so the climb is visible rather than something you discover at line six. */
+  {
+    id: "historia-17",
+    tier: "longer",
+    title: "Una tarde en el parque",
+    teaser: "Ice creams, a bench in the shade, and the names of the trees",
+    lines: [
+      { es: "El domingo por la tarde hacía buen tiempo, así que Deb y Carmen, la vecina del quinto, fueron al parque.", en: "On Sunday afternoon the weather was nice, so Deb and Carmen, the neighbour from the fifth floor, went to the park." },
+      { es: "Compraron dos helados en un quiosco: uno de chocolate para Carmen y uno de limón para Deb.", en: "They bought two ice creams at a kiosk: a chocolate one for Carmen and a lemon one for Deb." },
+      { es: "Se sentaron en un banco, a la sombra, y Carmen le enseñó los nombres de los árboles en español.", en: "They sat on a bench, in the shade, and Carmen taught her the names of the trees in Spanish." },
+      { es: "—Ese es un pino, y aquel, un olivo —le dijo—. Y esa flor roja se llama amapola.", en: "'That one is a pine, and that one over there, an olive tree,' she told her. 'And that red flower is called a poppy.'" },
+      { es: "Deb apuntó las palabras en el móvil para repasarlas por la noche.", en: "Deb noted the words down on her phone to go over them that night." },
+      { es: "A las siete empezó a refrescar y volvieron a casa andando, despacio, hablando de plantas.", en: "At seven it started to get cooler and they walked home slowly, talking about plants." },
+    ],
+    questions: [
+      { q: "Who went to the park with Deb?", options: ["El portero", "Carmen, la vecina del quinto", "Su amiga de Chicago"], answer: 1 },
+      { q: "What flavour was Deb's ice cream?", options: ["De chocolate", "De fresa", "De limón"], answer: 2 },
+      { q: "What is the red flower called?", options: ["Olivo", "Amapola", "Pino"], answer: 1 },
+      { q: "Why did they go home?", options: ["Empezó a llover", "Empezó a refrescar", "Cerraba el parque"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-18",
+    tier: "longer",
+    title: "El taxi al aeropuerto",
+    teaser: "Half past six, a heavy suitcase, and don't forget the passport",
+    lines: [
+      { es: "El viernes Deb tenía que coger un avión a las nueve de la mañana, así que pidió un taxi para las seis y media.", en: "On Friday Deb had to catch a plane at nine in the morning, so she booked a taxi for half past six." },
+      { es: "El taxista llegó puntual y la ayudó con la maleta, que pesaba bastante.", en: "The taxi driver arrived on time and helped her with the suitcase, which was quite heavy." },
+      { es: "—Al aeropuerto, por favor. ¿Cuánto se tarda a esta hora? —Unos veinticinco minutos, si no hay tráfico.", en: "'To the airport, please. How long does it take at this time?' 'About twenty-five minutes, if there's no traffic.'" },
+      { es: "Por el camino hablaron del tiempo y de Chicago, donde el taxista tenía un primo.", en: "On the way they talked about the weather and about Chicago, where the taxi driver had a cousin." },
+      { es: "La carrera costó treinta y dos euros; Deb le dio treinta y cinco y le dijo que se quedara con el cambio.", en: "The fare came to thirty-two euros; Deb gave him thirty-five and told him to keep the change." },
+      { es: "—Buen viaje —dijo él—. Y no se olvide del pasaporte. Deb lo buscó en el bolso: allí estaba, menos mal.", en: "'Have a good trip,' he said. 'And don't forget your passport.' Deb looked for it in her bag: there it was, thank goodness." },
+    ],
+    questions: [
+      { q: "What time was the taxi booked for?", options: ["A las nueve", "A las seis y media", "A las seis"], answer: 1 },
+      { q: "How long does the journey take without traffic?", options: ["Unos veinticinco minutos", "Treinta y dos minutos", "Una hora"], answer: 0 },
+      { q: "Where did the driver have a cousin?", options: ["En Atlanta", "En Chicago", "En el aeropuerto"], answer: 1 },
+      { q: "How much did Deb give the driver?", options: ["Treinta y dos euros", "Treinta y cinco euros", "Veinticinco euros"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-19",
+    tier: "longer",
+    title: "La cena en casa",
+    teaser: "Two omelettes, one cheesecake, and few grammar rules",
+    lines: [
+      { es: "El sábado Deb invitó a cenar a Carmen y a su marido, Pepe, y pasó toda la tarde en la cocina.", en: "On Saturday Deb invited Carmen and her husband, Pepe, to dinner, and spent the whole afternoon in the kitchen." },
+      { es: "Quería hacer una tortilla de patatas, pero la primera se le rompió al darle la vuelta.", en: "She wanted to make a Spanish omelette, but the first one broke on her when she flipped it." },
+      { es: "La segunda salió perfecta, y de postre compró una tarta de queso en la pastelería de abajo.", en: "The second came out perfect, and for dessert she bought a cheesecake from the cake shop downstairs." },
+      { es: "—¡Qué rica! —dijo Pepe—. ¿La has hecho tú? —La tortilla sí; la tarta, no —confesó Deb riendo.", en: "'Delicious!' said Pepe. 'Did you make it?' 'The omelette, yes; the cake, no,' Deb confessed, laughing." },
+      { es: "Hablaron hasta las doce, medio en español y medio en inglés, con mucho vino y pocas reglas de gramática.", en: "They talked until midnight, half in Spanish and half in English, with lots of wine and few grammar rules." },
+      { es: "Al irse, Carmen le dijo: —La próxima vez, en mi casa. Y te enseño a darle la vuelta a la tortilla.", en: "As she left, Carmen said: 'Next time, at my place. And I'll teach you to flip the omelette.'" },
+    ],
+    questions: [
+      { q: "Who came to dinner?", options: ["El portero y su mujer", "Carmen y Pepe", "Su amiga de Atlanta"], answer: 1 },
+      { q: "What happened to the first omelette?", options: ["Se quemó", "Se le rompió", "Salió perfecta"], answer: 1 },
+      { q: "Where did the cheesecake come from?", options: ["La hizo Deb", "La trajo Carmen", "De la pastelería de abajo"], answer: 2 },
+      { q: "What will Carmen teach her?", options: ["A hacer la tarta", "A darle la vuelta a la tortilla", "Las reglas de gramática"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-20",
+    tier: "longer",
+    title: "El mercadillo de plantas",
+    teaser: "One for the bathroom, and the doorman keeps count",
+    lines: [
+      { es: "Una vez al mes hay un mercadillo de plantas en la plaza, y Deb no se lo pierde nunca.", en: "Once a month there's a plant market in the square, and Deb never misses it." },
+      { es: "Esta vez buscaba una planta para el baño, que no tiene mucha luz.", en: "This time she was looking for a plant for the bathroom, which doesn't get much light." },
+      { es: "—Esta aguanta bien la sombra —le dijo la vendedora— y solo hay que regarla una vez a la semana.", en: "'This one copes well with shade,' the seller told her, 'and you only need to water it once a week.'" },
+      { es: "Costaba doce euros, pero como Deb compró también una maceta, se lo dejó todo en quince.", en: "It cost twelve euros, but as Deb also bought a pot, she let her have it all for fifteen." },
+      { es: "De vuelta a casa se encontró con el portero, que miró la planta y dijo: —Otra más. ¿Cuántas tiene ya?", en: "On the way home she ran into the doorman, who looked at the plant and said: 'Another one. How many have you got now?'" },
+      { es: "—Veintitrés —contestó Deb—. Bueno, veinticuatro. Pero esta es para el baño, que estaba muy vacío.", en: "'Twenty-three,' Deb replied. 'Well, twenty-four. But this one is for the bathroom, which was looking very empty.'" },
+    ],
+    questions: [
+      { q: "How often is the plant market?", options: ["Cada semana", "Una vez al mes", "Una vez al año"], answer: 1 },
+      { q: "Which room was the plant for?", options: ["La cocina", "El baño", "El salón"], answer: 1 },
+      { q: "How often does it need watering?", options: ["Una vez a la semana", "Cada día", "Una vez al mes"], answer: 0 },
+      { q: "How much did she pay in total?", options: ["Doce euros", "Quince euros", "Veinticuatro euros"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-21",
+    tier: "long",
+    title: "Una llamada de Atlanta",
+    teaser: "Three in the afternoon over there, and a visit in the spring",
+    lines: [
+      { es: "El martes por la noche sonó el móvil de Deb: era Susan, una amiga de Atlanta, donde eran las tres de la tarde.", en: "On Tuesday night Deb's phone rang: it was Susan, a friend from Atlanta, where it was three in the afternoon." },
+      { es: "—¿Cómo va el español? —le preguntó Susan. —Despacio, pero va —contestó Deb—. Ya pido el café sin pensar.", en: "'How's the Spanish going?' Susan asked her. 'Slowly, but it's going,' Deb replied. 'I order coffee without thinking now.'" },
+      { es: "Susan le contó que iba a venir a verla en primavera, en abril o en mayo, cuando ya no hiciera frío.", en: "Susan told her she was going to come and see her in spring, in April or May, once it was no longer cold." },
+      { es: "—Perfecto —dijo Deb—. Te llevo al mercado, a mi bar de tapas y a la clase de pilates, si te atreves.", en: "'Perfect,' said Deb. 'I'll take you to the market, to my tapas bar, and to Pilates class, if you dare.'" },
+      { es: "—A pilates no —rio Susan—. Pero a las tapas sí. ¿Y tu portero sigue tan simpático?", en: "'Not Pilates,' Susan laughed. 'But tapas, yes. And is your doorman still as nice?'" },
+      { es: "—Igual que siempre. Ahora me corrige el español, pero con cariño.", en: "'Same as ever. Now he corrects my Spanish, but kindly.'" },
+      { es: "Hablaron casi una hora, y al colgar Deb apuntó en el calendario: «Susan — abril o mayo — comprar otra silla».", en: "They talked for almost an hour, and when she hung up Deb wrote on the calendar: 'Susan — April or May — buy another chair.'" },
+    ],
+    questions: [
+      { q: "What time was it in Atlanta?", options: ["Las tres de la tarde", "Las nueve de la noche", "Las once de la mañana"], answer: 0 },
+      { q: "How is the Spanish going, according to Deb?", options: ["Muy mal", "Despacio, pero va", "Perfecto"], answer: 1 },
+      { q: "When is Susan coming?", options: ["En invierno", "En abril o en mayo", "La semana que viene"], answer: 1 },
+      { q: "Which does Susan not want to do?", options: ["Ir al mercado", "Ir de tapas", "Ir a pilates"], answer: 2 },
+      { q: "What did Deb write on the calendar?", options: ["Llamar a Susan", "Comprar otra silla", "Ir a Atlanta"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-22",
+    tier: "long",
+    title: "El cumpleaños del portero",
+    teaser: "Sixty, a surprise in the lobby, and a cake chosen by the American",
+    lines: [
+      { es: "Deb se enteró por Carmen de que el portero, Manolo, cumplía sesenta años el jueves.", en: "Deb found out from Carmen that the doorman, Manolo, was turning sixty on Thursday." },
+      { es: "Entre los vecinos decidieron hacerle un regalo, y Deb se ofreció a ir a comprar la tarta.", en: "The neighbours decided between them to get him a present, and Deb offered to go and buy the cake." },
+      { es: "En la pastelería pidió una tarta de chocolate para doce personas y preguntó si podían escribir algo encima.", en: "At the cake shop she ordered a chocolate cake for twelve people and asked if they could write something on top." },
+      { es: "—Claro. ¿Qué ponemos? —«Felices sesenta, Manolo» —dijo Deb, muy despacio, para no equivocarse.", en: "'Of course. What shall we put?' ''Happy sixtieth, Manolo',' said Deb, very slowly, so as not to get it wrong." },
+      { es: "El jueves a las seis, cuando Manolo entró en el portal, todos los vecinos gritaron «¡Sorpresa!».", en: "On Thursday at six, when Manolo came into the lobby, all the neighbours shouted 'Surprise!'" },
+      { es: "Manolo no dijo nada durante unos segundos; luego se rio, se limpió los ojos y cortó la tarta.", en: "Manolo said nothing for a few seconds; then he laughed, wiped his eyes and cut the cake." },
+      { es: "—Veinte años aquí y es la primera vez —dijo—. Y la tarta la ha elegido la americana, ¿verdad? Se nota: está buenísima.", en: "'Twenty years here and it's the first time,' he said. 'And the American chose the cake, didn't she? You can tell: it's delicious.'" },
+    ],
+    questions: [
+      { q: "How old was Manolo turning?", options: ["Cincuenta", "Sesenta", "Setenta"], answer: 1 },
+      { q: "What did Deb offer to do?", options: ["Hacer la tarta", "Comprar la tarta", "Escribir una carta"], answer: 1 },
+      { q: "How many people was the cake for?", options: ["Para doce", "Para seis", "Para veinte"], answer: 0 },
+      { q: "What did the neighbours shout?", options: ["¡Felicidades!", "¡Sorpresa!", "¡Hola!"], answer: 1 },
+      { q: "How long has Manolo worked there?", options: ["Sesenta años", "Doce años", "Veinte años"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-23",
+    tier: "long",
+    title: "Un día de lluvia en el centro",
+    teaser: "No umbrella, a bookshop, and chocolate con churros",
+    lines: [
+      { es: "El miércoles Deb había quedado con Carmen en el centro a las once para ir de tiendas.", en: "On Wednesday Deb had arranged to meet Carmen in the town centre at eleven to go shopping." },
+      { es: "Cuando salió de casa lucía el sol, así que no cogió el paraguas; a las once y cuarto estaba lloviendo a cántaros.", en: "When she left home the sun was shining, so she didn't take an umbrella; at quarter past eleven it was pouring down." },
+      { es: "Se refugió en una librería y, mientras esperaba, encontró un libro de recetas españolas con fotos enormes.", en: "She took shelter in a bookshop and, while she waited, found a book of Spanish recipes with enormous photos." },
+      { es: "—Me lo llevo —decidió—. Si voy a aprender a darle la vuelta a la tortilla, mejor con instrucciones.", en: "'I'll take it,' she decided. 'If I'm going to learn to flip the omelette, better with instructions.'" },
+      { es: "Carmen llegó empapada y con un paraguas roto. —¡Menudo día! —dijo—. Vamos a tomar algo caliente.", en: "Carmen arrived soaked and with a broken umbrella. 'What a day!' she said. 'Let's get something hot.'" },
+      { es: "Pidieron dos chocolates con churros en una cafetería de la plaza y vieron caer la lluvia por la ventana.", en: "They ordered two hot chocolates with churros in a café on the square and watched the rain fall through the window." },
+      { es: "De tiendas, al final, no fueron; pero Deb volvió a casa con un libro, un paraguas nuevo y las manos todavía calientes.", en: "In the end they didn't go shopping; but Deb went home with a book, a new umbrella and her hands still warm." },
+    ],
+    questions: [
+      { q: "What time had they arranged to meet?", options: ["A las once", "A las once y cuarto", "A las doce"], answer: 0 },
+      { q: "Why didn't Deb take an umbrella?", options: ["No tiene paraguas", "Lucía el sol cuando salió", "Carmen tenía uno"], answer: 1 },
+      { q: "Where did she take shelter?", options: ["En una cafetería", "En una librería", "En una tienda de paraguas"], answer: 1 },
+      { q: "What did they order?", options: ["Dos cafés con leche", "Dos chocolates con churros", "Una tarta de queso"], answer: 1 },
+      { q: "What did Deb go home with?", options: ["Un libro y un paraguas nuevo", "Una chaqueta nueva", "Solo el libro"], answer: 0 },
+    ],
+  },
+  {
+    id: "historia-24",
+    tier: "long",
+    title: "La profesora nueva",
+    teaser: "Pilates in fast Spanish, and a hand in the air",
+    lines: [
+      { es: "Esta semana en pilates hay una profesora nueva, Lucía, que habla muy rápido y no sabe nada de inglés.", en: "This week at Pilates there's a new teacher, Lucía, who talks very fast and doesn't know any English." },
+      { es: "El primer día Deb no entendía casi nada: «inhala», «exhala», «estira la pierna»… y copiaba a la chica de al lado.", en: "The first day Deb understood almost nothing: 'breathe in', 'breathe out', 'stretch your leg'… and copied the girl next to her." },
+      { es: "Al terminar, se acercó a Lucía y le dijo: —Perdona, soy americana y todavía aprendo español. ¿Puedes hablar un poco más despacio?", en: "At the end, she went up to Lucía and said: 'Sorry, I'm American and I'm still learning Spanish. Can you speak a bit more slowly?'" },
+      { es: "—¡Claro! —contestó Lucía—. Y si no entiendes algo, levanta la mano, que te lo enseño con el cuerpo.", en: "'Of course!' Lucía replied. 'And if you don't understand something, put your hand up and I'll show you with my body.'" },
+      { es: "El segundo día fue mucho mejor: Deb entendió «espalda», «rodillas» y «hombros», y solo se equivocó de pierna una vez.", en: "The second day was much better: Deb understood 'back', 'knees' and 'shoulders', and only got the wrong leg once." },
+      { es: "El viernes, Lucía dijo delante de toda la clase: —Muy bien, Deb. Hoy no has mirado a nadie.", en: "On Friday, Lucía said in front of the whole class: 'Very good, Deb. Today you didn't look at anyone.'" },
+      { es: "Deb salió tan contenta que se compró un cortado y lo pidió, por primera vez, sin pensar en el acento.", en: "Deb left so happy that she bought herself a cortado and ordered it, for the first time, without thinking about her accent." },
+    ],
+    questions: [
+      { q: "What is the new teacher like?", options: ["Habla muy despacio", "Habla muy rápido y no sabe inglés", "Es americana"], answer: 1 },
+      { q: "What did Deb do on the first day?", options: ["Copiaba a la chica de al lado", "Levantó la mano", "Se fue a casa"], answer: 0 },
+      { q: "What did Deb ask Lucía?", options: ["Hablar en inglés", "Hablar más despacio", "Cambiar de clase"], answer: 1 },
+      { q: "What should Deb do if she doesn't understand?", options: ["Levantar la mano", "Copiar a la vecina", "Preguntar en inglés"], answer: 0 },
+      { q: "What did Lucía say on Friday?", options: ["Hoy no has mirado a nadie", "Habla más despacio", "Te has equivocado de pierna"], answer: 0 },
+    ],
+  },
+  {
+    id: "historia-25",
+    tier: "hard",
+    title: "La carta del banco",
+    teaser: "A twenty-euro fee, a ticket number, and three sentences that worked",
+    lines: [
+      { es: "El lunes Deb recibió una carta del banco que no entendía del todo: hablaba de «una comisión de mantenimiento» de veinte euros.", en: "On Monday Deb got a letter from the bank that she didn't entirely understand: it talked about a 'maintenance fee' of twenty euros." },
+      { es: "Se la enseñó a Carmen, que la leyó dos veces y dijo: —Esto es un error. Tú tienes la cuenta sin comisiones, ¿no?", en: "She showed it to Carmen, who read it twice and said: 'This is a mistake. You've got the no-fee account, haven't you?'" },
+      { es: "Al día siguiente fue a la oficina del banco, cogió número y esperó veinticinco minutos repasando las palabras de la carta en el móvil.", en: "The next day she went to the bank branch, took a ticket and waited twenty-five minutes going over the words from the letter on her phone." },
+      { es: "—Buenos días. He recibido esta carta y creo que hay un error —dijo, y le dio la carta al empleado sin añadir nada más.", en: "'Good morning. I've received this letter and I think there's a mistake,' she said, and handed the letter to the clerk without adding anything else." },
+      { es: "El empleado miró la pantalla, frunció el ceño y tecleó un buen rato. —Tiene razón —dijo por fin—. Le devolvemos los veinte euros esta semana.", en: "The clerk looked at the screen, frowned and typed for a good while. 'You're right,' he said at last. 'We'll refund the twenty euros this week.'" },
+      { es: "—¿Y no va a volver a pasar? —preguntó Deb. —No debería. Pero si vuelve a pasar, llámenos y lo arreglamos.", en: "'And it won't happen again?' asked Deb. 'It shouldn't. But if it happens again, call us and we'll sort it out.'" },
+      { es: "Deb salió a la calle sintiéndose, por primera vez, capaz de discutir con un banco en español, aunque fuera con tres frases.", en: "Deb walked out into the street feeling, for the first time, able to argue with a bank in Spanish, even if it was with three sentences." },
+      { es: "Esa noche se lo contó a Carmen. —¿Ves? —le dijo su vecina—. El próximo paso es quejarte de la factura de la luz.", en: "That night she told Carmen. 'You see?' said her neighbour. 'The next step is complaining about the electricity bill.'" },
+    ],
+    questions: [
+      { q: "What was the letter about?", options: ["Una comisión de veinte euros", "Una cuenta nueva", "La factura de la luz"], answer: 0 },
+      { q: "What did Carmen think?", options: ["Que había que pagar", "Que era un error", "Que no entendía la carta"], answer: 1 },
+      { q: "How long did Deb wait at the bank?", options: ["Dos veces", "Veinte minutos", "Veinticinco minutos"], answer: 2 },
+      { q: "What did the clerk say in the end?", options: ["Que Deb tenía razón", "Que no podía ayudarla", "Que llamara la semana que viene"], answer: 0 },
+      { q: "What is the 'next step', according to Carmen?", options: ["Abrir otra cuenta", "Quejarse de la factura de la luz", "Cambiar de banco"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-26",
+    tier: "hard",
+    title: "El examen del portero",
+    teaser: "One exam at eight, another five minutes later",
+    lines: [
+      { es: "Desde que Manolo descubrió que Deb estudiaba español todas las mañanas, le hace un «examen» cada vez que ella pasa por el portal.", en: "Ever since Manolo discovered that Deb studies Spanish every morning, he gives her an 'exam' every time she walks through the lobby." },
+      { es: "—A ver, Deb: ¿cómo se dice «I would like a table by the window»? —Querría una mesa al lado de la ventana. —¡Muy bien! Mañana, más difícil.", en: "'Let's see, Deb: how do you say 'I would like a table by the window'?' 'Querría una mesa al lado de la ventana.' 'Very good! Tomorrow, harder.'" },
+      { es: "Algunos días Deb se equivoca, y Manolo nunca se ríe: repite la frase despacio, una vez, y le dice que la practique en el ascensor.", en: "Some days Deb gets it wrong, and Manolo never laughs: he repeats the sentence slowly, once, and tells her to practise it in the lift." },
+      { es: "Un jueves, Deb le propuso cambiar los papeles: —Hoy el examen te lo hago yo, pero en inglés.", en: "One Thursday, Deb suggested swapping roles: 'Today I'll give you the exam, but in English.'" },
+      { es: "Manolo se puso rojo. —Yo de inglés, nada —dijo—. Bueno… «good morning», «thank you» y «one beer, please», que lo aprendí en Benidorm.", en: "Manolo went red. 'I know no English at all,' he said. 'Well… 'good morning', 'thank you' and 'one beer, please', which I learned in Benidorm.'" },
+      { es: "—Pues ya son tres frases —contestó Deb—. Mañana te enseño «where is the station», que es la que más me preguntan a mí en Chicago.", en: "'Well, that's three sentences already,' Deb replied. 'Tomorrow I'll teach you 'where is the station', which is the one people ask me most in Chicago.'" },
+      { es: "Ahora, cada mañana, hay dos exámenes en el portal: uno en español, a las ocho, y otro en inglés, cinco minutos después.", en: "Now, every morning, there are two exams in the lobby: one in Spanish, at eight, and another in English, five minutes later." },
+      { es: "Carmen, que lo ve todo desde la escalera, dice que es la única academia de idiomas del barrio que abre antes que la panadería.", en: "Carmen, who sees it all from the stairs, says it's the only language school in the neighbourhood that opens before the bakery." },
+    ],
+    questions: [
+      { q: "When does Manolo give Deb an exam?", options: ["Los jueves", "Cada vez que pasa por el portal", "Una vez al mes"], answer: 1 },
+      { q: "What does Manolo do when Deb gets it wrong?", options: ["Se ríe", "Repite la frase despacio", "Cambia de tema"], answer: 1 },
+      { q: "What did Deb suggest one Thursday?", options: ["Dejar los exámenes", "Cambiar los papeles", "Ir a Benidorm"], answer: 1 },
+      { q: "Where did Manolo learn his English?", options: ["En Chicago", "En la escalera", "En Benidorm"], answer: 2 },
+      { q: "When is the English exam?", options: ["A las ocho", "Cinco minutos después del de español", "Antes que la panadería"], answer: 1 },
+    ],
+  },
 ];
+
+/* The climb, in order. A story names its tier; the list groups by it and
+   says what each step adds, so "progressively harder" is a thing you can
+   see on the page rather than something you discover at line six. The
+   first two tiers predate the field — `tierOf` reads them off the id — so
+   a story with no `tier` written on it is not an error. */
+export const STORY_TIERS = [
+  { id: "easy", title: "Short", sub: "Four lines, three questions" },
+  { id: "harder", title: "A bit harder", sub: "Five lines, the past tenses, four questions" },
+  { id: "longer", title: "Longer", sub: "Six lines, four questions" },
+  { id: "long", title: "Longer still", sub: "Seven lines, five questions" },
+  { id: "hard", title: "Hard", sub: "Eight lines, five questions, and a twist" },
+];
+
+export function tierOf(story) {
+  if (story.tier) return story.tier;
+  return Number(story.id.replace("historia-", "")) <= 10 ? "easy" : "harder";
+}
 
 export function storyById(id) {
   return STORIES.find((s) => s.id === id) ?? null;

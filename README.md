@@ -48,11 +48,14 @@ A few things worth knowing:
   tomorrow. The teal **Review** square on the home page says how many are
   due (there's a clock node next to Repaso too): ten cards at most, the rest
   wait for tomorrow. Nothing due, and it says so.
-- **Stories.** The red square. Sixteen tiny scenes — three or four sentences
-  from your own week, the doorman, the market, Pilates, a parcel that turns
-  out to be a plant — each followed by three questions, and then five harder
-  ones: five longer sentences in the past tenses, four questions, and the
-  shop, the supermarket, the pharmacy, the doctor, a lost key and a lift stuck between floors. The question is in English,
+- **Stories.** The red square. Twenty-six little scenes from your own week,
+  in five steps that get longer and harder as they go: ten short ones — the
+  doorman, the market, Pilates, a parcel that turns out to be a plant — with
+  three questions each; six a bit harder, in the past tenses, with four; then
+  the park, a taxi to the airport, a dinner with the neighbours, a surprise
+  birthday in the lobby, a letter from the bank and the doorman's daily
+  exam, climbing to eight lines and five questions. The list says which step
+  each one is on. The question is in English,
   the answers are in Spanish, and the English of the story appears once
   you've answered. Tap any line to hear it, or have the whole thing read to
   you. Your best score sits beside each one; read them again whenever you

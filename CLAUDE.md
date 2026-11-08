@@ -1431,14 +1431,14 @@ still on screen; a round of Match with `total: 49` planted celebrates
 counts as `perfect`; export carries `awards`. The smoke script is in the
 session scratchpad, like the others.
 
-## Stories: a scene, then three questions
+## Stories: a scene, then some questions
 
 Asked for as *"tiny mini stories — three or four sentences that make up a
 scene, followed by a few questions that are multiple-choice, as a kind of
 comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
 `stories` tab in app.js (`renderStories`, `renderStory`, `openStory`).
 
-- **Hand-written, like everything else in content.js.** Sixteen scenes from
+- **Hand-written, like everything else in content.js.** Twenty-six scenes from
   Deb's own week — the doorman, the café, the market, tapas, Pilates, rain
   and plants, the lift, the restaurant, the bakery, a parcel that is a plant
   — written out of the course's own vocabulary, easiest first. **The six
@@ -1451,10 +1451,28 @@ comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
   the shelf, the flat and the street, out and about — `palabras-9` to
   `palabras-12`, phrase ids from `palabras-14-1`), asked for as *"more
   everyday words that I would need to use in a store or just in everyday
-  life"*. The Worker
+  life"*. **The ten from `historia-17` on climb**, asked for as *"more
+  please — maybe slowly make them progressively harder and longer"*: four
+  at six lines and four questions, four at seven lines and five, two at
+  eight lines with a twist. The grammar climbs with them — the conditional,
+  *cuando* with the subjunctive, reported speech, *se le rompió*, object
+  pronouns doing real work — and the neighbour and the doorman get names,
+  Carmen and Manolo, because at that length "la vecina del quinto" four
+  times a story is a mouthful. The Worker
   could write these, and deliberately doesn't: a story is where the cards
   are met again in a sentence that isn't the card, and that only works if
   the sentences use the cards. Add a story by appending; never renumber.
+- **`STORY_TIERS` is the climb, declared.** Five steps — Short, A bit
+  harder, Longer, Longer still, Hard — each with a one-line *sub* saying
+  what it adds. A story names its tier in `tier`; the first sixteen predate
+  the field, so `tierOf` reads theirs off the id, and a story with no `tier`
+  is not an error. The list groups by tier under a `.list-banner` in
+  Stories' red (the Phrases shape), with *read of total* on each banner, and
+  the story page says its tier beside *Story 17 of 26*. The numbering runs
+  on through the groups, because "story 17" is how a story gets referred to.
+  Add a tier by adding a row and naming it on the stories — nothing else
+  reads the list. **Keep a new story's length honest to its tier's sub**,
+  since that line is the promise the banner makes.
 - **The question is English and the answers are Spanish.** Deb's choice, of
   three offered. The question is never the obstacle; reading the Spanish is.
   The options are lifted from the story, so the distractors are things that
@@ -1489,7 +1507,11 @@ comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
   are Deb's week in Castilian, and Xerra's would be someone else's in
   Catalan, the same way the keyword pictures are.
 
-Worth asserting: sixteen `.story-row`s and no `.story-best` on a clean boot;
+Worth asserting: twenty-six `.story-row`s under five `.list-banner`s
+reading *Short*, *A bit harder*, *Longer*, *Longer still* and *Hard* with
+counts 10, 6, 4, 4 and 2, the rows numbered 1 to 26 straight through, and no
+`.story-best` on a clean boot; `historia-26` opens on eight `.story-line`s
+and five `.story-q`s with its intro reading *Story 26 of 26 · Hard*;
 a story opens with four `.story-line`s, four `[data-line]` play buttons,
 `#story-read`, no `.story-en` and no `#story-english`, three `.story-q`s
 and nine `.story-opt`s all `lang="es-ES"`, the question text English; a
