@@ -476,6 +476,7 @@ p { margin: 0 0 10px; }
 .list-banner:first-child { margin-top: 0; }
 .list-banner-name { font-weight: 900; font-size: 1.02rem; overflow-wrap: anywhere; }
 .list-banner-count { flex: none; font-size: 0.82rem; font-weight: 800; opacity: 0.9; }
+.list-banner-sub { display: block; font-weight: 700; font-size: 0.8rem; opacity: 0.9; }
 
 .section-label {
   font-size: 0.76rem;
@@ -1669,7 +1670,10 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 /* The list: numbered rows in Stories' red, the best score at the end of the
    row once there is one — a full score wears a tick, so "which are left"
    can be read down the list. */
-.story-row { align-items: center; }
+/* A grid item won't shrink below its content, and the teaser is nowrap —
+   so without this a long teaser pushed the row off the right of the page. */
+.story-row { align-items: center; min-width: 0; }
+.story-row .row-sub { display: block; }
 .story-num {
   flex: none;
   width: 30px;
