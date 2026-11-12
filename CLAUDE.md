@@ -429,6 +429,20 @@ quieter than the word but no longer hiding under it.
   repeats a phrase already on a card elsewhere: Match refuses two cards with
   the same text in one round, and a duplicate would also be the same phrase
   twice on the path.
+- **La vida diaria, Las plantas, Buscar piso, Por la ciudad and Las
+  fiestas** came in together, asked for as *"more phrases, more words, more
+  match, more stories"* with the topics named — what an American living in
+  Barcelona needs in year one: the pharmacy and the phone, her plants,
+  looking for housing, directions, and a holidays section with Thanksgiving
+  and Christmas coming. Same shape as the four above and sitting after Cada
+  día, before El pasado. Four Palabras lessons came with them
+  (`palabras-13` to `palabras-16`, phrase ids from `palabras-18-1`), carrying
+  the words those units lean on — the pot, the rent, the corner, the
+  turkey — and eight stories written out of the same vocabulary, spread
+  across the tiers rather than stacked on the end. Las fiestas is where the
+  customs live: Nochebuena is the dinner, the lottery is the 22nd, the grapes
+  are midnight on the 31st, and presents come on the 6th from the Kings — it
+  is in the focusNotes because it is what she'll be asked about.
 - **`STORIES` is the other export**, and it is not course content: a story
   is three or four sentences and three questions, read rather than said, and
   nothing in it is a phrase. See *Stories* below. Ids are stable for the
@@ -850,7 +864,7 @@ them in step; the divergences that are deliberate are the deck-vs-unit shape
 
 ## A word, a sound and one ridiculous picture
 
-The **Palabras** unit (twelve lessons, sixty-one words, purple) is vocabulary by
+The **Palabras** unit (sixteen lessons, eighty-one words, purple) is vocabulary by
 the keyword method: you hear an English sound inside the Spanish word, and you
 build one absurd scene out of that sound and the meaning. `tenedor` sounds like
 "ten-a-door", so a ten-dollar bill is nailed to your front door and the nail is a fork. It is
@@ -1438,7 +1452,7 @@ scene, followed by a few questions that are multiple-choice, as a kind of
 comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
 `stories` tab in app.js (`renderStories`, `renderStory`, `openStory`).
 
-- **Hand-written, like everything else in content.js.** Twenty-six scenes from
+- **Hand-written, like everything else in content.js.** Thirty-four scenes from
   Deb's own week — the doorman, the café, the market, tapas, Pilates, rain
   and plants, the lift, the restaurant, the bakery, a parcel that is a plant
   — written out of the course's own vocabulary, easiest first. **The six
@@ -1454,7 +1468,11 @@ comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
   life"*. **The ten from `historia-17` on climb**, asked for as *"more
   please — maybe slowly make them progressively harder and longer"*: four
   at six lines and four questions, four at seven lines and five, two at
-  eight lines with a twist. The grammar climbs with them — the conditional,
+  eight lines with a twist. **The eight from `historia-27` on** came with
+  the five everyday units and are written out of their vocabulary — the
+  plants, the flat hunt, Thanksgiving, the lottery, the grapes, the Kings;
+  they carry a `tier` each and are spread across the five, so an easy one
+  appended at the end still lists under Short. The grammar climbs with them — the conditional,
   *cuando* with the subjunctive, reported speech, *se le rompió*, object
   pronouns doing real work — and the neighbour and the doorman get names,
   Carmen and Manolo, because at that length "la vecina del quinto" four
@@ -1507,11 +1525,13 @@ comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
   are Deb's week in Castilian, and Xerra's would be someone else's in
   Catalan, the same way the keyword pictures are.
 
-Worth asserting: twenty-six `.story-row`s under five `.list-banner`s
+Worth asserting: thirty-four `.story-row`s under five `.list-banner`s
 reading *Short*, *A bit harder*, *Longer*, *Longer still* and *Hard* with
-counts 10, 6, 4, 4 and 2, the rows numbered 1 to 26 straight through, and no
+counts 12, 8, 6, 5 and 3, the rows numbered 1 to 34 straight through, and no
 `.story-best` on a clean boot; `historia-26` opens on eight `.story-line`s
-and five `.story-q`s with its intro reading *Story 26 of 26 · Hard*;
+and five `.story-q`s with its intro reading *Story 26 of 34 · Hard*, and
+`historia-27`, appended with `tier: "easy"`, is numbered 27 but listed
+under *Short*;
 a story opens with four `.story-line`s, four `[data-line]` play buttons,
 `#story-read`, no `.story-en` and no `#story-english`, three `.story-q`s
 and nine `.story-opt`s all `lang="es-ES"`, the question text English; a
@@ -1521,7 +1541,7 @@ disabled options, a wrong one `.story-q.wrong` with the picked option
 appears only after the third answer, reading *2 of 3*, with `#story-english`
 and a *Next story* button; the store holds `best: 2, of: 3, times: 1` and
 `debolingo.attempts` is still empty; a second read scoring 3 moves `best` to
-3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 16 read*; the
+3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 34 read*; the
 last story offers only *Read it again*; an open story ticks `awards.study`
 and export carries `stories`. The smoke script is in the session scratchpad
 with the others.
@@ -1716,7 +1736,7 @@ in the order Practice, Words, Sobre mí, Quick, Match, Stories, Review, All
 Phrases, one `[data-review]`, one `[data-open-stories]`, no `.due-strip` and
 no `.tile-wide`; the Practice path draws Precios y números, El restaurante, De
 compras and Cada día between El mercado and El pasado, and `library.drillable()`
-is 206 on a clean boot; with an assistant, opening the tile fires exactly one
+is 301 on a clean boot; with an assistant, opening the tile fires exactly one
 `/interview` by itself, `#about-make` is disabled until a learner turn exists,
 a batch containing a punctuation-only repeat adds one fewer than it returned,
 the made cards are ordinary phrases with `deck === "Sobre mí"` that the Sobre mí

@@ -5,9 +5,10 @@ A tiny personal Spanish trainer, made for exactly one student: Deb.
 Five-minute lessons for real life — greeting the doorman, ordering coffee and
 cava, tapas, *para llevar*, holding your own at a market counter, prices and
 the time, booking a table, the bakery and the fish counter, the weather and
-the neighbours — plus the past tense in dots and lines, sixty-one everyday
-words with a ridiculous picture nailed to each one, and sixteen tiny stories
-with questions. You hear a native voice, record yourself saying the
+the neighbours, the pharmacy and the phone, your plants, hunting for a flat,
+asking the way, and the holidays from Thanksgiving to the Kings — plus the
+past tense in dots and lines, eighty-one everyday words with a ridiculous
+picture nailed to each one, and thirty-four tiny stories with questions. You hear a native voice, record yourself saying the
 same thing, and the app shows you how close you got: side-by-side waveforms, an
 intonation comparison, and a word-by-word pronunciation score.
 
@@ -48,14 +49,15 @@ A few things worth knowing:
   tomorrow. The teal **Review** square on the home page says how many are
   due (there's a clock node next to Repaso too): ten cards at most, the rest
   wait for tomorrow. Nothing due, and it says so.
-- **Stories.** The red square. Twenty-six little scenes from your own week,
-  in five steps that get longer and harder as they go: ten short ones — the
-  doorman, the market, Pilates, a parcel that turns out to be a plant — with
-  three questions each; six a bit harder, in the past tenses, with four; then
-  the park, a taxi to the airport, a dinner with the neighbours, a surprise
-  birthday in the lobby, a letter from the bank and the doorman's daily
-  exam, climbing to eight lines and five questions. The list says which step
-  each one is on. The question is in English,
+- **Stories.** The red square. Thirty-four little scenes from your own week,
+  in five steps that get longer and harder as they go: twelve short ones — the
+  doorman, the market, Pilates, a parcel that turns out to be a plant, a new
+  flower on the balcony — with three questions each; eight a bit harder, in
+  the past tenses, with four; then the park, a taxi to the airport, a dinner
+  with the neighbours, a surprise birthday in the lobby, a first cold at the
+  pharmacy, the Christmas lottery, the twelve grapes and a roscón with rather
+  too many kings in it, climbing to eight lines and five questions. The list
+  says which step each one is on. The question is in English,
   the answers are in Spanish, and the English of the story appears once
   you've answered. Tap any line to hear it, or have the whole thing read to
   you. Your best score sits beside each one; read them again whenever you
