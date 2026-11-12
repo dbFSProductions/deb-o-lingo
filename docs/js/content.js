@@ -1119,6 +1119,677 @@ export const COURSE = [
     ],
   },
   {
+    // Five more everyday units, asked for as "more phrases, more words, more
+    // match, more stories" with the topics named: what an American living
+    // in Barcelona needs in year one — the pharmacy and the phone, her
+    // plants, looking for a flat, finding the way, and the holidays, since
+    // Thanksgiving and Christmas are next. Same rules again: five phrases a
+    // lesson, nothing already on a card elsewhere in the course, Castilian
+    // focusNotes written for an American mouth. They sit on the path in
+    // course order after Cada día and before El pasado.
+    id: "vida",
+    title: "La vida diaria",
+    subtitle: "The pharmacy, the phone and things that break",
+    color: "#1cb0f6",
+    colorDark: "#1899d6",
+    lessons: [
+      {
+        id: "vida-1",
+        title: "At the pharmacy",
+        phrases: [
+          {
+            id: "vida-1-1",
+            text: "Necesito algo para el resfriado.",
+            translation: "I need something for a cold.",
+            focusNote:
+              "ne-the-SEE-to AL-go PA-ra el res-fri-A-do. Spain's 'th' in 'necesito'; 'resfriado' is four syllables with the stress on A, and the d at the end is soft.",
+          },
+          {
+            id: "vida-1-2",
+            text: "Me duele la cabeza.",
+            translation: "My head hurts.",
+            focusNote:
+              "me DWE-le la ka-BE-tha. 'Duele' is one glide, DWE; 'cabeza' ends on the Spain th — ka-BE-tha, never 'ka-BAY-za'.",
+          },
+          {
+            id: "vida-1-3",
+            text: "¿Hace falta receta?",
+            translation: "Do I need a prescription?",
+            focusNote:
+              "A-the FAL-ta re-THE-ta. Silent h and two th's: A-the, re-THE-ta. 'Hace falta' is 'is it needed' — the pharmacist's own phrase.",
+          },
+          {
+            id: "vida-1-4",
+            text: "¿Cuántas veces al día?",
+            translation: "How many times a day?",
+            focusNote:
+              "KWAN-tas BE-thes al DEE-a. 'Veces' is BE-thes — a soft b at the front and the th in the middle. 'Día' is two syllables, DEE-a.",
+          },
+          {
+            id: "vida-1-5",
+            text: "¿Tiene algo más fuerte?",
+            translation: "Do you have anything stronger?",
+            focusNote:
+              "TYE-ne AL-go mas FWER-te. 'Fuerte' — the ue is one glide, FWER, with a tapped r. Every vowel short and pure.",
+          },
+        ],
+      },
+      {
+        id: "vida-2",
+        title: "On the phone",
+        phrases: [
+          {
+            id: "vida-2-1",
+            text: "¿Diga?",
+            translation: "Hello? (answering the phone)",
+            focusNote:
+              "DEE-ga — two syllables, soft d. This is how Spain picks up the phone; 'hola' sounds like you don't know who's calling.",
+          },
+          {
+            id: "vida-2-2",
+            text: "Llamo para pedir cita.",
+            translation: "I'm calling to make an appointment.",
+            focusNote:
+              "YA-mo PA-ra pe-DEER THEE-ta. The ll is a y: YA-mo. 'Cita' is THEE-ta, the Spain th — not 'see-ta'.",
+          },
+          {
+            id: "vida-2-3",
+            text: "¿Puede hablar más despacio?",
+            translation: "Can you speak more slowly?",
+            focusNote:
+              "PWE-the a-BLAR mas des-PA-thyo. Silent h in 'hablar'; 'despacio' is des-PA-thyo with the th. The most useful sentence on any phone call.",
+          },
+          {
+            id: "vida-2-4",
+            text: "¿Me puede llamar más tarde?",
+            translation: "Can you call me back later?",
+            focusNote:
+              "me PWE-the ya-MAR mas TAR-de. 'Llamar' is ya-MAR, stress at the end, one light tap on the r.",
+          },
+          {
+            id: "vida-2-5",
+            text: "Perdone, me he equivocado.",
+            translation: "Sorry, wrong number.",
+            focusNote:
+              "per-DO-ne me e e-ki-bo-KA-do. 'Me he' is two e's run together; 'equivocado' has a k for the qu, a soft b for the v, and the stress on KA.",
+          },
+        ],
+      },
+      {
+        id: "vida-3",
+        title: "When something breaks",
+        phrases: [
+          {
+            id: "vida-3-1",
+            text: "No funciona la calefacción.",
+            translation: "The heating isn't working.",
+            focusNote:
+              "no foon-THYO-na la ka-le-fak-THYON. Two th's — foon-THYO-na, ka-le-fak-THYON — and the stress lands right at the end.",
+          },
+          {
+            id: "vida-3-2",
+            text: "Hay una fuga de agua.",
+            translation: "There's a water leak.",
+            focusNote:
+              "ai OO-na FOO-ga de A-gwa. 'Hay' is just 'eye' — the h is silent. 'Agua' is A-gwa, two syllables, the u a quick glide.",
+          },
+          {
+            id: "vida-3-3",
+            text: "¿Puede venir alguien a mirarlo?",
+            translation: "Can someone come and look at it?",
+            focusNote:
+              "PWE-the be-NEER AL-gyen a mee-RAR-lo. 'Venir' starts with a soft b; 'alguien' is AL-gyen with a hard g. Tap both r's in 'mirarlo'.",
+          },
+          {
+            id: "vida-3-4",
+            text: "No tengo internet.",
+            translation: "I have no internet.",
+            focusNote:
+              "no TEN-go in-ter-NET. Spanish stresses the END of 'internet' — in-ter-NET — and taps the r. The vowels stay short.",
+          },
+          {
+            id: "vida-3-5",
+            text: "¿Cuándo puede pasar?",
+            translation: "When can you come by?",
+            focusNote:
+              "KWAN-do PWE-the pa-SAR. 'Pasar' — to drop by — is the word for a tradesperson's visit; stress at the end, tapped r.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "plantas",
+    title: "Las plantas",
+    subtitle: "Buying them, keeping them alive, showing them off",
+    color: "#58cc02",
+    colorDark: "#46a302",
+    lessons: [
+      {
+        id: "plantas-1",
+        title: "At the garden centre",
+        phrases: [
+          {
+            id: "plantas-1-1",
+            text: "¿Esta planta necesita mucha luz?",
+            translation: "Does this plant need a lot of light?",
+            focusNote:
+              "ES-ta PLAN-ta ne-the-SEE-ta MOO-cha looth. 'Luz' ends on the Spain th: looth. 'Necesita' has the same th in the middle.",
+          },
+          {
+            id: "plantas-1-2",
+            text: "¿Es de interior o de exterior?",
+            translation: "Is it for indoors or outdoors?",
+            focusNote:
+              "es de in-te-RYOR o de eks-te-RYOR. The x is 'ks'; both words stress the very end, -RYOR, with a tapped r.",
+          },
+          {
+            id: "plantas-1-3",
+            text: "¿Cada cuánto la riego?",
+            translation: "How often do I water it?",
+            focusNote:
+              "KA-da KWAN-to la RYE-go. 'Cada cuánto' is the everyday 'how often'. 'Riego' — a tapped r, then one glide, RYE-go.",
+          },
+          {
+            id: "plantas-1-4",
+            text: "Quiero una maceta más grande.",
+            translation: "I want a bigger pot.",
+            focusNote:
+              "KYE-ro OO-na ma-THE-ta mas GRAN-de. 'Maceta' is ma-THE-ta — the c before e is the Spain th. Soft d in 'grande'.",
+          },
+          {
+            id: "plantas-1-5",
+            text: "¿Tienen tierra para macetas?",
+            translation: "Do you have potting soil?",
+            focusNote:
+              "TYE-nen TYE-rra PA-ra ma-THE-tas. 'Tierra' has the rolled rr — one of the few places the r really rolls rather than taps.",
+          },
+        ],
+      },
+      {
+        id: "plantas-2",
+        title: "Keeping them alive",
+        phrases: [
+          {
+            id: "plantas-2-1",
+            text: "Se le caen las hojas.",
+            translation: "Its leaves are falling off.",
+            focusNote:
+              "se le KA-en las O-has. Silent h, and the j is the throaty h: O-has. 'Caen' is two syllables, KA-en.",
+          },
+          {
+            id: "plantas-2-2",
+            text: "Creo que la he regado demasiado.",
+            translation: "I think I've overwatered it.",
+            focusNote:
+              "KRE-o ke la e re-GA-do de-ma-SYA-do. 'Creo' is two syllables, KRE-o; the h in 'he' is silent, so it's just 'e'. Soft d's throughout.",
+          },
+          {
+            id: "plantas-2-3",
+            text: "Le hace falta más sol.",
+            translation: "It needs more sun.",
+            focusNote:
+              "le A-the FAL-ta mas sol. Silent h and the Spain th: A-the. 'Le hace falta' — 'it is lacking' — is how Spanish says something needs something.",
+          },
+          {
+            id: "plantas-2-4",
+            text: "Está creciendo mucho.",
+            translation: "It's growing a lot.",
+            focusNote:
+              "es-TA kre-THYEN-do MOO-cho. 'Creciendo' is kre-THYEN-do — hard k, then the th, then one glide. Three syllables.",
+          },
+          {
+            id: "plantas-2-5",
+            text: "Tiene una flor nueva.",
+            translation: "It has a new flower.",
+            focusNote:
+              "TYE-ne OO-na flor NWE-ba. 'Flor' has a short o and a tapped r — not 'floor'. 'Nueva' is one glide, NWE, and a soft b.",
+          },
+        ],
+      },
+      {
+        id: "plantas-3",
+        title: "Showing them off",
+        phrases: [
+          {
+            id: "plantas-3-1",
+            text: "Tengo muchas plantas en el balcón.",
+            translation: "I have a lot of plants on the balcony.",
+            focusNote:
+              "TEN-go MOO-chas PLAN-tas en el bal-KON. 'Balcón' stresses the end, bal-KON, with a light l — not the English 'BAL-cony'.",
+          },
+          {
+            id: "plantas-3-2",
+            text: "Esta es mi favorita.",
+            translation: "This one is my favourite.",
+            focusNote:
+              "ES-ta es mee fa-bo-REE-ta. 'Favorita' — the v is a soft b, fa-bo-REE-ta, stress on REE.",
+          },
+          {
+            id: "plantas-3-3",
+            text: "¿Me la puede cuidar unos días?",
+            translation: "Could you look after it for a few days?",
+            focusNote:
+              "me la PWE-the kwee-DAR OO-nos DEE-as. 'Cuidar' — the ui is one glide, kwee-DAR, stress at the end.",
+          },
+          {
+            id: "plantas-3-4",
+            text: "Hay que regarla dos veces a la semana.",
+            translation: "It has to be watered twice a week.",
+            focusNote:
+              "ai ke re-GAR-la dos BE-thes a la se-MA-na. 'Hay que' is 'you have to'. 'Veces' is BE-thes, soft b and the th.",
+          },
+          {
+            id: "plantas-3-5",
+            text: "Se está muriendo.",
+            translation: "It's dying.",
+            focusNote:
+              "se es-TA moo-RYEN-do. 'Muriendo' is moo-RYEN-do — a tapped r and one glide, three syllables. Said with a sigh, to Carmen.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "piso",
+    title: "Buscar piso",
+    subtitle: "The advert, the viewing and the deposit",
+    color: "#ff9600",
+    colorDark: "#e08600",
+    lessons: [
+      {
+        id: "piso-1",
+        title: "Calling about the ad",
+        phrases: [
+          {
+            id: "piso-1-1",
+            text: "Llamo por el anuncio del piso.",
+            translation: "I'm calling about the flat advert.",
+            focusNote:
+              "YA-mo por el a-NOON-thyo del PEE-so. The ll is a y: YA-mo. 'Anuncio' is a-NOON-thyo with the Spain th.",
+          },
+          {
+            id: "piso-1-2",
+            text: "¿Sigue disponible?",
+            translation: "Is it still available?",
+            focusNote:
+              "SEE-ge dis-po-NEE-ble. In 'sigue' the u is silent and the g is hard: SEE-ge. 'Disponible' — stress on NEE, final e said.",
+          },
+          {
+            id: "piso-1-3",
+            text: "¿Cuánto es el alquiler al mes?",
+            translation: "How much is the rent a month?",
+            focusNote:
+              "KWAN-to es el al-kee-LER al mes. 'Alquiler' — the qu is a k, and the stress sits at the very end: al-kee-LER.",
+          },
+          {
+            id: "piso-1-4",
+            text: "¿Están incluidos los gastos?",
+            translation: "Are the bills included?",
+            focusNote:
+              "es-TAN in-kloo-EE-dos los GAS-tos. 'Incluidos' is four syllables — the ui splits here, in-kloo-EE-dos. 'Gastos' is the word for bills.",
+          },
+          {
+            id: "piso-1-5",
+            text: "¿Puedo verlo esta semana?",
+            translation: "Can I see it this week?",
+            focusNote:
+              "PWE-do BER-lo ES-ta se-MA-na. 'Verlo' starts with a soft b and taps the r: BER-lo.",
+          },
+        ],
+      },
+      {
+        id: "piso-2",
+        title: "Viewing the flat",
+        phrases: [
+          {
+            id: "piso-2-1",
+            text: "¿Cuántas habitaciones tiene?",
+            translation: "How many bedrooms does it have?",
+            focusNote:
+              "KWAN-tas a-bi-ta-THYO-nes TYE-ne. Silent h; 'habitaciones' is five syllables with the th in THYO. Stress on THYO.",
+          },
+          {
+            id: "piso-2-2",
+            text: "¿Tiene ascensor?",
+            translation: "Does it have a lift?",
+            focusNote:
+              "TYE-ne as-then-SOR. 'Ascensor' — the sc is s-then-, with the Spain th, and the stress on the end. Fourth floor without one is a real question.",
+          },
+          {
+            id: "piso-2-3",
+            text: "¿Está amueblado?",
+            translation: "Is it furnished?",
+            focusNote:
+              "es-TA a-mwe-BLA-do. 'Amueblado' — the ue is one glide, a-mwe-BLA-do, with a soft d at the end.",
+          },
+          {
+            id: "piso-2-4",
+            text: "¿Da a la calle o al patio?",
+            translation: "Does it face the street or the courtyard?",
+            focusNote:
+              "da a la KA-ye o al PA-tyo. 'Da a' — the two a's run together as one long a. 'Calle' is KA-ye; the ll is a y.",
+          },
+          {
+            id: "piso-2-5",
+            text: "¿Hay mucho ruido por la noche?",
+            translation: "Is there much noise at night?",
+            focusNote:
+              "ai MOO-cho RWEE-do por la NO-che. 'Ruido' is two syllables, RWEE-do, with a tapped r. Ask it with the window open.",
+          },
+        ],
+      },
+      {
+        id: "piso-3",
+        title: "Taking it",
+        phrases: [
+          {
+            id: "piso-3-1",
+            text: "¿Cuánto es la fianza?",
+            translation: "How much is the deposit?",
+            focusNote:
+              "KWAN-to es la FYAN-tha. 'Fianza' — FYAN-tha, one glide at the front and the Spain th at the end.",
+          },
+          {
+            id: "piso-3-2",
+            text: "¿Cuándo podría entrar?",
+            translation: "When could I move in?",
+            focusNote:
+              "KWAN-do po-DREE-a en-TRAR. 'Podría' is three syllables with the stress on DREE; 'entrar' stresses the end, tapped r.",
+          },
+          {
+            id: "piso-3-3",
+            text: "Necesito un contrato de un año.",
+            translation: "I need a one-year contract.",
+            focusNote:
+              "ne-the-SEE-to oon kon-TRA-to de oon A-nyo. 'Año' — the ñ is 'ny', and it matters: without it, it's a very different word.",
+          },
+          {
+            id: "piso-3-4",
+            text: "¿Qué documentos necesita?",
+            translation: "What documents do you need?",
+            focusNote:
+              "ke do-koo-MEN-tos ne-the-SEE-ta. 'Documentos' — stress on MEN, every vowel pure. The answer will be the NIE and a payslip.",
+          },
+          {
+            id: "piso-3-5",
+            text: "Lo pensaré y le llamo mañana.",
+            translation: "I'll think about it and call you tomorrow.",
+            focusNote:
+              "lo pen-sa-RE ee le YA-mo ma-NYA-na. 'Pensaré' stresses the very end, where the accent is. 'Llamo' is YA-mo.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "ciudad",
+    title: "Por la ciudad",
+    subtitle: "Asking the way, understanding the answer, getting there",
+    color: "#00c2b2",
+    colorDark: "#00a294",
+    lessons: [
+      {
+        id: "ciudad-1",
+        title: "Asking the way",
+        phrases: [
+          {
+            id: "ciudad-1-1",
+            text: "Perdone, ¿dónde está el metro?",
+            translation: "Excuse me, where's the metro?",
+            focusNote:
+              "per-DO-ne DON-de es-TA el ME-tro. 'Perdone' is the formal 'excuse me' for a stranger — stress on DO. 'Metro' with a tapped r.",
+          },
+          {
+            id: "ciudad-1-2",
+            text: "¿Está lejos?",
+            translation: "Is it far?",
+            focusNote:
+              "es-TA LE-hos. The j is the throaty h: LE-hos. Two short syllables.",
+          },
+          {
+            id: "ciudad-1-3",
+            text: "¿Se puede ir andando?",
+            translation: "Can you walk there?",
+            focusNote:
+              "se PWE-de eer an-DAN-do. 'Ir' is just 'eer'. 'Andando' has two soft d's, tongue on the teeth.",
+          },
+          {
+            id: "ciudad-1-4",
+            text: "Busco la calle Mallorca.",
+            translation: "I'm looking for Mallorca Street.",
+            focusNote:
+              "BOOS-ko la KA-ye ma-YOR-ka. Both ll's are y's in Spain: KA-ye, ma-YOR-ka. 'Busco' is BOOS-ko, hard k.",
+          },
+          {
+            id: "ciudad-1-5",
+            text: "¿Me lo puede señalar en el mapa?",
+            translation: "Can you show me on the map?",
+            focusNote:
+              "me lo PWE-the se-nya-LAR en el MA-pa. 'Señalar' — the ñ is 'ny', stress at the end. 'Mapa' with a pure a, MA-pa.",
+          },
+        ],
+      },
+      {
+        id: "ciudad-2",
+        title: "Understanding the answer",
+        phrases: [
+          {
+            id: "ciudad-2-1",
+            text: "Todo recto.",
+            translation: "Straight on.",
+            focusNote:
+              "TO-do REK-to. Soft d in 'todo'; 'recto' has a hard k in the middle, REK-to. The answer you'll hear most.",
+          },
+          {
+            id: "ciudad-2-2",
+            text: "Gire a la izquierda.",
+            translation: "Turn left.",
+            focusNote:
+              "HEE-re a la eeth-KYER-da. 'Gire' — g before i is the throaty h: HEE-re. 'Izquierda' is eeth-KYER-da, the z a th.",
+          },
+          {
+            id: "ciudad-2-3",
+            text: "La segunda a la derecha.",
+            translation: "Second on the right.",
+            focusNote:
+              "la se-GOON-da a la de-RE-cha. 'Derecha' — de-RE-cha, ch as in 'church', stress on RE.",
+          },
+          {
+            id: "ciudad-2-4",
+            text: "Está en la esquina.",
+            translation: "It's on the corner.",
+            focusNote:
+              "es-TA en la es-KEE-na. 'Esquina' — the qu is a k: es-KEE-na, stress on KEE.",
+          },
+          {
+            id: "ciudad-2-5",
+            text: "Está al lado de la farmacia.",
+            translation: "It's next to the pharmacy.",
+            focusNote:
+              "es-TA al LA-do de la far-MA-thya. 'Farmacia' is far-MA-thya — the Spain th, and the stress on MA, not on the end.",
+          },
+        ],
+      },
+      {
+        id: "ciudad-3",
+        title: "Getting there",
+        phrases: [
+          {
+            id: "ciudad-3-1",
+            text: "¿Qué línea va a la Sagrada Familia?",
+            translation: "Which line goes to the Sagrada Familia?",
+            focusNote:
+              "ke LEE-ne-a ba a la sa-GRA-da fa-MEE-lya. 'Línea' is three syllables, LEE-ne-a; 'va' is a soft b. Soft d in 'Sagrada'.",
+          },
+          {
+            id: "ciudad-3-2",
+            text: "¿Este autobús para en la plaza?",
+            translation: "Does this bus stop at the square?",
+            focusNote:
+              "ES-te ow-to-BOOS PA-ra en la PLA-tha. 'Autobús' stresses the end; 'plaza' is PLA-tha with the Spain th.",
+          },
+          {
+            id: "ciudad-3-3",
+            text: "¿Cuántas paradas faltan?",
+            translation: "How many stops are left?",
+            focusNote:
+              "KWAN-tas pa-RA-das FAL-tan. 'Faltan' — 'are missing' — is how you ask how many to go. Soft d in 'paradas'.",
+          },
+          {
+            id: "ciudad-3-4",
+            text: "A esta dirección, por favor.",
+            translation: "To this address, please.",
+            focusNote:
+              "a ES-ta dee-rek-THYON por fa-BOR. 'Dirección' — the cc is k-th, dee-rek-THYON, stress at the end. Said to a taxi driver with the phone held up.",
+          },
+          {
+            id: "ciudad-3-5",
+            text: "Me bajo aquí.",
+            translation: "I'm getting off here.",
+            focusNote:
+              "me BA-ho a-KEE. 'Bajo' — the j is the throaty h: BA-ho. 'Aquí' stresses the end, a-KEE.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    // Thanksgiving explained to the neighbours, then Spain's own December:
+    // Nochebuena, the lottery, the grapes and the Kings. The customs are in
+    // the focusNotes because they are what she'll be asked about.
+    id: "fiestas",
+    title: "Las fiestas",
+    subtitle: "Thanksgiving, Christmas, the grapes and the Kings",
+    color: "#ce82ff",
+    colorDark: "#a568cc",
+    lessons: [
+      {
+        id: "fiestas-1",
+        title: "Thanksgiving",
+        phrases: [
+          {
+            id: "fiestas-1-1",
+            text: "En Estados Unidos celebramos Acción de Gracias.",
+            translation: "In the US we celebrate Thanksgiving.",
+            focusNote:
+              "en es-TA-dos oo-NEE-dos the-le-BRA-mos ak-THYON de GRA-thyas. Three Spain th's: the-le-BRA-mos, ak-THYON, GRA-thyas. Long, but you'll say it ten times in November.",
+          },
+          {
+            id: "fiestas-1-2",
+            text: "Es el cuarto jueves de noviembre.",
+            translation: "It's the fourth Thursday of November.",
+            focusNote:
+              "es el KWAR-to HWE-bes de no-BYEM-bre. 'Jueves' is HWE-bes — the throaty h, then a soft b. 'Noviembre' is no-BYEM-bre.",
+          },
+          {
+            id: "fiestas-1-3",
+            text: "Voy a hacer un pavo.",
+            translation: "I'm going to make a turkey.",
+            focusNote:
+              "boy a a-THER oon PA-bo. 'Voy a hacer' — the h is silent, so the a's run together: boy-a-THER. 'Pavo' is PA-bo, soft b.",
+          },
+          {
+            id: "fiestas-1-4",
+            text: "¿Tienen pavo entero?",
+            translation: "Do you have a whole turkey?",
+            focusNote:
+              "TYE-nen PA-bo en-TE-ro. 'Entero' — en-TE-ro, tapped r, stress on TE. Ask the butcher a week early; they order it in.",
+          },
+          {
+            id: "fiestas-1-5",
+            text: "Venid a cenar a mi casa el jueves.",
+            translation: "Come to dinner at mine on Thursday.",
+            focusNote:
+              "be-NEED a the-NAR a mee KA-sa el HWE-bes. 'Venid' is 'come', to more than one person — soft b, stress at the end. 'Cenar' is the-NAR.",
+          },
+        ],
+      },
+      {
+        id: "fiestas-2",
+        title: "Christmas",
+        phrases: [
+          {
+            id: "fiestas-2-1",
+            text: "¡Feliz Navidad!",
+            translation: "Merry Christmas!",
+            focusNote:
+              "fe-LEETH na-bi-DAD. 'Feliz' ends on the Spain th: fe-LEETH. In 'Navidad' the v is a soft b and the final d barely sounds.",
+          },
+          {
+            id: "fiestas-2-2",
+            text: "¿Dónde pasas la Nochebuena?",
+            translation: "Where are you spending Christmas Eve?",
+            focusNote:
+              "DON-de PA-sas la no-che-BWE-na. 'Nochebuena' is no-che-BWE-na, stress on BWE. The big dinner in Spain is the 24th, not the 25th.",
+          },
+          {
+            id: "fiestas-2-3",
+            text: "Me voy a Estados Unidos por Navidad.",
+            translation: "I'm going to the US for Christmas.",
+            focusNote:
+              "me boy a es-TA-dos oo-NEE-dos por na-bi-DAD. 'Me voy' is 'I'm off' — soft b. Every d in the sentence is the soft one.",
+          },
+          {
+            id: "fiestas-2-4",
+            text: "¿Te ha tocado la lotería?",
+            translation: "Did you win the lottery?",
+            focusNote:
+              "te a to-KA-do la lo-te-REE-a. Silent h in 'ha'. 'Lotería' is four syllables, lo-te-REE-a. The Christmas draw is 22 December and everyone asks.",
+          },
+          {
+            id: "fiestas-2-5",
+            text: "Un poco de turrón, por favor.",
+            translation: "A bit of turrón, please.",
+            focusNote:
+              "oon PO-ko de too-RRON por fa-BOR. The rr rolls in 'turrón' and the stress is at the end. It's the Christmas almond nougat — hard or soft, you'll be asked which.",
+          },
+        ],
+      },
+      {
+        id: "fiestas-3",
+        title: "New Year and the Kings",
+        phrases: [
+          {
+            id: "fiestas-3-1",
+            text: "¡Feliz año nuevo!",
+            translation: "Happy New Year!",
+            focusNote:
+              "fe-LEETH A-nyo NWE-bo. 'Año' — the ñ is 'ny', and it matters: without it, it's a very different word. 'Nuevo' is NWE-bo.",
+          },
+          {
+            id: "fiestas-3-2",
+            text: "Doce uvas a medianoche.",
+            translation: "Twelve grapes at midnight.",
+            focusNote:
+              "DO-the OO-bas a me-dya-NO-che. 'Doce' is DO-the; 'uvas' is OO-bas, soft b. One grape per chime on New Year's Eve, and you have to finish.",
+          },
+          {
+            id: "fiestas-3-3",
+            text: "¿Qué te han traído los Reyes?",
+            translation: "What did the Kings bring you?",
+            focusNote:
+              "ke te an tra-EE-do los RE-yes. Silent h in 'han'. 'Traído' is three syllables, tra-EE-do. Presents come on 6 January, from the Three Kings.",
+          },
+          {
+            id: "fiestas-3-4",
+            text: "¿Lleva sorpresa el roscón?",
+            translation: "Does the roscón have the surprise in it?",
+            focusNote:
+              "YE-ba sor-PRE-sa el ros-KON. 'Lleva' is YE-ba — y for the ll, soft b. The Kings' ring cake hides a figurine, and a bean: whoever gets the bean pays.",
+          },
+          {
+            id: "fiestas-3-5",
+            text: "¡Felices fiestas!",
+            translation: "Happy holidays!",
+            focusNote:
+              "fe-LEE-thes FYES-tas. 'Felices' is fe-LEE-thes with the Spain th. The all-purpose one for shop doors and lifts, from December right through to the 6th.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     // The past, drilled Xerra-style: before a card will show its Spanish, the
     // lesson asks which SHAPE the sentence is — a dot in a box (preterite), a
     // line (imperfect), or a line reaching now (present perfect) — and the
@@ -2144,6 +2815,234 @@ export const COURSE = [
           },
         ],
       },
+      /* Four more lessons, arriving with the five everyday units: the words
+         those units lean on, each with a picture. Lesson ids carry on from
+         palabras-12; phrase ids carry on from the last block, 17, for the
+         reason given above. */
+      {
+        id: "palabras-13",
+        title: "The plants",
+        phrases: [
+          {
+            id: "palabras-18-1",
+            text: "la maceta",
+            translation: "the flower pot",
+            sounds: "ma, THE TAp",
+            picture:
+              "Your ma keeps a flower pot under the kitchen tap — 'Ma! THE TAp!' — and it overflows every single morning.",
+            focusNote:
+              "ma-THE-ta. The c before e is the Spain th — ma-THE-ta, never 'ma-SET-a'. Stress in the middle.",
+          },
+          {
+            id: "palabras-18-2",
+            text: "la hoja",
+            translation: "the leaf",
+            sounds: "oh! ha!",
+            picture:
+              "A leaf lands on your head and you go 'oh! ha!' — and then the whole tree starts laughing at you, leaf by leaf.",
+            focusNote:
+              "O-ha. The h is silent and the j is the throaty h, so it's 'oh-ha'. Two syllables, stress on the first.",
+          },
+          {
+            id: "palabras-18-3",
+            text: "la tierra",
+            translation: "the soil, the earth",
+            sounds: "tiara",
+            picture:
+              "A queen is crowned with a tiara made of wet potting soil, worms and all, and it drips down her face through the whole ceremony.",
+            focusNote:
+              "TYE-rra. The ie is one glide and the rr really rolls — this is one of the few words where it does. Stress on TYE.",
+          },
+          {
+            id: "palabras-18-4",
+            text: "la flor",
+            translation: "the flower",
+            sounds: "floor",
+            picture:
+              "A flower bursts up through the floorboards of your flat, and you have to water the floor every morning.",
+            focusNote:
+              "flor — one syllable, short o as in 'for', and the r is one light tap. Not the long 'floor'.",
+          },
+          {
+            id: "palabras-18-5",
+            text: "la semilla",
+            translation: "the seed",
+            sounds: "see me? YA!",
+            picture:
+              "'See me? YA!' shouts a seed, leaping out of the packet and planting itself in the pot before you can.",
+            focusNote:
+              "se-MEE-ya. The ll is a y in Spain, so the end is 'ya'. Stress on MEE.",
+          },
+        ],
+      },
+      {
+        id: "palabras-14",
+        title: "Looking for a flat",
+        phrases: [
+          {
+            id: "palabras-19-1",
+            text: "el piso",
+            translation: "the flat (apartment)",
+            sounds: "Pisa",
+            picture:
+              "Your flat leans like the tower of Pisa, and every piece of furniture slides across to the same wall.",
+            focusNote:
+              "PEE-so. Two syllables, stress on PEE, and the final o is pure — the one thing 'Pisa' gets wrong. Also the floor of a building: 'el tercer piso'.",
+          },
+          {
+            id: "palabras-19-2",
+            text: "el alquiler",
+            translation: "the rent",
+            sounds: "Al's key lair",
+            picture:
+              "Al lives in a lair full of keys, and on the first of every month you pay him the rent in more keys.",
+            focusNote:
+              "al-kee-LER. The qu is a k; stress right at the end, with a tapped r. Three syllables.",
+          },
+          {
+            id: "palabras-19-3",
+            text: "el casero",
+            translation: "the landlord",
+            sounds: "casserole",
+            picture:
+              "Your landlord is a steaming casserole with a moustache, and he knocks on the door on the first of the month.",
+            focusNote:
+              "ka-SE-ro. Stress on SE, not on the first syllable as in 'casserole'; the r is a single tap.",
+          },
+          {
+            id: "palabras-19-4",
+            text: "la fianza",
+            translation: "the deposit",
+            sounds: "fee, Anthea",
+            picture:
+              "You hand the deposit to Anthea — 'a fee? Anthea!' — and she swallows it and promises it back in a year.",
+            focusNote:
+              "FYAN-tha. The ia is one glide and the z is the Spain th: FYAN-tha. Two syllables.",
+          },
+          {
+            id: "palabras-19-5",
+            text: "el ruido",
+            translation: "the noise",
+            sounds: "roo, EE, dough",
+            picture:
+              "A kangaroo in the flat upstairs eats raw dough all night — 'roo? EE! dough' — and the chewing is the noise.",
+            focusNote:
+              "RWEE-do. Two syllables — the ui is one glide — with a tapped r at the front and a soft d.",
+          },
+        ],
+      },
+      {
+        id: "palabras-15",
+        title: "Finding the way",
+        phrases: [
+          {
+            id: "palabras-20-1",
+            text: "la esquina",
+            translation: "the corner",
+            sounds: "a ski? NAH",
+            picture:
+              "You try to ski round the street corner — 'a ski? NAH!' — and go straight through the bakery window.",
+            focusNote:
+              "es-KEE-na. The qu is a k, and the stress sits on KEE. Three syllables.",
+          },
+          {
+            id: "palabras-20-2",
+            text: "el semáforo",
+            translation: "the traffic light",
+            sounds: "semaphore",
+            picture:
+              "The traffic light has no bulbs: a man up the pole waves semaphore flags — red, amber, green — and the cars obey.",
+            focusNote:
+              "se-MA-fo-ro. Four syllables, stress on MA where the accent is — not 'SEM-a-for'. Both r's tap.",
+          },
+          {
+            id: "palabras-20-3",
+            text: "la rotonda",
+            translation: "the roundabout",
+            sounds: "rotunda",
+            picture:
+              "A marble rotunda sits in the middle of the roundabout, and the cars drive round and round between its pillars.",
+            focusNote:
+              "ro-TON-da. Stress on TON; the first r taps and the d is soft.",
+          },
+          {
+            id: "palabras-20-4",
+            text: "lejos",
+            translation: "far",
+            sounds: "lay hose",
+            picture:
+              "You lay a garden hose along the pavement to the place you're going, and it's so far the hose runs out.",
+            focusNote:
+              "LE-hos. The j is the throaty h: LE-hos. Stress on the first syllable.",
+          },
+          {
+            id: "palabras-20-5",
+            text: "cerca",
+            translation: "near",
+            sounds: "THERE, car!",
+            picture:
+              "'THERE — car!' You point, and the car is right there, near enough to touch — it's parked on your foot.",
+            focusNote:
+              "THER-ka. The c before e is the Spain th, so it opens on 'there'; the second c is a hard k. Stress on THER.",
+          },
+        ],
+      },
+      {
+        id: "palabras-16",
+        title: "The holidays",
+        phrases: [
+          {
+            id: "palabras-21-1",
+            text: "el pavo",
+            translation: "the turkey",
+            sounds: "Pa bows",
+            picture:
+              "Your pa bows low to the Thanksgiving turkey, and the turkey bows back, and neither of them will stand up first.",
+            focusNote:
+              "PA-bo. The v is a soft b, lips barely touching: PA-bo. Stress on PA.",
+          },
+          {
+            id: "palabras-21-2",
+            text: "el regalo",
+            translation: "the present",
+            sounds: "regal, oh!",
+            picture:
+              "A regal present: you unwrap it and it's a crown, and a tiny king inside shouts 'oh!' when you put it on.",
+            focusNote:
+              "re-GA-lo. Stress on GA; the r is a single tap. Not 'REE-gal'.",
+          },
+          {
+            id: "palabras-21-3",
+            text: "la uva",
+            translation: "the grape",
+            sounds: "ooh… BAH",
+            picture:
+              "A sheep at midnight eats twelve grapes one by one, going 'ooh… BAH' at every chime of the clock.",
+            focusNote:
+              "OO-ba. The v is a soft b: OO-ba. Two syllables, stress on OO.",
+          },
+          {
+            id: "palabras-21-4",
+            text: "el brindis",
+            translation: "the toast (raising a glass)",
+            sounds: "bring this!",
+            picture:
+              "'Bring this!' — everyone raises an empty glass at you, and you have to bring the cava for the toast.",
+            focusNote:
+              "BRIN-dis. Stress on BRIN; the final s is crisp. Tap the r.",
+          },
+          {
+            id: "palabras-21-5",
+            text: "el belén",
+            translation: "the nativity scene",
+            sounds: "bell, Len",
+            picture:
+              "Len rings a huge bell over a tiny stable in the living room, and the little clay shepherds cover their ears.",
+            focusNote:
+              "be-LEN. Stress at the end, where the accent is; a soft b at the front. It's Bethlehem in Spanish, and every house and shop has one in December.",
+          },
+        ],
+      },
     ],
   },
 ];
@@ -2677,6 +3576,169 @@ export const STORIES = [
       { q: "What did Deb suggest one Thursday?", options: ["Dejar los exámenes", "Cambiar los papeles", "Ir a Benidorm"], answer: 1 },
       { q: "Where did Manolo learn his English?", options: ["En Chicago", "En la escalera", "En Benidorm"], answer: 2 },
       { q: "When is the English exam?", options: ["A las ocho", "Cinco minutos después del de español", "Antes que la panadería"], answer: 1 },
+    ],
+  },
+  /* Eight more, arriving with the five everyday units and written out of
+     their vocabulary: the plants, the way to the metro, the flat hunt,
+     Thanksgiving in the third-floor flat, the pharmacy, the Christmas
+     lottery, the grapes and the Kings. Spread across the tiers rather than
+     stacked on the end — the list groups by tier, so an easy one appended
+     here still lands under Short. */
+  {
+    id: "historia-27",
+    tier: "easy",
+    title: "Las plantas de Deb",
+    teaser: "A new flower, and some advice",
+    lines: [
+      { es: "Deb tiene muchas plantas en el balcón.", en: "Deb has a lot of plants on the balcony." },
+      { es: "Hoy una planta tiene una flor nueva.", en: "Today one plant has a new flower." },
+      { es: "—¡Mira, Carmen! —dice Deb—. Esta es mi favorita.", en: "'Look, Carmen!' says Deb. 'This one is my favourite.'" },
+      { es: "—Muy bonita —dice Carmen—. Pero le hace falta más sol.", en: "'Very pretty,' says Carmen. 'But it needs more sun.'" },
+    ],
+    questions: [
+      { q: "Where are Deb's plants?", options: ["En la cocina", "En el balcón", "En el mercado"], answer: 1 },
+      { q: "What does the plant have today?", options: ["Una flor nueva", "Una hoja seca", "Una maceta nueva"], answer: 0 },
+      { q: "What does Carmen say it needs?", options: ["Más agua", "Más sol", "Más tierra"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-28",
+    tier: "easy",
+    title: "¿Está lejos?",
+    teaser: "Straight on, then second on the right",
+    lines: [
+      { es: "Deb busca la calle Mallorca.", en: "Deb is looking for Mallorca Street." },
+      { es: "—Perdone, ¿está lejos? —pregunta a un señor.", en: "'Excuse me, is it far?' she asks a man." },
+      { es: "—No. Todo recto y la segunda a la derecha —dice él.", en: "'No. Straight on and second on the right,' he says." },
+      { es: "Deb va andando y llega en cinco minutos.", en: "Deb walks and gets there in five minutes." },
+    ],
+    questions: [
+      { q: "What is Deb looking for?", options: ["La calle Mallorca", "El mercado", "La farmacia"], answer: 0 },
+      { q: "What does the man say?", options: ["Todo recto y la segunda a la derecha", "Gire a la izquierda", "Está muy lejos"], answer: 0 },
+      { q: "How does Deb get there?", options: ["En autobús", "En taxi", "Andando"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-29",
+    tier: "harder",
+    title: "Un piso con balcón",
+    teaser: "Three flats, and the one with the morning light",
+    lines: [
+      { es: "Cuando Deb llegó a Barcelona, buscaba un piso con balcón para sus plantas.", en: "When Deb arrived in Barcelona, she was looking for a flat with a balcony for her plants." },
+      { es: "El primero que vio era muy bonito, pero daba a una calle con mucho ruido.", en: "The first one she saw was very pretty, but it faced a street with a lot of noise." },
+      { es: "El segundo tenía ascensor y estaba amueblado, pero el alquiler era muy caro.", en: "The second had a lift and was furnished, but the rent was very expensive." },
+      { es: "El tercero daba al patio, tenía luz toda la mañana y el casero era muy amable.", en: "The third faced the courtyard, had light all morning and the landlord was very kind." },
+      { es: "—Me lo quedo —dijo Deb—. ¿Cuánto es la fianza?", en: "'I'll take it,' said Deb. 'How much is the deposit?'" },
+    ],
+    questions: [
+      { q: "What was Deb looking for?", options: ["Un piso con balcón", "Un piso con piscina", "Un piso en el centro"], answer: 0 },
+      { q: "What was wrong with the first flat?", options: ["Era muy caro", "Daba a una calle con mucho ruido", "No tenía ascensor"], answer: 1 },
+      { q: "Why not the second one?", options: ["El alquiler era muy caro", "No tenía luz", "El casero no era amable"], answer: 0 },
+      { q: "Which flat did she take?", options: ["El primero", "El segundo", "El tercero"], answer: 2 },
+    ],
+  },
+  {
+    id: "historia-30",
+    tier: "harder",
+    title: "Acción de Gracias en el tercero",
+    teaser: "A whole turkey, and an oven that's too small",
+    lines: [
+      { es: "El cuarto jueves de noviembre, Deb invitó a Carmen y a Manolo a cenar.", en: "On the fourth Thursday of November, Deb invited Carmen and Manolo to dinner." },
+      { es: "—En Estados Unidos celebramos Acción de Gracias —les explicó—. Se come pavo.", en: "'In the US we celebrate Thanksgiving,' she explained to them. 'You eat turkey.'" },
+      { es: "El lunes fue a la carnicería y pidió un pavo entero; el carnicero se rio y dijo que lo tendría el miércoles.", en: "On Monday she went to the butcher's and asked for a whole turkey; the butcher laughed and said he'd have it on Wednesday." },
+      { es: "El jueves el pavo no cabía en el horno, así que Deb lo cortó en dos y nadie se dio cuenta.", en: "On Thursday the turkey didn't fit in the oven, so Deb cut it in two and nobody noticed." },
+      { es: "—Está buenísimo —dijo Manolo—. ¿Y esto se celebra todos los años? Pues yo vengo.", en: "'It's delicious,' said Manolo. 'And this is celebrated every year? Then I'm coming.'" },
+    ],
+    questions: [
+      { q: "Who did Deb invite?", options: ["A Carmen y a Manolo", "A Susan", "A la profesora de pilates"], answer: 0 },
+      { q: "What did the butcher say?", options: ["Que no tenía pavo", "Que lo tendría el miércoles", "Que era muy caro"], answer: 1 },
+      { q: "What was the problem on Thursday?", options: ["El pavo estaba frío", "El pavo no cabía en el horno", "El pavo no llegó"], answer: 1 },
+      { q: "What does Manolo say at the end?", options: ["Que no le gusta el pavo", "Que viene todos los años", "Que tiene frío"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-31",
+    tier: "longer",
+    title: "La farmacia de la esquina",
+    teaser: "A first Barcelona cold, and no prescription needed",
+    lines: [
+      { es: "El martes Deb se despertó con dolor de cabeza y la nariz tapada: su primer resfriado en Barcelona.", en: "On Tuesday Deb woke up with a headache and a blocked nose: her first cold in Barcelona." },
+      { es: "Bajó a la farmacia de la esquina y dijo, muy despacio: —Necesito algo para el resfriado.", en: "She went down to the pharmacy on the corner and said, very slowly: 'I need something for a cold.'" },
+      { es: "La farmacéutica le preguntó si tenía fiebre y si era alérgica a algo. —A los frutos secos —contestó Deb—, pero eso no es un medicamento, ¿no?", en: "The pharmacist asked her if she had a fever and if she was allergic to anything. 'To nuts,' Deb answered, 'but that's not a medicine, is it?'" },
+      { es: "—No, tranquila —se rio la farmacéutica, y le dio una caja de sobres—. Uno cada ocho horas, con agua caliente. Y no hace falta receta.", en: "'No, don't worry,' laughed the pharmacist, and gave her a box of sachets. 'One every eight hours, with hot water. And you don't need a prescription.'" },
+      { es: "Deb pagó cuatro euros con veinte y volvió a casa pensando que había entendido todo, o casi todo.", en: "Deb paid four euros twenty and went home thinking she had understood everything, or almost everything." },
+      { es: "Esa noche durmió diez horas; el miércoles, en el portal, Manolo le dijo que tenía mejor cara que él.", en: "That night she slept ten hours; on Wednesday, in the lobby, Manolo told her she looked better than he did." },
+    ],
+    questions: [
+      { q: "What was wrong with Deb?", options: ["Le dolía la espalda", "Tenía un resfriado", "Estaba cansada"], answer: 1 },
+      { q: "What did the pharmacist ask?", options: ["Si tenía fiebre", "Si tenía receta", "Si tenía tarjeta"], answer: 0 },
+      { q: "How often should Deb take the medicine?", options: ["Dos veces al día", "Uno cada ocho horas", "Uno a la semana"], answer: 1 },
+      { q: "How long did Deb sleep?", options: ["Ocho horas", "Diez horas", "Toda la mañana"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-32",
+    tier: "longer",
+    title: "El Gordo",
+    teaser: "Twenty euros in, children singing numbers, and twenty euros out",
+    lines: [
+      { es: "A principios de diciembre, Manolo le preguntó a Deb si quería comprar un décimo de la lotería de Navidad con los vecinos.", en: "At the beginning of December, Manolo asked Deb if she wanted to buy a share of the Christmas lottery with the neighbours." },
+      { es: "—¿Un décimo? —preguntó Deb. —Sí, mujer: veinte euros, y si toca, toca para todo el edificio —explicó Carmen.", en: "'A share?' asked Deb. 'Yes: twenty euros, and if it wins, it wins for the whole building,' Carmen explained." },
+      { es: "Deb no entendía muy bien cómo funcionaba, pero pagó sus veinte euros y guardó el papel en el bolso.", en: "Deb didn't really understand how it worked, but she paid her twenty euros and kept the slip in her bag." },
+      { es: "El veintidós de diciembre, a las nueve de la mañana, en todas las radios del barrio unos niños cantaban números.", en: "On the twenty-second of December, at nine in the morning, on every radio in the neighbourhood some children were singing numbers." },
+      { es: "A las once, Carmen llamó a la puerta gritando: —¡Nos ha tocado! Bueno… la pedrea. ¡Veinte euros!", en: "At eleven, Carmen knocked on the door shouting: 'We've won! Well… a small prize. Twenty euros!'" },
+      { es: "Deb recuperó justo lo que había pagado, pero bajó al portal con una botella de cava igualmente: a lo mejor el año que viene.", en: "Deb got back exactly what she had paid, but she went down to the lobby with a bottle of cava anyway: maybe next year." },
+    ],
+    questions: [
+      { q: "What did Manolo suggest?", options: ["Comprar un décimo con los vecinos", "Comprar el pavo", "Cenar en el tercero"], answer: 0 },
+      { q: "How much did Deb pay?", options: ["Diez euros", "Veinte euros", "Cien euros"], answer: 1 },
+      { q: "What happens on 22 December?", options: ["Unos niños cantan números en la radio", "Es Nochebuena", "Vienen los Reyes"], answer: 0 },
+      { q: "How much did they win?", options: ["Nada", "Veinte euros", "Mucho dinero"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-33",
+    tier: "long",
+    title: "Las doce uvas",
+    teaser: "Practice on the thirtieth, a tip from the greengrocer, and midnight",
+    lines: [
+      { es: "Deb decidió quedarse en Barcelona en Nochevieja: el vuelo a Atlanta era carísimo y, además, quería ver lo de las uvas.", en: "Deb decided to stay in Barcelona for New Year's Eve: the flight to Atlanta was hugely expensive and, besides, she wanted to see the thing with the grapes." },
+      { es: "Carmen la invitó a cenar a su casa y le dio instrucciones: —Doce uvas, una por campanada, y tienes que terminarlas antes de que acabe la última.", en: "Carmen invited her to dinner at her place and gave her instructions: 'Twelve grapes, one per chime, and you have to finish them before the last one ends.'" },
+      { es: "Deb practicó el día treinta con uvas del mercado, delante del reloj de la cocina, y se atragantó en la séptima.", en: "Deb practised on the thirtieth with grapes from the market, in front of the kitchen clock, and choked on the seventh." },
+      { es: "—Pélalas y quítales las pepitas —le aconsejó el frutero el día treinta y uno—. Es lo que hace todo el mundo, aunque nadie lo diga.", en: "'Peel them and take the pips out,' the greengrocer advised her on the thirty-first. 'It's what everyone does, even if nobody says so.'" },
+      { es: "A las doce menos cuarto, en casa de Carmen, todos estaban de pie delante de la tele con un plato de uvas en la mano.", en: "At quarter to twelve, at Carmen's, everyone was standing in front of the TV with a plate of grapes in their hand." },
+      { es: "Sonaron las campanadas; Deb comió, comió, comió… y en la duodécima levantó los brazos con la boca llena mientras todos gritaban «¡Feliz año nuevo!».", en: "The chimes rang; Deb ate, ate, ate… and on the twelfth she raised her arms with her mouth full while everyone shouted 'Happy New Year!'" },
+      { es: "—Es la primera americana que lo consigue a la primera —dijo Manolo, y brindaron con cava—. El año que viene, con pepitas.", en: "'She's the first American to manage it first time,' said Manolo, and they toasted with cava. 'Next year, with the pips in.'" },
+    ],
+    questions: [
+      { q: "Why did Deb stay in Barcelona?", options: ["El vuelo era carísimo", "No le gusta Atlanta", "Tenía que trabajar"], answer: 0 },
+      { q: "What are Carmen's instructions?", options: ["Doce uvas, una por campanada", "Una uva a medianoche", "Doce uvas con cava"], answer: 0 },
+      { q: "What happened when Deb practised?", options: ["Se atragantó en la séptima", "No tenía uvas", "Se comió todas"], answer: 0 },
+      { q: "What did the greengrocer advise?", options: ["Comprar uvas grandes", "Pelarlas y quitarles las pepitas", "Comer solo seis"], answer: 1 },
+      { q: "What does Manolo say at the end?", options: ["Que Deb ha perdido", "El año que viene, con pepitas", "Que no le gustan las uvas"], answer: 1 },
+    ],
+  },
+  {
+    id: "historia-34",
+    tier: "hard",
+    title: "El roscón de Reyes",
+    teaser: "A bean, a figurine, and a box Deb should have read",
+    lines: [
+      { es: "El cinco de enero por la tarde, Carmen le explicó a Deb que los niños dejan los zapatos junto a la ventana y que los Reyes pasan por la noche a dejar los regalos.", en: "On the afternoon of the fifth of January, Carmen explained to Deb that children leave their shoes by the window and that the Kings come by in the night to leave the presents." },
+      { es: "—¿Y los mayores? —preguntó Deb. —Los mayores comen roscón el día seis: a quien le toca la figurita se pone la corona, y a quien le toca el haba, paga el roscón.", en: "'And the grown-ups?' asked Deb. 'The grown-ups eat roscón on the sixth: whoever gets the little figure wears the crown, and whoever gets the bean pays for the roscón.'" },
+      { es: "Deb fue a la pastelería de la plaza y compró uno grande, de nata, porque el pequeño le pareció poca cosa para cuatro personas.", en: "Deb went to the cake shop on the square and bought a big one, with cream, because the small one seemed too little for four people." },
+      { es: "El día seis, Manolo subió con su hijo, y Carmen cortó el roscón muy despacio, mirando cada trozo como si fuera un médico.", en: "On the sixth, Manolo came up with his son, and Carmen cut the roscón very slowly, examining each slice as if she were a doctor." },
+      { es: "El hijo de Manolo mordió, puso cara rara y escupió el haba en la servilleta. —¡Pagas tú! —gritaron todos, y el niño se puso rojo.", en: "Manolo's son bit in, pulled a funny face and spat the bean into his napkin. 'You're paying!' they all shouted, and the boy went red." },
+      { es: "Deb mordió su trozo, muy atenta, y sintió algo duro: sacó una figurita de porcelana, un rey con una capa azul.", en: "Deb bit into her slice, very carefully, and felt something hard: she pulled out a little porcelain figure, a king with a blue cape." },
+      { es: "Le pusieron la corona de papel dorado y, por un momento, Deb fue la reina del tercero.", en: "They put the gold paper crown on her and, for a moment, Deb was queen of the third floor." },
+      { es: "Luego Carmen cortó el siguiente trozo, y el siguiente, y en cada uno había un rey. Deb miró la caja y leyó: «Roscón especial: doce sorpresas». Al final de la tarde había doce reyes en el salón y un solo niño que tenía que pagar.", en: "Then Carmen cut the next slice, and the next, and in every one there was a king. Deb looked at the box and read: 'Special roscón: twelve surprises'. By the end of the afternoon there were twelve kings in the living room and just one boy who had to pay." },
+    ],
+    questions: [
+      { q: "Where do the children leave their shoes?", options: ["Junto a la ventana", "En el balcón", "En el portal"], answer: 0 },
+      { q: "What happens to whoever gets the bean?", options: ["Se pone la corona", "Paga el roscón", "Come otro trozo"], answer: 1 },
+      { q: "Which roscón did Deb buy?", options: ["El pequeño", "Uno grande, de nata", "Uno de chocolate"], answer: 1 },
+      { q: "Who got the bean?", options: ["Deb", "Carmen", "El hijo de Manolo"], answer: 2 },
+      { q: "How many kings were there in the end?", options: ["Uno", "Tres", "Doce"], answer: 2 },
     ],
   },
 ];
