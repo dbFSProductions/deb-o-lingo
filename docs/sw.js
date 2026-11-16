@@ -6,13 +6,29 @@
 
 // Bumped with VERSION in js/version.js — Settings shows the two side by side,
 // so forgetting one of them shows up as two different numbers on screen.
-const VERSION = "debolingo-v61";
+const VERSION = "debolingo-v62";
 const SHELL = [
   "./",
   "./index.html",
   "./app.css",
   "./manifest.webmanifest",
   "./js/app.js",
+  "./js/about.js",
+  "./js/add.js",
+  "./js/ask.js",
+  "./js/core.js",
+  "./js/drill.js",
+  "./js/match.js",
+  "./js/path.js",
+  "./js/phrases.js",
+  "./js/pictures.js",
+  "./js/prizes.js",
+  "./js/quick.js",
+  "./js/quiet.js",
+  "./js/replies.js",
+  "./js/score.js",
+  "./js/settings.js",
+  "./js/story-page.js",
   "./js/version.js",
   "./js/store.js",
   "./js/audio.js",
