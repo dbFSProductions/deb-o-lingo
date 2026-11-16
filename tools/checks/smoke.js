@@ -160,7 +160,7 @@ const WORKER_ROUTES = {
   await home();
   await page.click('[data-section="phrases"]');
   await page.waitForSelector("#phrase-list [data-phrase]");
-  await page.fill("#search", "hola");
+  await page.fill("#search", "por favor");
   await page.click("#phrase-list [data-phrase]");
   await page.waitForSelector("#p-edit");
   await page.click("#p-edit");
