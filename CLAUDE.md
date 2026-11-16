@@ -2,1942 +2,276 @@
 
 A personal Spanish (es-ES) pronunciation trainer for one specific beginner,
 Deb: five-minute lessons, Duolingo-flavoured UI, real pronunciation scoring.
-Not for release; the audience is exactly two people.
+You hear a native model, record yourself, and the app shows where the two
+differ. Not for release; the audience is exactly two people, on iPhones.
 
 `README.md` is for the people using it. This file is for whoever works on it.
+It is deliberately short: the rules, the map, and an index. The reasoning
+behind every feature is in `notes/` — read the relevant file before changing
+that feature.
 
 ---
 
-## Lineage: this is a fork of Xerra's web app
+## Rules
 
-The core came from `dbFSProductions/listen-record-learn` (`docs/` — "Xerra",
-a Catalan trainer). Division of labour:
+1. **The phone runs the GitHub Pages build of `main` and nothing else.**
+   Deployment is Pages from `main`/`docs`. Work goes in through a pull request
+   (use `.github/pull_request_template.md`); until it is on `main` nobody can
+   try it.
+2. **Bump both version strings on any change under `docs/`**: `VERSION` in
+   `docs/js/version.js` (`vNN`) and in `docs/sw.js` (`debolingo-vNN`). Read
+   `main`'s values when you merge and bump past them. A change that ships
+   nothing to the phone (this file, `notes/`, `tools/`) needs no bump.
+3. **Say the two version numbers** in the pull request and again when you
+   report the work done — `js/version.js` first, then `sw.js`'s. Settings →
+   *Version* (Running / Installed) is checked against them.
+4. **A new file under `docs/js/` must be added to `SHELL` in `docs/sw.js`**,
+   or the app breaks offline.
+5. **Don't undo the service worker's two guards**: precaching with
+   `cache: "reload"`, and network-first navigations. `notes/project.md`.
+6. **`docs/js/content.js` is hand-written here** — no generator. **Phrase ids
+   and story ids are stable** and referenced by saved data: never renumber,
+   append. `notes/content.md`.
+7. **There is no Worker in this repo.** Every AI call goes to the Worker in
+   `dbFSProductions/listen-record-learn`, shared by three apps. It validates
+   what it is sent: anything calling `/complete-card` sends `deck`,
+   `languageCode` and `languageName`; anything built for `chatContext` needs
+   `language` and `deck`. A feature that needs a new endpoint needs a change
+   and a deploy over there first.
+8. **No build step, no `package.json`, no dependencies in the repo.** Vanilla
+   ES modules loaded by the browser. Tooling (Playwright, acorn, ESLint) is
+   installed outside it.
+9. **Never commit a key.** The Azure key and the assistant passcode live only
+   in localStorage. Anything touching Azure or the Worker is tested against
+   fakes — say so plainly when reporting.
+10. **The three sister apps share one browser origin** (`github.io` paths, not
+    subdomains). Storage keys, `DB_NAME` and the cache name are prefixed
+    `debolingo`; never read or write another prefix.
+11. **Run the checks before merging**: `tools/checks/run.sh`. Add to them when
+    you add a feature.
+12. **Report honestly.** "Passes headless against a fake" is not "works on the
+    phone". Name what was not tried.
 
-| File | Relationship to Xerra |
+---
+
+## The map
+
+```
+docs/                 The PWA. GitHub Pages serves this folder from main.
+  index.html          The shell. All UI is rendered from JS into #view.
+  app.css             The one stylesheet. Palette shared with the sister apps.
+  sw.js               Service worker: precache list (SHELL) and VERSION.
+  js/                 See the table below.
+  vendor/             Azure Speech SDK, fonts. Vendored on purpose.
+tools/checks/         Headless checks (Playwright). run.sh runs them all.
+tools/split-app/      The script and config that split app.js at v62.
+notes/                Why things are the way they are. Indexed below.
+```
+
+### `docs/js/`
+
+`app.js` was one 5,900-line file until v61. It is now the entry point and one
+module per page. Older notes that say "in app.js" mean one of these.
+
+| file | what is in it |
 |---|---|
-| `docs/js/audio.js` | **Verbatim copy, both halves.** Recording, playback, the speech detector, the waveform and the pitch tracker are the same code in both repos — change one, change the other, and re-verify numerically (below). Only two comments differ, where the tail-pad argument names a Spanish final -s rather than a Catalan final -t. |
-| `docs/js/speech.js` | Same behaviour, comments retouched. Port bug fixes both ways. |
-| `docs/js/store.js` | Restructured: one fixed language, course content is *code* (content.js) not seeded data, plus lesson progress + streaks. |
-| `docs/js/app.js` | Drill/canvas/scoring internals ported; everything around them (path, lessons, banners, celebration) is new. The Add tab, the card-chat panel, stars, autosizing text boxes and the attempt-trend line are ports of Xerra's — keep them in step. Xerra's in-app dictate buttons are the exception: they have been taken out here (see *The composer has no dictate buttons*). |
-| `docs/js/card-assistant.js` | Was a verbatim copy; **Xerra's has since grown call timing** (`aiLog` + a Settings panel, its PR #29) that this app doesn't have, so don't "fix" the two back into agreement without porting it deliberately. Everything else is the same, and it talks to the *same deployed Worker*: the Worker takes the language per request, and Pages serves both apps from the one `github.io` origin its CORS list allows. There is no `worker/` directory here — the code lives in Xerra's repo. All five endpoints are called from here (`/complete-card`, `/chat`, `/replies`, `/interview`, `/about-cards`). |
-| `docs/js/version.js` | Ported from Xerra. Bumped in step with `VERSION` in `sw.js`; Settings shows the pair. |
-| `docs/js/content.js` | **Hand-written here.** No Swift twin, no generator — unlike Xerra, editing it directly is correct. Xerra now carries a Catalan rewrite of this course (its Salutacions, Tapes, El mercat and most of Cafès i sortir); the situations are shared, the focusNotes deliberately are not — hers teach Castilian, Xerra's teach Catalan. Add a unit here and it's worth offering there. |
-| `docs/app.css` | Was the divergent one; Xerra has now taken this palette on. The two are meant to stay in step — change a colour here and change it there. Xerra keeps its own structure (section accents, page-head banners, deck meters), so port the *values*, not the rules. |
+| `app.js` | Entry point. Boot (loads every store), `render()` — the dispatcher that picks a page from `state` — `goHome()`, and the one delegated click listener on `#view`. |
+| `core.js` | Shared by everything: `view`, `state`, `player`, `esc`, `toast`, sheets, `armDelete`, `sayAloud`, `noVoice`, `starButton`, `homeLink`, `stopEverything`, `normaliseSentence`, `reviewToday`, `PASS_GREAT` / `PASS_OK`, the icons and the parrot. **Imports no page module.** |
+| `path.js` | The home tiles and the path: `renderPath(section)`, `TILE_UNITS`, `PRACTICE`, `SECTION_TITLES`, the generated units (Lo tuyo, Sobre mí, Your words), `pathUnits` / `unitsFor` / `allUnits`, `findLesson`. |
+| `drill.js` | `startLesson`, `startPractice`, `startReview`, `loadPhrase`, `renderDrill`, level two, the past-tense gate, recording, the banner, `deletePhrase`, `renderComplete`. |
+| `quiet.js` | Quiet mode: the type box and `checkTyped`, the marking of a typed answer. |
+| `score.js` | After an attempt: the comparison, the score card, the waveform and pitch canvases. |
+| `ask.js` | `cardChatPanel` (the ask box in the drill, the sheet and the Add review), `chatContext`, the kept notes. |
+| `replies.js` | "What might they say back?": showing, fetching and keeping replies. |
+| `pictures.js` | Keyword mnemonics: the picture block, the gender cue and field, drawings, the picture prompts, Imagine it again. |
+| `add.js` | Add a word (`renderAddWord`) and Add a card (`renderAdd`). |
+| `quick.js` | Quick: the ask box and the card it saves. |
+| `phrases.js` | All Phrases, the phrase sheet (`showPhrase`), the editor (`editPhrase`) and its AI rebuild. |
+| `about.js` | Sobre mí: the interview and the cards it writes. |
+| `prizes.js` | The study clock (`studyTick`, started at import), `checkAwards`, the celebration overlay, the Prizes page. |
+| `match.js` | Match, the pairs game. |
+| `story-page.js` | Stories: the list and a story with its questions. (The stories themselves are `STORIES` in `content.js`.) |
+| `settings.js` | Settings, the version panel, the storage line. |
+| `store.js` | All persisted data and its rules: `library`, `settings`, `progress`, `aboutMe`, `awards`, `stories`, `attemptScore`, `ASPECTS`, `genderOf`, review, IndexedDB. |
+| `speech.js` | Azure synthesis and scoring, the browser-voice fallback. Same behaviour in all three apps. |
+| `audio.js` | Recorder, Player, the speech detector, waveform and pitch analysis. **Verbatim copy in all three apps.** |
+| `card-assistant.js` | The client for every Worker endpoint. |
+| `content.js` | `COURSE` (units → lessons → phrases) and `STORIES`. Hand-written. |
+| `version.js` | `VERSION`. |
 
-Xerra gotchas that still apply here: the `.sheet` `display:flex` vs `hidden`
-trap (comment preserved in app.css), service-worker staleness (bump **both**
-`VERSION`s — `sw.js` and `js/version.js` — when shipping changed assets), and
-never commit an Azure key — it lives only in localStorage, entered in Settings.
-
-### Two version strings, bumped together
-
-`VERSION` in `sw.js` and `VERSION` in `docs/js/version.js` aren't derived from
-each other — `sw.js` is a classic worker and can't import an ES module, and
-inlining one into the other needs the build step this app deliberately doesn't
-have. Settings shows both instead, as *Running* (the executing JavaScript) and
-*Installed* (read back from `caches.keys()`), so forgetting one shows up as two
-different numbers on the screen rather than silently. That panel is also the
-answer to "is the fix in, or has the phone not caught up?" — after a deploy the
-installed number moves first, and the gap is the reload still owed.
-
-**Say the two numbers out loud whenever you hand work over.** Every pull
-request and every merge should end with the pair written out — `js/version.js`
-first, then `sw.js`'s — because Settings → *Version* is the only way to tell
-"the fix is in" from "the phone hasn't caught up", and that check is worthless
-without knowing what number to expect. So: state them in the PR body, and state
-them again when reporting a change as done. Deb should never have to go and
-read the diff to find out what she's looking for.
-`.github/pull_request_template.md` has a slot for them so the PR half is
-structural rather than a thing to remember.
-
-Bumping it is necessary and was once not sufficient. The install handler used
-to precache with `cache.add(url)`, whose fetch goes through the browser's own
-HTTP cache — and Pages serves everything `max-age=600`. So for ten minutes
-after a deploy, a brand-new version's cache could be filled with pre-deploy
-copies of some files and post-deploy copies of others, and cache-first then
-served that mix until the *next* version bump, with no amount of reloading
-fixing it. (That is Xerra's story; this repo shipped the fix before it
-happened here.) Precaching now uses `new Request(url, { cache: "reload" })` so
-a version's cache is all of one version, and navigations are network-first
-(cache only as the offline fallback) so the HTML can never be staler than the
-scripts it names. **Don't undo either one for "fewer requests."**
+To find where something lives: `grep -n "function name" docs/js/*.js`.
 
 ---
 
-## The home screen: a wordmark, eight tiles, and the path
-
-The tab bar is gone. Four buttons for four things that were never peers —
-Learn was the home screen, Phrases and Add things you do occasionally, Settings
-rarer still. Ported from Xerra, where the same bar had the same problem.
-
-- **The header carries the brand and the two controls.** The parrot at 34px
-  beside the wordmark, then the streak and a cog. The big parrot stays in the
-  greeting card below: one is the logo, the other is the mascot talking to you.
-- **The cog is a toothed cog, not the spoked circle the tab bar used**, and it
-  sits on a tinted disc. Under the word *Settings* the old mark read fine;
-  alone on a header it reads as a brightness icon, and on Xerra it was reported
-  as simply not being findable. Fixed there first, ported already fixed.
-- **Every page below home prints `homeLink()`** — *‹ Home* — behind one
-  delegated listener on `view`, so a page only has to print the link.
-
-### Home is eight tiles; the path is one tap in
-
-The first cut put the tiles *above* the path, so the home screen was still the
-winding course with four squares on top of it. Now home is the header, the
-greeting, the week strip and eight tiles, and nothing else — the path lives
-behind **Practice**. (It was six tiles for a long while, and most of what
-follows was written then; Stories and Review are the two that made it eight.)
-
-- **Review and Stories are the seventh and eighth squares**, asked for
-  together: *"add these as two new cards on the front page — move Review down
-  to be one of the cards and add Stories as the other one"*. Review had been
-  a teal strip under the parrot, shown only when something was due. As a
-  square it is **always shown** — a tile that comes and goes leaves a hole in
-  a grid — and reads *Nothing due today* when there is nothing, with a tap
-  then toasting rather than opening an empty drill (`startReview` checks).
-  It carries `data-review`, the same attribute the strip did, so the one
-  listener that starts the review queue didn't change; `.due-strip` and its
-  CSS are gone. Stories is red, the one strong colour no other tile wore, and
-  carries `data-open-stories`. The order is Practice, Words, Sobre mí, Quick,
-  Match, Stories, Review, All Phrases: the two games on the third row, the
-  two lists on the fourth. The week strip stays under the parrot — it is
-  still the thing on that page that changes every day.
-
-- **`PRACTICE` is a section like the others**, not a special case of "no
-  section". Three places test for it, which is why it is a named constant: a
-  typo in any of them draws an empty path rather than erroring.
-- **Sobre mí is a square, not a unit on the path.** It was a unit led by a
-  workshop node that opened the interview — and buried under Mézclalo it was
-  the last thing on the longest page, for a deck that is not a lesson you work
-  through any more than the past tense is. So the tile does what the node did:
-  it opens the interview page, which lists the cards. `pathUnits` leaves
-  `ABOUT_UNIT_ID` out alongside `TILE_UNITS`; `allUnits` keeps it, so Repaso's
-  pool and `findLesson` still see the cards. It is the one tile carrying
-  `data-about` rather than `data-section`, because it opens a page and not a
-  path, and it is green — the one strong colour the other five don't use.
-  **It is always shown**, unlike the unit, which stayed away with no assistant
-  and no cards: a tile that comes and goes leaves a hole in a grid, so the
-  tile says *Needs the card builder* instead and the page it opens links to
-  Settings. All Phrases still lists the cards under their own label, because
-  that page is every card. Ported from Xerra, where the same row came out of
-  Decks the same day.
-- **Sobre mí sits where The Past was, and The Past went down beside Phrases.**
-  The order was Practice, Words, Sobre mí, Quick, The Past, Phrases. Asked for
-  from the phone; the two you reach for most belong on the top two rows.
-- **Match has The Past's square now.** Asked for as *"she doesn't use that"*.
-  The order is Practice, Words, Sobre mí, Quick, Match, Phrases; Match keeps
-  the slot's gold so the grid's palette is unchanged, and it is the tile that
-  carries `data-open-match`. El pasado is not gone: `TILE_UNITS` lost `past`,
-  which is all it takes to put the unit back on the Practice path in course
-  order, after El mercado and before Mézclalo. Four lessons on the path is
-  not the burial that Palabras's thirty-one (now sixty-one) words were.
-- **Phrases is a square too, and that is what makes six.** It was `.tile-wide`,
-  a button across the bottom on the argument that the whole library outranks a
-  slice of it; five squares and a strip read worse than six squares, and the
-  argument was never strong. `.tile-wide` is gone with it.
-- **`SECTION_TITLES` is what a section is called on the way in, and it is
-  deliberately not the unit's own title.** The Palabras unit is still called
-  Palabras in `content.js`; **Words** is what the tile says and what the page
-  says once you are in it. A tile reading Words that opens a page reading
-  Palabras is two names for one place, and that is exactly what the first cut
-  did. One table, read by both the tile and the section head — change a name
-  there and both follow.
-- **Mézclalo moved with the path.** It is the end of the course, so it belongs
-  behind Practice rather than on a home screen that no longer shows lessons.
-
-### Every list wears a colour, and Home is in the same place everywhere
-
-Ported from Xerra the day it landed there, asked for as *"mum-o and Deb-o now
-look dull without all the colours"*. Words and The Past were never dull — they
-are the path's own units, banners and all — so what changed is the pages that
-listed white rows under grey labels.
-
-- **Phrases groups its rows under a one-row banner in the group's colour**
-  (`group()` in `renderPhrases`, `.list-banner` in app.css), with the rows
-  under it striped in the same colour (`.row.striped`) and spaced out as
-  cards (`.rows-spaced`) rather than fused into one list. A course lesson
-  takes its unit's `color` off the path, so a lesson looks the same here as
-  its banner does there; Favourites are gold and Sobre mí green, as their
-  tiles are; own phrases are blue; a jotted-down capture is orange, the
-  colour of the Add page it is waiting to be finished on. Gold takes dark
-  lettering, as the tile does. The colours are set inline (`--hue`,
-  `--hue-dark`, `--hue-on`) because a unit's colour is a hex in `content.js`
-  rather than a palette variable.
-- **Quick's answer card and its *Asked for before* rows are striped in
-  Quick's orange, and Sobre mí's cards in its green.** Same stripe, same
-  spaced rows.
-- **Every page below Home opens with the same `home-head section-head` —
-  the title where the wordmark goes and *‹ Home* beside it.** Phrases,
-  Settings and Add had the link on a line above an `h1`, and Sobre mí had a
-  ✕ in a lesson bar: four pages, three shapes of the same control. Reported
-  as the Home button being different in Sobre mí. `.page-back`,
-  `.list-intro`, `.about-head` and `.about-lede` went with it; Sobre mí
-  keeps its `#about-back` id and handler.
-
-Xerra's version of this also paints its deck rows as filled banners and its
-print sheet; neither has a counterpart here, since this app has no deck list
-and no print page.
-
-### El pasado and Palabras came off the path
-
-`TILE_UNITS` is the whole of it: a unit named there is reached through a tile
-instead of the path. It was both of them; El pasado came back onto the path
-when Match took its tile (see above), so it is Palabras alone now.
-
-- **They were never "next".** One is a grammar drill, the other a vocabulary
-  pile you dip into — neither is a thing you work through in order. Strung out
-  along the winding path they buried the everyday lessons under twenty more
-  nodes, so the path stopped reading as progress.
-- **They are still ordinary units.** Same shape, same lessons, same progress
-  ticks, drawn by the same `renderPath` — `section` simply filters which units
-  it draws. **There is deliberately no second renderer**: a copy would drift,
-  and the first thing to drift would be the node states.
-- **`pathUnits()` and `unitFor(section)` answer two different questions.** The
-  first is what the path draws, the second is what one tile opens. Mixing them
-  up is how a unit ends up in both places or neither.
-- **A tile whose unit is empty is not shown.** `tiles()` filters on the count,
-  so a fork without one of these units gets three tiles rather than a dead
-  square.
-
-### Quick, and where its cards live
-
-Ported from Xerra. One box, one button, the phrase, and a Listen you can hit
-twice on the way in — for the moment you are outside a pharmacy and have about
-as long as it takes to open the door.
-
-- **`QUICK_DECK` is a deck name and nothing more**, exactly like `ABOUT_DECK`,
-  and it buys the same one thing: somewhere of its own to be listed.
-- **`ownUnit` skips both `ABOUT_DECK` and `QUICK_DECK`.** Without that, a Quick
-  card would appear twice — behind its tile and again on the path under *Lo
-  tuyo*. That filter is the load-bearing line here.
-- **The card is saved as it arrives**, not on a "keep it" tap: the failure this
-  guards against is the phrase scrolling away while you are talking. *Don't
-  keep it* is the undo, and it is one tap.
-- **No Worker change.** It calls the same `/complete-card` the Add page does.
-
-#### Quick has to send its language and its deck
-
-It shipped broken. The port dropped three fields from the `/complete-card`
-payload — `deck`, `languageCode` and `languageName` — on the reasoning that
-this fork has one language and Quick has one deck, so there was nothing to
-choose. The Worker does not agree: `validateDraft` requires all three and
-returns **400 "Choose a language and deck."** without them. Every ask failed,
-with that message in the error box.
-
-**They are not optional because the value is constant.** The Worker is shared
-by three apps and validates the payload it is given, not the payload it could
-have inferred. Anything calling `/complete-card` sends them.
-
-**The wider lesson is about the tests, and it is the third time this shape has
-bitten.** The suite had thirteen assertions on Quick and every one passed: the
-box was there, the button was there, the page rendered, no console errors.
-None of them pressed the button, because pressing it meant standing in a
-Worker. `page.route` over `/complete-card` costs a few lines and is the whole
-difference between "the screen is built" and "the feature works" — so the stub
-now validates the payload **the way the Worker does**, and the test fails 9 of
-13 against the broken version.
-
-- A DOM assertion proves a control exists.
-- A screenshot proves it can be found.
-- Only exercising it proves it does anything.
-
-#### The field asks "el or la?", and a regenerated picture is ours to replace
-
-Two things reported together, both about Add a word.
-
-**The gender field said "From the article".** That names the *mechanism*; the
-question in your head when you file a word is **el or la**, and the answer is
-also which colour the picture gets painted. So `GENDERS` carries an `article`
-now and the field reads *El — colour it blue* / *La — colour it pink*, with
-*El or La — colour it blue or pink* while it cannot tell. The override options
-are *Always el* / *Always la*, which is what distinguishes them from the
-automatic one when it has worked the answer out.
-
-**And the picture stopped following the card.** *Never overwrite yours* was
-measured by "is the box empty" — so the moment we filled it, the next press
-treated our own sentence as the user's and kept it. Change the English, press
-again, and every field refilled except the picture, which went on describing the
-old word. Reported exactly that way.
-
-`lastMade.picture` is the fix: we remember what we put there. Untouched since,
-it is ours to replace; edited at all, it is yours and it stays. **The general
-shape is worth keeping** — "did the user write this?" cannot be answered by
-"is it non-empty" on any field the app also writes to.
-
-#### The colour carries the gender, so the words don't have to
-
-**That is the whole point of the blue and the pink** — and the picture prompt
-was never told. So it spent the bridge and the scene on *el* and *la*, encoding
-in words the one thing the drawing already says in colour, and the mnemonic paid
-twice for it.
-
-`PICTURE_BRIEF` now says it: on a noun, the gender is carried by the colour the
-object is painted, so keep the article out of **both** lines and build the
-bridge and the scene from the noun itself.
-
-#### Every box the app writes to needs the same question asked of it
-
-*Fill in the rest for me* skipped the completion whenever both language boxes
-were full — an optimisation that was exactly wrong, because **after the first
-press both boxes are always full**. Change the English and the word never
-followed; it sat there answering the question you had just stopped asking.
-
-`lastMade` now holds all four fields, and the rule is the same one the editor's
-AI rebuild uses: **whichever side is *yours* is the brief, and the other is
-dropped so it gets written again.**
-
-- You edited the English → send the English alone, the word is rewritten.
-- You edited the word → send the word alone, the English is rewritten.
-- You typed both yourself → nothing of ours to refresh, so no call at all.
-- Sounds and picture the same: ours to replace, yours to leave.
-
-**The general rule, now three bugs deep:** *"did the user write this?"* can
-never be answered by *"is it non-empty"* on a field the app also writes to, and
-it cannot be answered by *"is anything missing"* either. Remember what you
-wrote, and compare.
-
-#### "Don't know" is the first option, and the reading goes underneath
-
-The slot read *El or La — colour it blue or pink*, which is **a description of
-the other two options sitting where a choice should be** — the list offered
-three things and two of them were the same two things. What that slot means is
-"I am not telling you; read it off the article", and the honest word for that is
-**Don't know**.
-
-What the app has worked out moved *under* the select, as `genderHint`: *Reading
-"el" — the picture will be blue.* Feedback, not a fourth thing to weigh up. It
-follows both the word box and the select, so choosing an override says what the
-override will do.
-
-#### Two bugs the same press produced
-
-- **The `/chat` call carried no language.** `chatContext` builds `languageCode`
-  from `phrase.language`, and *Fill in the rest for me* handed it a bare
-  `{ text, translation }` — so the Worker refused it with **"Choose a language
-  first."** every time, after the first call had already filled the word in.
-  The editor's picture button always passed `language`; this one never did.
-  **Anything built for `chatContext` needs `language` and `deck` on it**, and
-  the object is usually assembled by hand rather than being a real phrase, which
-  is exactly why it gets forgotten.
-- **A completed word came back as a sentence.** *"dog"* returned **"Un gos."**,
-  full stop and all — `/complete-card` writes phrases, because that is what it
-  is for. That is not cosmetic: **`genderOf` refuses any text containing
-  punctuation**, so the trailing stop silently cost the card its gender, which
-  is the one thing this screen exists to get right. Two guards, because either
-  alone is thin: the `situation` now says it is a single vocabulary word with
-  its article and not a sentence, and `stripTrailingStop` takes the punctuation
-  off the end whatever comes back. Only the *end* — an interior comma would mean
-  it really was a phrase.
-
-#### An adverb has no article, and the brief said every word did
-
-*Ahora* filed through Add a word came back as **el ahora**. The situation
-sent to `/complete-card` said the word was to be *"given with its article"*,
-flat, because that line was written to stop *"dog"* coming back as a
-sentence — and on a noun it is right. On anything else the model did what it
-was told and invented one. That is not cosmetic twice over: the card then
-drills a word nobody says, and `genderOf` reads the invented article and
-paints an adverb blue.
-
-`SINGLE_WORD_SITUATION` in app.js is the whole of the fix: a noun comes with
-its definite article, anything else — adverb, verb, adjective, question
-word — comes bare and is never given one. Same line in all three apps.
-
-### Add a word, and where your own words live
-
-The Words section was read-only: Palabras is course content in `content.js`, so
-there was no way to add one at all. Now it carries **Add a word**, and what you
-add lands in `WORDS_DECK` — an ordinary deck name like `ABOUT_DECK` and
-`QUICK_DECK`, buying the same one thing: somewhere of its own to be listed.
-
-- **`unitsFor(section)` returns a list, and Words is why.** That section draws
-  the course unit and then **Your words** underneath it, so a word you added is
-  where you would go looking for it rather than filed under *Lo tuyo* with your
-  phrases. Every other section is one unit; this returns a list so that stays
-  true without a special case downstream.
-- **`ownUnit` now skips three decks** — Sobre mí, Quick and Words. Each has
-  somewhere of its own, and a card in two places is the bug this prevents.
-
-**One side is enough.** You have heard a word and don't know what it means, or
-you know the meaning and want the word — whichever you have is enough to start,
-and *Fill in the rest for me* does the other side, the gender, the sound bridge
-and the scene in one press. Two calls in order: `/complete-card` for the missing
-side, then `/chat` for the picture, built from the **completed** word. A picture
-you wrote yourself is never overwritten — only `sounds` is taken then. The
-gender needs no call at all: it is read off the article, which is why the
-completion dispatches an `input` event rather than only setting `.value`.
-
-Ported from Xerra, where the same screen keeps a deck field because its Vocab
-is decks you can file into. Here there is one pile, so the field goes.
-
-### Adding is something you do to a section
-
-The Phrases page carries *Add a card*; there is no Add destination of its own
-any more. Palabras and El pasado offer nothing to add, because in this fork they
-are course content — unlike Xerra, where Vocab is decks you can file into and
-therefore has an *Add a word*.
-
-### The shapes are coloured; the choices still are not
-
-The gate was black and white until you answered — reported as looking broken
-or unfinished. **The reason it had no colour is still good**: a coloured
-*choice* reads as the recommended one, and the only colour on that screen was
-meant to arrive with the verdict.
-
-So the colour is on **the mark**, not on the button — one hue per shape, given
-to every choice at once. That is a legend rather than a recommendation, and it
-is the reason this doesn't undo the earlier decision.
-
-- **Dot is orange, line is blue, a line reaching now is purple**, and the same
-  colour follows the shape into the verdict and onto the phrase sheet, so the
-  picture and the colour get learned together.
-- **The tint behind the mark is mixed from `currentColor`**, so a new shape is
-  one `.shape-*` line and nothing else.
-- The phrase sheet's block already sits on a tint, so the mark keeps its colour
-  and drops the second background there.
-
-### The English was the half you had to hunt for
-
-`.drill-translation` was 1rem against the word's 1.55rem, and a full shade
-lighter. On a Words card — **Hoy** large, *today* small and grey underneath —
-the half you are actually trying to learn was the half you had to look for.
-Reported from the phone. It is 1.12rem and one step of weight up now, still
-quieter than the word but no longer hiding under it.
-
-## Content model
-
-`content.js` exports `COURSE`: units → lessons → phrases. Rules:
-
-- **Phrase ids are stable and referenced by saved attempts.** Never renumber;
-  append.
-- The **Palabras** cards carry `sounds` and `picture` — see *A word, a sound
-  and one ridiculous picture* below. Both are editable fields, so they are
-  hers to rewrite and any card may have them, not only a Palabras word. A
-  third, `gender`, decides whether the picture paints that word's object blue
-  or pink; it is almost always read off the article instead and is written on a
-  card only where the article lies.
-- A lesson is ~5 phrases — one 6:30am coffee. Keep them that size.
-- **Precios y números, El restaurante, De compras and Cada día** came in
-  together, with two more Palabras lessons, for Match's sake: the game draws
-  from every drillable card, and 111 cards was six pairs a round coming back
-  round too soon. Asked for as *"more words and sentences covering a wider
-  variety … prices definitely, but still more food shopping, restaurants, and
-  everyday stuff"*. They sit on the path in course order after El mercado and
-  before El pasado, and they are ordinary units — the deliberate choice was
-  proper lessons over a Match-only pile, because a card that can't be
-  drilled, scored or reviewed is a card in only one place. Nothing in them
-  repeats a phrase already on a card elsewhere: Match refuses two cards with
-  the same text in one round, and a duplicate would also be the same phrase
-  twice on the path.
-- **La vida diaria, Las plantas, Buscar piso, Por la ciudad and Las
-  fiestas** came in together, asked for as *"more phrases, more words, more
-  match, more stories"* with the topics named — what an American living in
-  Barcelona needs in year one: the pharmacy and the phone, her plants,
-  looking for housing, directions, and a holidays section with Thanksgiving
-  and Christmas coming. Same shape as the four above and sitting after Cada
-  día, before El pasado. Four Palabras lessons came with them
-  (`palabras-13` to `palabras-16`, phrase ids from `palabras-18-1`), carrying
-  the words those units lean on — the pot, the rent, the corner, the
-  turkey — and eight stories written out of the same vocabulary, spread
-  across the tiers rather than stacked on the end. Las fiestas is where the
-  customs live: Nochebuena is the dinner, the lottery is the 22nd, the grapes
-  are midnight on the 31st, and presents come on the 6th from the Kings — it
-  is in the focusNotes because it is what she'll be asked about.
-- **`STORIES` is the other export**, and it is not course content: a story
-  is three or four sentences and three questions, read rather than said, and
-  nothing in it is a phrase. See *Stories* below. Ids are stable for the
-  same reason phrase ids are — `debolingo.stories` is keyed by them.
-- Every phrase has a `focusNote` written for an American English speaker
-  learning **Castilian** Spanish — soft d's, silent h, b=v, the 'th' in
-  ce/ci/z, tapped r. The notes are the pedagogy, not decoration.
-- The **El pasado** phrases also carry `aspect` and `aspectNote` — see *Dot in
-  a box, or line* below. `aspect` is the shape the card is about, and a lesson's
-  contents decide what the gate offers, so filing a card matters twice.
-- El pasado cards also carry `marked`: the text with the tense machinery in
-  `[brackets]`, drawn on the drill card as amber *lettering* — a letter shade,
-  not a background block, which made trabaj-aba read as two words
-  (`drillSpanish` in app.js, `.ending-mark` in app.css; `--amber` is the gold
-  that works as text, where `--gold` is a fill). The brackets must strip back to `text`
-  exactly or the highlight is silently dropped — which is what keeps an edited
-  card showing its edit, and makes a typo in the marks cost only the
-  highlight. Their translations stay uncontracted ("I have been", "did not")
-  on purpose: word-for-word English is what lets the tense mapping be seen.
-- And `infinitive` — "trabajar — to work" — printed as one quiet italic line
-  under the translation (`.infinitive-line`, behind `showTranslation` since
-  the gloss is half the meaning) and beside the term on the phrase sheet. She
-  should know what the -aba is hanging off; it also makes visible that *fui a
-  Atlanta* is ir while *la clase fue dura* is ser. Deliberately not loud —
-  the endings are the loud part.
-- If Deb's target ever shifts to Latin American Spanish, the focusNotes need
-  rewriting (no 'th'), not just the voice — `VOICES` in store.js is
-  deliberately es-ES only, and `settings.load()` resets any voice not in
-  that list, so add new voices there when the content is ready for them.
-
-Progress (`debolingo.progress` in localStorage): completed lessons with best
-average, and a streak counted in *local* days.
-
-**Nothing is locked.** Every node on the path is open from first launch; the
-ticks and the streak record what Deb has done, they don't gate what she may do
-next. The old sequential unlocking and its "Unlock all" testing toggle are
-gone — don't reintroduce gating as a "fix" for the path looking uniformly
-available.
-
-## What is data, and what is code
-
-`content.js` is code and stays the source of truth. Everything Deb does to it
-is stored beside it, keyed by phrase id:
-
-| localStorage key | Holds |
-|---|---|
-| `debolingo.phrases` | Her own cards — from the Add tab or written by hand. |
-| `debolingo.overrides` | Her edits to *course* phrases, as a diff of changed fields only. Empty diff = key deleted, so "Reset to the original" is a delete and an untouched phrase costs no storage. |
-| `debolingo.favourites` | Starred phrase ids, course and custom alike. |
-| `debolingo.attempts` | Recordings and scores (audio blobs live in IndexedDB). |
-| `debolingo.progress` | Completed lessons + streak. |
-| `debolingo.notes` | Answers she kept from a card chat, by phrase id. |
-| `debolingo.replies` | What she might hear back, by phrase id. |
-| `debolingo.aboutMe` | The Sobre mí interview transcript (not keyed by phrase). |
-| `debolingo.awards` | Study seconds per local day, the Match tallies, and prize id → date won. See *Prizes*. |
-| `debolingo.stories` | Best score, times read and when, by story id. See *Stories*. |
-
-`library.decorate()` is what merges an override, the star flag, the kept notes
-and the replies onto a stored phrase — anything that reads a phrase for display
-or for drilling must go through it, or Deb's edit will be invisible in that one
-place. Export/import carries all nine stores plus the transcript.
-
-**The keyword pictures *are* edits, and that is the whole reason they cost no
-new store.** A picture is a field on a card like `focusNote` is — `sounds` and
-`picture` are in `EDITABLE`, so writing one over a course word is an override,
-"Reset to the original" is the way back from a worse one, and a word she wrote
-from scratch carries it in `debolingo.phrases` with everything else. Compare
-notes and replies below, which are the opposite case and needed stores of their
-own.
-
-**Notes and replies are not edits, so they are not overrides.** An override is
-a diff against content.js that "Reset to the original" throws away; losing the
-answer Deb kept about a phrase because she reset its wording would be wrong.
-They get their own stores for the same reason favourites does: a course phrase
-is code and can't carry anything.
-
-**`decorate()` hands back a copy, and that is the one thing to watch.** Xerra
-mutates the phrase object its queue is holding (`setReplies`, `keepNote`); here
-the queue is holding a copy, so `library.setReplies`/`keepNote` write the store
-and the *caller* assigns the result back onto the copy it has
-(`phrase.replies = …`, `phrase.notes = …`). Same fix in a different shape:
-repaint the card you're looking at, never `render()` underneath yourself —
-a render in the drill takes the attempt off the screen and the chat with it.
-`updatePhrase` strips `favourite`, `notes` and `replies` back off before
-saving, so a stale second copy can't ride along in export.
-
-**Only Deb's own cards can be deleted.** `library.removePhrase()` takes the
-card, its attempts and its recordings, and the phrase sheet offers it — armed,
-so it takes two taps (`armDelete()`, shared with the editor's copy). A course
-card has no delete: it's code, and deleting one would mean inventing yet
-another "hidden ids" store. The sheet says so rather than leaving Deb hunting
-for a button that isn't there. If hiding course cards is ever wanted, that's
-the design to have, not a `removePhrase` that silently does nothing.
-
-**Deleting reaches the lesson too, and that is what the fix was.** The queue
-holds decorated *copies*, not ids, so `removePhrase` on its own took the card
-out of the library and left the lesson showing it with the bar still counting
-it — reported in Xerra as "delete phrase has stopped working", which is exactly
-what it looks like: the sheet closes, the card is gone from storage, and there
-it still is. `deletePhrase(phrase)` is the one delete now — the phrase sheet's
-armed button and the editor's both call it, and the editor's *is* the lesson's,
-since the lesson bar's EDIT is what opens it. `dropFromQueue` is the half that
-reaches the lesson: the card Deb is looking at stays the card Deb is looking at,
-the index only moves when the current card is the one deleted (the next slides
-into its place), and an emptied queue quits the lesson rather than leaving an
-empty drill.
-
-Worth asserting with three own cards seeded: deleting the one in view from EDIT
-puts the next card in `.drill-text`, deleting the only card in a lesson puts the
-path back, and the sheet's delete still takes two taps. Xerra has the same fix
-in the same shape.
-
-Her own cards ride the path as a generated unit, **Lo tuyo**, chunked five to a
-lesson in creation order (`own-1`, `own-2`, …). The ids are stable as cards are
-appended; deleting one can reshuffle membership, which costs at most a
-completion tick on a lesson she made herself. Cards the interview wrote are
-chunked the same way into a second unit (`about-1`, …) — the two lists are
-separate so neither can shuffle the other's lesson ids.
-
-### Editing a card, and the AI rebuild
-
-The edit sheet has a **Rebuild the rest with AI** button (only when the card
-assistant is configured). It calls the same `/complete-card` the Add tab does —
-**the Worker is unchanged**, which matters because it lives in Xerra's repo and
-serves both apps.
-
-The one piece of judgement is which side gets sent. Change the Spanish but not
-the English and the two now disagree; sending both would ask the assistant to
-reconcile a contradiction. So `wireEditorAI` snapshots the fields when the
-sheet opens and sends only the side that was actually edited, dropping the
-other as if it had been left blank on the Add tab. Change both, or neither, and
-both go. Nothing is written until Save — for a course card that means no
-override is created — and the review notice carries an Undo that puts the
-snapshot back.
-
-The lesson bar has an **EDIT** button for the card she has just heard and
-realised isn't how she'd say it. `editPhrase(phrase, onSaved)` takes a callback
-for it: the lesson queue holds decorated copies and the model audio is cached
-by text, so the fixed card has to go back into `lesson.queue` and be reloaded —
-a re-render alone would keep the old text's audio.
-
-Xerra has both in the same shape. Keep them in step.
+## How the app is put together
+
+- **One render loop.** `state` (in `core.js`) says where you are; `render()`
+  (in `app.js`) reads it and calls one `renderX()`, which replaces
+  `view.innerHTML` and wires its own listeners. To navigate: set `state`,
+  call `render()`.
+- **`state.tab`** is `learn`, `add`, `add-word`, `prizes`, `match`, `stories`
+  or `settings` (there is no tab bar; the name is historical). Inside `learn`,
+  **`state.stage`** is `path`, `drill`, `complete` or `about`, and
+  **`state.section`** is which tile you are behind: `null` for home,
+  `practice`, `words`, `phrases`, `quick`. `state.lesson` is the queue being
+  drilled; `state.story` and `state.match` are a story and a round in play.
+- **Tiles are a filter over one path renderer.** `renderPath(section)` draws
+  home, Practice and Words; there is deliberately no second renderer.
+- **Course content is code; what Deb does to it is data beside it**, keyed by
+  phrase id: her own cards, overrides (a diff of edited fields), favourites,
+  attempts, progress, notes, replies, the interview, awards, stories. Read a
+  phrase through `library.decorate()` or her edit is invisible.
+- **Cards made by features are ordinary cards** carrying a deck name
+  (`ABOUT_DECK`, `QUICK_DECK`, `WORDS_DECK`). No flags, no special kinds.
+- **Storage** is `localStorage` (`debolingo.*`) and IndexedDB for blobs
+  (recordings, cached model audio, drawings). Export / import in Settings is
+  the only backup: if you add a store, add it to both.
 
 ---
 
-## What they might say back
+## Things that have already bitten — check these first
 
-A card carries `replies` — two or three things a person actually says in
-answer, each with its English and a play button. Saying your line well is half
-of it; the half that strands you is the answer.
-
-- **They have their own Worker endpoint, `/replies`, and that is not a detail.**
-  In Xerra they were briefly extra fields on `/complete-card` and it took the
-  Add tab down: a required array of objects on top of the six string fields
-  roughly doubled the output, a Flash model already shedding load took longer
-  than the Worker's per-attempt timeout to produce it, and the button spun for
-  a minute before reporting Gemini busy. **Card generation must stay the small,
-  fast call it is.** Don't move replies back into the card payload to save a
-  request.
-- **The Add tab never waits for them.** `askForReplies()` is fired after the
-  card is on screen and is never awaited, so the card lands at its old speed,
-  Save is enabled immediately, and a failure here costs nothing but the
-  section. `repliesToken` guards against a slow set landing after "Try again".
-- **The whole course predates the field**, so *What might they say back?*
-  offers to go and get some — on the phrase sheet **and in the lesson**, since
-  the moment you want them is the moment you have just said the line and
-  wondered what happens next.
-- **They are held back harder than anything else in the drill.** A situation is
-  a clue; "we're full, about twenty minutes" is the answer to the question a
-  level-two card is asking you to produce. So `drillReplies` stays out entirely
-  while a question is standing, as well as while the meaning is hidden — and
-  the *offer* sits behind the same gate as the replies it would fill in.
-- **Every reply offers *Keep as a card*.** A reply is a phrase somebody
-  actually says, and the one you keep hearing is the one you will want to be
-  able to say — so the way from "I like this one" to a card of your own is one
-  tap, on the reply, rather than retyping it into Add. `keepReply` in app.js is
-  the whole of it: the reply's text and English become the card, the phrase it
-  answers is written into the situation (that is exactly what a situation is
-  for), no focusNote because nobody has written one — the editor's AI rebuild
-  is there for that. It lands with your other cards under Lo tuyo whatever the
-  card it answered was: a reply to a Quick phrase is not a Quick phrase, and a
-  reply to a Sobre mí card is not about you. *Kept as a card ✓* is read off
-  `allPhrases()` at render (`replyKept`), so it survives a re-render and a
-  reload, and a duplicate is refused on the button rather than in a toast.
-  `wireReplies` takes a `source` read at the tap, not at wiring, because on the
-  Add review the phrase box is still being edited. Ported from Xerra.
-- Replies play through `speech.modelAudio`, which keys its cache on the text,
-  so a reply heard once is available offline like any phrase. `sayAloud` is the
-  shared one-tap behaviour: stop whatever is playing, Azure audio if there's a
-  key, browser voice if there isn't, busy flag on the button itself so several
-  can sit on one screen.
-
-### Situation is the first box in the composer
-
-The Add tab asks for the situation *above* the Spanish and English boxes, and
-that ordering is the point rather than a layout preference. It is the field the
-completion is built from — where you are and who you are talking to is what
-decides what a person would actually say — and it is the thing the other apps
-skip. Underneath the two language boxes it read as a footnote to them and got
-left blank; above them it is the question being asked. The "or" divider still
-belongs to the pair below it, and *Generate again*'s hint still puts the cursor
-here, which now means the top of the card rather than the bottom.
-
-It stays labelled **(optional)**, honestly: `completeCard` needs Spanish or
-English, so a situation on its own can't build a card.
-
-### The composer has no dictate buttons
-
-Each of the three boxes used to carry a green microphone beside its label,
-running the Web Speech API's recogniser into the field. They are gone, and the
-reason is that on the one device that matters they never worked: Safari does
-not implement `SpeechRecognition`, so on Deb's phone every one of them fell
-through to a toast saying *use the microphone on the keyboard instead* — a
-button whose whole job was to point at a different button.
-
-What does the work now is `lang` on the textarea, which was already there:
-`es-ES` on the Spanish box and `en-US` on the other two, so the keyboard's own
-dictation key types the right language into whichever box has the cursor. That
-is the same arrangement Sobre mí's answer box has always relied on. The
-situation box gained an explicit `lang="en-US"` in the same change, since it had
-been leaning on the page default.
-
-Removed with them: `micIcon`, `startDictation`, `state.dictation` and its abort
-in `stopEverything`, the `.dictate` rules and the `dictation-pulse` keyframes.
-`.field-head` went too — it existed to put a label and a button on one line, and
-with the button gone the composer's labels are styled by `.add-card .field > label`
-instead. The boxes stay `div.field` rather than `label.field`, because the
-composer's spacing comes from the "or" divider and `label.field`'s bottom margin
-would break it.
-
-**Xerra still has the buttons.** That is now a deliberate divergence rather than
-a port waiting to happen; don't bring them back as a "keep them in step" fix.
-
-### The Add review reads in one direction
-
-Preview line, then what the assistant did and why, then the way back if that
-isn't what she meant, then the fields, the replies, and the two ways out. The
-order is the argument: everything above the fields is *about the card she is
-looking at*, and everything she might do about it is a link inside one sentence
-rather than a button competing with Save.
-
-- **The review note was above the preview and the Undo was inside it.** So the
-  explanation sat above the thing it explained, and the one control that
-  withdraws the whole completion was a bare word in a yellow box at the top of
-  the panel — nowhere near "Generate again", which is the other half of the
-  same thought. Both are now directly under the card: the note, then *Not what
-  you meant? **Change the situation, Spanish or English** above, then
-  **generate again**. Or **undo** to get your own words back.*
-- **`before` and `undoCompletion` moved up to `renderAdd`'s scope.** Undo is
-  wired once now, with the rest of the page, instead of being injected into the
-  review note's innerHTML on every completion.
-- **Two ways out, and practise is the primary.** *Save and add another* keeps
-  her here with an empty form; *Save and practise now* saves the card and drops
-  her straight into it — `startPractice([saved])`, the same one-card queue the
-  phrase sheet's "Practise now" already starts. A card saved and never drilled
-  is where this app leaks, so the drill is the green one.
-
-Xerra has this in the same shape, with one difference that follows from its
-decks: its "practise now" starts the card's whole deck positioned at the new
-card rather than a queue of one, because it has a deck to carry on through.
-Mum-o-lingo has the identical version of this file's copy.
-
-### The Add review says the card out loud, and can be sent back
-
-A generated card used to be checkable only by reading it. The review opens with
-a **preview line** — the phrase, its English and a play button in the Add tab's
-orange — built out of the same parts as a reply because it does the same job
-one step up.
-
-- **The preview reads the field, not a snapshot of the completion.** The
-  Spanish stays editable right up until Save, and a preview saying something
-  other than what is in the box would be worse than no preview.
-- **"Try again" is now "Generate again", and the way back to the inputs is
-  spelled out.** It always re-read the composer fields; the trouble was that
-  they are at the top of the page and it is at the bottom, so on a phone they
-  are never on screen together and it read as "roll the dice again". The hint
-  scrolls the composer into view and puts the cursor in Situation — usually the
-  field that needed to be clearer.
-- **Undo withdraws the whole completion.** The completion overwrites all three
-  inputs with its corrected versions, so re-steering it meant editing the
-  assistant's rewrite of your own words. Undo puts the raw three back, hides
-  the review and the chat, and bumps `repliesToken` — a reply still in flight
-  answers a card that no longer exists. The review note is always shown (with
-  a fallback line), because a completion with no `reviewNote` would otherwise
-  leave the hint under it hanging on nothing.
-- The two review buttons **stack** rather than sharing a row: at 390px both
-  wrap onto a second line and go 70px tall.
-
-Xerra has all of this in the same shape. Keep them in step.
-
-## Asking about the card you are practising, and keeping the answer
-
-Getting a card right and not knowing *why* it is right is where practice
-stalls. So the lesson carries the same `cardChatPanel` the phrase sheet and the
-Add tab use, at the bottom of the page, and an answer worth having can be kept
-on the card.
-
-- **Kept per answer, not per conversation.** A chat wanders; the one paragraph
-  that explained why it's *me pone* is the part you want under the card next
-  time. The button lives inside the answer bubble, and the question that drew
-  it is stored with it — an answer with no question in front of it reads like a
-  note someone else left.
-- **Both halves pick their side of the level-two line, and they pick
-  differently.** The printed notes are reference material: out while a question
-  is standing *and* out while the meaning is hidden, because a note about a
-  card quotes it and always explains it. The ask box shows nothing until you
-  type, so it only goes out while the question is standing — but it does have
-  to go, because the answer it fetches is built from the card and would
-  otherwise be the way round the question.
-- **Keeping a note repaints `#drill-notes` in place rather than
-  re-rendering.** A `render()` in the drill takes the attempt you are looking
-  at off the screen — and throws the conversation away with it.
-- **The panel sees the replies, and that needed a Worker change.** They are
-  printed under the card she is looking at, so "what does *marchando* mean?"
-  is a question about this card — but `validateChat` built its `card` from
-  five string fields and dropped everything else, so the tutor was answering
-  with no idea what she was pointing at. `card.replies` is now accepted
-  (optional, capped at `MAX_REPLIES`, sanitised like any other list) and the
-  prompt says what they are. Additive: a card without them sends an empty list
-  and the prompt omits the paragraph, so the old Worker and the new client are
-  compatible in both directions and the deploy order doesn't matter.
-- The sheet is where a note can be dropped again (*Forget this*). The lesson
-  prints them and otherwise keeps out of the way.
-
-## Sobre mí: cards the app writes about Deb
-
-Every other card arrives already written — content.js, or something typed into
-Add. These are written *about her*, from an interview held entirely in English,
-and they are the answer to "AI-generated content from life context".
-
-- **Why an interview and not a text box.** You don't know what is worth saying
-  about yourself until something asks. A blank box captioned "tell us about
-  you" gets a blank box back; a question about where you live gets an answer,
-  and the answer suggests the next question. The box was the cheaper build and
-  it would not have worked.
-- **English throughout, and that is the point.** Deb cannot describe her own
-  life in Spanish yet — that is the thing the unit is being built to fix.
-  `lang="en-US"` on the answer box so the iOS keyboard's dictation types the
-  right language into it.
-- **What comes out is ordinary cards of hers.** They drill, star, score, level
-  up, export, edit and delete exactly like a card from Add, and nothing
-  downstream of `library.addPhrase` knows where they came from. `ABOUT_DECK`
-  is a name they carry in `deck` and nothing more; the one thing it buys is a
-  unit of their own on the path. Resist giving them a flag — the moment they
-  are a special *kind* of phrase, every list in the app has to learn about them.
-- **The tile breaks a rule on purpose.** Every other tile opens a list or a
-  path; this one opens the interview, because the interview is the only way
-  cards get into the unit, and the page lists the cards. It was a workshop
-  node at the head of a unit on the path before it was a square on the home
-  screen — see *Home is eight tiles* above for why it moved.
-- **Two endpoints, not one, and for the established reason.** `/interview` asks
-  the next question, `/about-cards` turns the transcript into a batch of them.
-  Writing a batch is the big slow call and asking one question is not, so they
-  have to be able to fail separately — the same argument that moved replies off
-  `/complete-card`. **Both are additive on the Worker, which lives in Xerra's
-  repo: `/complete-card`, `/chat` and `/replies` were unchanged, so Sobre mí
-  required no Worker edit.**
-- **The Worker owns how these calls behave, and it can change under this app.**
-  Xerra's #29 put `/interview` and `/chat` on a smaller, faster model with a
-  10s timeout, and cut `/about-cards` down. None of that needed a line here,
-  which is the arrangement working as intended — but it does mean "the chat
-  answers got worse" may be a Worker change rather than anything in this repo.
-  `GEMINI_FAST_MODEL = GEMINI_MODEL` in Xerra's `wrangler.toml` undoes the
-  model half.
-- **How many cards a batch holds is the Worker's business, not this app's.**
-  `makeCards` saves whatever comes back, so the number is free to change over
-  there without a line changing here — and it does: Xerra tuned it down when
-  `/about-cards` turned out to be the slowest call it makes, since the cost is
-  almost entirely the length of what it writes. Don't pin the number in this
-  file or in a test; "tell it more, get more" is the flow either way.
-- **The transcript is persisted; the card chat's history is not.** That is the
-  whole difference between `aboutMe` in store.js and `cardChatPanel`'s local
-  array. A card chat is a study aside that dies with the panel. This one is the
-  material the cards are built from, so it has to survive a lesson, a reload
-  and the weekly reinstall — and it is what stops the assistant asking about
-  her job twice. It rides in export/import with the phrases.
-- **A question that arrives after she has left is still saved.** `nextQuestion`
-  writes the reply to the transcript whether or not the page is still on
-  screen, and only the repaint is guarded. The guard is `log.isConnected`, not
-  a lookup by id: a `render()` puts a *new* log in the document, so an id
-  lookup succeeds while the handles in the closure are stale, and the spinner
-  gets painted onto a detached node.
-- **`interviewPayload` caps are load-bearing, not cosmetic.** 16 turns at 800
-  characters plus 40 existing translations at 120 is what fits under the
-  Worker's 24k body cap, which is checked on the raw request *before* its
-  validator runs — go over and the whole call is rejected with no way to tell
-  why.
-- **No review step before saving, unlike Add.** There is no half-remembered
-  phrase being corrected here, so there is nothing to check the assistant's
-  reading against — and approving a batch of cards one at a time would be the
-  longest screen in the app. A wrong one is edited or deleted from the phrase
-  sheet.
-- **Duplicates are dropped client-side as well as discouraged in the prompt.**
-  A model asked twice about the same life will eventually write the same
-  sentence; `normaliseSentence` already ignores case, accents and punctuation,
-  so "Vivo en Madrid." and "vivo en madrid" are one card.
-- **Clearing the interview is armed, and leaves the cards alone.** It is the
-  only way back from a conversation that went somewhere she didn't mean. The
-  cards it already wrote are ordinary cards; deleting those is the phrase
-  sheet's job. The button appears the moment there is a transcript rather than
-  on the next full render — Xerra still has that gap, and it is worth porting
-  back.
-- **The interview sits above the cards, the way Quick's ask box sits above
-  what it made.** Asked for as *"put the about me chat above the about me
-  cards … a similar layout to quick"*, and ported from Xerra the same day.
-  The page opened on the practise button and every card, with the box you
-  talk to underneath — so once there were thirty cards the thing the page
-  is *for* was a screen and a half down. Now it reads: the chat card and
-  Create, then *Your cards* with its Practise button and the rows. Nothing
-  else moved — same ids, same handlers, same `paintLog` — so the assertions
-  below hold as they were, plus one on the order: `#about-form` above
-  `#about-make` above `#about-practise` above the first `.row`.
-
-Xerra has all of this except the reset-button point, in the same shape. Keep
-them in step; the divergences that are deliberate are the deck-vs-unit shape
-(it has a deck list, this has a path) and the Spanish name.
+- **`hidden` loses to `display`.** An element whose CSS sets `display: flex`
+  needs its own `[hidden] { display: none }` rule (the `.sheet` trap).
+- **Never add a listener to `view` inside a render function.** `view` is never
+  replaced, so it multiplies. Listeners go on elements the render just made,
+  or in the one delegated listener in `app.js`.
+- **The lesson queue holds decorated copies, not ids.** After
+  `library.setReplies` / `keepNote` the caller assigns the result back onto
+  the copy it holds; `setPicture` and `deletePhrase` reach the queue for the
+  same reason.
+- **Do not call `render()` to update something small in the drill.** It takes
+  the attempt and the chat off the screen. Repaint the one element. A prize
+  celebration is an overlay on `body` for the same reason.
+- **A value another module must change goes on `state`.** An imported `let` is
+  read-only; that is why the recorder is `state.recorder`.
+- **`core.js` must not import a page module.** Page modules import each other
+  and `app.js` freely (cycles are fine for functions called later), but a
+  top-level `const` that needs another page module's `const` at load time
+  throws "Cannot access before initialization". The smoke check catches it.
+- **A field missing from `EDITABLE` in `store.js` is dropped on save without a
+  word** when a course card is edited.
+- **"Did the user write this?" cannot be answered by "is it non-empty"** on a
+  field the app also writes to. Remember what the app wrote and compare.
+- **Stale service worker.** "My change didn't apply" is nearly always this:
+  both version strings bumped? The checks run with the worker blocked.
+- **Anything added to the drill card must pick a side of the gate.** While a
+  question stands (level two, quiet mode, the shape gate) nothing that gives
+  the answer may show — Listen, the tip, notes, replies, the ask box.
+- **iOS only.** Chromium is where the checks run, not where the app lives.
+  Safari has no `SpeechRecognition`, may accept a browser-voice utterance and
+  never say it, and may not encode WebP.
+- **A DOM assertion proves a control exists; a screenshot proves it can be
+  found; only exercising it proves it does anything.** Stub the Worker with
+  `page.route` and press the button.
 
 ---
 
-## A word, a sound and one ridiculous picture
-
-The **Palabras** unit (sixteen lessons, eighty-one words, purple) is vocabulary by
-the keyword method: you hear an English sound inside the Spanish word, and you
-build one absurd scene out of that sound and the meaning. `tenedor` sounds like
-"ten-a-door", so a ten-dollar bill is nailed to your front door and the nail is a fork. It is
-the request this app was asked for in exactly those words, and it is the one
-unit here that teaches single words rather than things you say.
-
-- **Two fields, and the split is load-bearing.** `sounds` is the bridge — what
-  the word sounds like in English and nothing else. `picture` is the scene, and
-  its one job is to contain **both** the sound and the meaning, so that
-  recalling the scene hands back the word. A scene with the sound but not the
-  meaning is useless; so is a pretty one with neither. `picture` alone renders;
-  `sounds` alone renders nothing, being a riddle with its answer torn off.
-- **Never bridge to a sound the word hasn't got.** `llave` is not "lava",
-  however good the picture would be. A mnemonic that teaches a mispronunciation
-  is worse than no mnemonic, and this app scores pronunciation for a living.
-  The `focusNote` still does the real work; the picture only has to get her to
-  the word. The rules for writing more of them are in the unit's own comment in
-  `content.js`.
-- **They are ordinary editable fields, not a new store.** That buys the
-  editor, the override diff, Reset, export and import for nothing — and it
-  means *any* card can carry a picture, not just a Palabras word, which is
-  where most of the value ends up: a picture on the one word inside a phrase
-  she keeps losing. Resist making them a special kind of card, for the reason
-  Sobre mí gives above.
-- **The drill's gates, and the picture takes a third position.** At level one
-  it waits behind `showTranslation` like the notes do — the scene names the
-  English, so printing it under a hidden meaning would be pointless. At level
-  two it is *the point*: the Spanish is being withheld and the picture is the
-  road back to it, so it is offered as **Show me the picture** rather than
-  shown, above the plain **Show me**.
-- **Reaching for the picture is not peeking.** `state.pictured` is its own
-  flag and deliberately does not set `peeked`: Show me hands over the answer,
-  the picture makes her produce it, and that is the method working exactly as
-  intended. The attempt is still filed as `"recall"`. The hint button is tinted
-  (`.btn-picture`) and Show me is left plain, because the hierarchy is the
-  pedagogy.
-- **"Invent a picture for me" goes through `/chat`, and that is not laziness.**
-  The Worker lives in Xerra's repo and serves all of these apps, so a feature
-  needing a new endpoint needs a deploy over there first. This one needs
-  nothing: it is one turn of the same conversation `cardChatPanel` already has,
-  with the question written for her instead of by her. The answer is asked for
-  as two labelled lines and parsed back into the two boxes; a model that
-  ignores the format costs only the split, since the whole reply lands in
-  Picture. **Don't "improve" this into a `/complete-card` field or an endpoint
-  of its own** without reading what replies did to the Add tab.
-- **The scene gets drawn, and only when asked.** `/picture` on the
-  Worker turns the `picture` sentence into an image; the drawing is kept in
-  IndexedDB by phrase id and shown inside the same block, behind the same
-  gates, as the text. It is never fetched on its own initiative, and that is
-  the pedagogy rather than the bill: imagining the scene yourself is the
-  technique working, and a picture handed over unasked removes the effort that
-  makes it stick. The sentence stays the mnemonic; the drawing is for when the
-  scene will not come.
-- **The drawing is its own endpoint, its own model and its own failure.** An
-  image is the biggest, slowest thing the Worker produces, so it earns an
-  endpoint for the reason replies did — see what putting them on
-  `/complete-card` cost. It gets 40s rather than the 25s sized for a card.
-  **This one did need a Worker change**, unlike everything else in this unit —
-  the Worker lives in Xerra's repo and `worker/**` is on a deploy trigger, so
-  merging it there ships it for all three apps at once.
-- **It draws through Replicate, on Gemini's own image model, and the two
-  halves of that sentence were decided separately.** The first shipped version
-  called Gemini's API directly and had never drawn anything — written from the
-  API reference against a response nobody had seen, since there is no Gemini
-  key in any of these repos. The Replicate path was checked end to end on the
-  real Palabras cards first.
-  Which model was the surprise. Four drew the same cards, and the diffusion
-  models lost on the one thing this unit cannot tolerate: they don't honour
-  "no lettering" and they draw any word you name them, so flux-schnell
-  captioned *el tenedor* with **"el tenddor"** and ideogram wrote the Spanish
-  out in a speech bubble. A misspelling of the word being taught is worse than
-  no picture — the same argument as *never bridge to a sound the word hasn't
-  got*, one layer down. `google/nano-banana-2` is Gemini's image model reached
-  through Replicate, so it follows the instruction, and **`buildPicturePrompt`
-  therefore did not change.** Don't swap it for something cheaper without
-  re-reading that table in `worker/README.md`: the cheap ones were tried.
-- **Nothing in this repo changed when the provider did, and that is the client
-  contract earning its keep.** Replicate answers with a URL rather than bytes,
-  so the Worker fetches the file and base64s it; what arrives here is still
-  `{ image: { data, mimeType } }`. No client change in any of the three apps,
-  and **no version bump** — `sw.js` and `js/version.js` are for changed assets,
-  and none changed. Provider is chosen by which credential the Worker holds
-  (`REPLICATE_API_TOKEN`), deliberately not as a fallback chain: an unverified
-  path underneath a verified one turns "the drawing failed" into two possible
-  stories. Unsetting the token is the way back to the Gemini path.
-- **Third IndexedDB store, so `DB_VERSION` went to 2.** The upgrade handler
-  creates whatever is missing, so an existing install keeps its recordings and
-  cached audio and gains the box. Drawings are not in the export, for the same
-  reason recordings aren't: blobs stay on the device, and a restored backup
-  offers to draw them again.
-- **Blue for masculine, pink for feminine, painted on the object the word
-  names.** Every mnemonic system that teaches gendered nouns bakes a fixed cue
-  into the scene — Linkword puts a boxer in every masculine one and perfume in
-  every feminine one, Fluent Forever puts the two genders in two different
-  rooms — and colour is the popular one. It is also the weakest of the three as
-  *prose*, because a colour is not an event; what rescues it here is that these
-  scenes get **drawn**, and a pink fork is legible in a thumbnail without
-  reading a word. One object is coloured, never the whole scene: a wash over
-  everything competes with the picture it is supposed to be marking.
-- **The gender is read off the card's own article**, so no course content had
-  to learn about it and a noun typed into the editor gets the cue for free.
-  `genderOf` in store.js is the one reader. It refuses to guess at anything
-  that isn't a noun phrase — *La cuenta, por favor* also starts with *la* — so
-  a sentence, a verb, an adverb or a question word is left alone rather than
-  mislabelled, which is most of this unit outside A la mesa and En la calle.
-- **`el agua` is the one Spanish word class the article lies about.** Feminine
-  nouns opening on a stressed a- take *el* in the singular — it is *el agua
-  fría* — so `EL_BUT_FEMININE` in store.js corrects the common ones and
-  `phrase.gender` overrides anything past them. This is what Xerra's `l'`
-  problem looks like over here: the word whose gender you cannot read off the
-  article in front of it. Deliberately a short list rather than a lexicon.
-- **`gender` had to be added to `EDITABLE`, and that is the fork-specific
-  half.** A course card's edits are stored as an override of the fields in that
-  list, and a field missing from it is dropped on save without a word — so the
-  editor's new select looked like it worked and changed nothing. Xerra has no
-  such list, its phrases being ordinary rows, so this is the one part of the
-  port that isn't a copy.
-- **The colour is carried by a swatch dot, not by the lettering.** Neither
-  `--blue` nor a pink of the same weight clears 4.5:1 as small text, and a cue
-  you have to decode from the shade of the type is a worse cue than one that
-  says *pink* out loud. The line reads as an instruction — *Paint the fork pink
-  in the scene* — because that is a thing you do to the scene you are already
-  imagining, where "feminine · pink" would be a second thing to memorise beside
-  it. `--pink` is new in the palette and Xerra has the same variable.
-- **The Worker needed no change**, because Xerra shipped the optional `gender`
-  paragraph in `buildPicturePrompt` with its own copy of this. Sending the
-  field is all this app had to do, and a card with no gender to draw sends `""`
-  and gets the prompt it always got.
-- **Draw it again is offered wherever a drawing is, the drill included.** What
-  comes back is one roll of a stochastic model and *that isn't it* is the
-  commonest thought on seeing it, so the redo belongs where you are looking at
-  the picture — which is mid-drill, not on the phrase sheet. The sheet keeps
-  **Remove the drawing**: throwing one away is tidying up, not trying again.
-  A failed redraw repaints the drawing you had rather than the offer — the blob
-  is still in the store, so showing *Draw this for me* would be a fright and a
-  lie at once.
-- **What comes back is shrunk before it is kept** — 512px, WebP where the
-  browser will encode it. A full-size render per word would outweigh the rest
-  of the app on a phone whose storage iOS is willing to evict.
-- **`outputImageOf` on the Worker reads the response forgivingly, and that is
-  not sloppiness** — though it is now only on the *fallback* path, and nothing
-  on the Replicate path calls it. There is no Gemini key in any of these repos
-  and no image fixture to replay, so that path could not be exercised before it
-  was deployed; it accepts the bytes from `output_image` or from a
-  `model_output` step, under either spelling of the field names. If Google
-  moves them, that function is the fix and *"the model drew nothing"* on the
-  phone is what points at it.
-- **Two output shapes on the Replicate side, and the difference is invisible
-  until it 500s.** `nano-banana-2` answers with a bare URL string;
-  `flux-schnell` answers with an array of them. The Worker takes either. A
-  model swap that changes the shape is exactly the sort of thing
-  `worker/tools/picture-test.mjs` exists to catch.
-- **It sits in the editor, not on the sheet.** One implementation, reachable
-  from the phrase sheet's Edit and from the lesson's EDIT alike, and it lands
-  where the result can be rewritten — which matters, because a picture
-  Deb invents herself outlasts one she was handed. Nothing is written until
-  Save.
-- **Purple is the colour, and it was already spoken for.** Purple is what
-  memory looks like in this app: the level-two badge, Lo tuyo. `--purple-ink`
-  is new and is purple *as lettering*, on the `--amber` precedent — `--purple`
-  is a fill and vanishes as small text on white.
-
-The other forks have this unit too, with the same code and deliberately
-different pictures: hers are dollars and her own week, Mum's are pounds and the
-Christmas trip, and Xerra's are thirty-six Catalan words in a **Paraules**
-family of six decks. Port the machinery, never the scenes — a picture is aimed
-at one mouth and one life, the same way a focusNote is.
-
----
-
-### Imagine it again
-
-Ported from Xerra (#49). A redraw is for a picture that came out wrong; this is
-for one that was never right — a bridge you don't hear in the word, or a scene
-that simply doesn't stick, which is the failure that actually costs you the
-word. Until now the only way out of it was Edit, *Invent a picture for me*,
-Save: four taps and a screenful of small print away from the moment you notice,
-which is mid-lesson with the card in front of you.
-
-- **It sits at the foot of the picture block**, in both places a picture is
-  shown, next to the drawing's own *Draw it again*. The two act on different
-  things: that row acts on the picture you are looking at, this on the sentence
-  the whole block is.
-- **Nothing is confirmed first and the old scene is offered back in one tap.**
-  What comes back is one roll of a model and may well be worse, and a course
-  scene was written for one mouth and one life. One step back, not a history:
-  roll twice and a second undo would be restoring a scene already rejected.
-- **The undo sits in the row, not inside the sentence announcing the new
-  scene**, so a second roll failing doesn't take the way back off the screen
-  with the message it was written into.
-- **An existing drawing is left alone and said to be stale.** Deleting it
-  destroys something you may still want; keeping quiet about it leaves a
-  drawing of a scene that no longer exists.
-- **It goes through `/chat`, not `/picture`.** `/picture` draws a scene, it
-  doesn't write one — and a new endpoint would mean a Worker deploy that serves
-  all three apps. `reimagineRequest` is the same brief with the rejected scene
-  named in the *middle* of it, since an instruction arriving after "nothing
-  before or after them" invites a third line. It asks for a new bridge only
-  where the word honestly offers one: on a word with one honest English sound
-  in it, insisting on a new bridge is insisting on a wrong one.
-- **The editor's button learned the same thing.** On a card that already has a
-  scene it reads *Imagine another one* and sends the rejected one, so it can no
-  longer hand back the scene you pressed it to escape. It reads the scene out of
-  the boxes rather than off the phrase, because the boxes are what the card is
-  about to become.
-
-**One divergence from Xerra, and it is the storage model.** Over there
-`setPicture` takes an id and mutates the phrase in the library. Here a course
-phrase is code, so it takes the phrase *object* and goes through
-`updatePhrase`, which already knows how to write a course phrase as an override
-and a custom one in place. It still mutates the object, for the same reason
-Xerra's does: the lesson holds decorated copies in `lesson.queue`, so the card
-you re-imagined would otherwise carry on showing the scene it was rendered with.
-
-### Listen has to say when nothing came out
-
-Ported from Xerra (#51), where it was reported as *"we broke the listen button
-everywhere"* — and the audio path turned out to be untouched. What was missing
-was any way for the app to say so. Three silent failures, all of which look
-identical to a dead button:
-
-- **The browser voice takes an utterance and never says it.** iOS offers a
-  Spanish voice, accepts `speak()`, returns nothing and throws nothing. So
-  `browserSpeech.speak` now takes an `onSilent` callback and fires it when the
-  utterance has neither started nor queued after 800ms, and both callers say
-  so out loud. With an Azure key this path is never reached, which is why the
-  message names that as the fix.
-- **A database that will not open took the whole card off the screen.**
-  `speech.isCached` is the first await in `loadPhrase` — before the drill has
-  rendered anything — and it read IndexedDB unguarded, so a blocked version
-  upgrade or evicted storage threw there and left an empty view. A question
-  about whether to show a spinner must never be able to do that; unknown is
-  now "no". `modelAudio`'s cache read was outside its try for the same reason
-  and is now inside it: a cache you cannot read is a reason to synthesise, not
-  to give up. Failing to *keep* the result costs the offline copy and nothing
-  else.
-- **Assigning a stale voice can throw**, which came out of the click handler as
-  nothing at all. The default voice for the utterance's `lang` beats silence.
-
-The drill has always printed *Using the browser voice…* when there is no Azure
-key, and `speech.lastError` when Azure refuses. **Those two lines are the first
-thing to read when playback is reported dead** — between them and the new toast,
-every silent path now names itself.
-
-`speech.js` is a straight copy of Xerra's fix; `app.js` differs only in taking
-this fork's single course language. Keep all three in step.
-
-## The score is your weakest word
-
-Azure has no strictness setting worth having, and every number it returns is
-an aggregate. `pronunciationScore` is the worst: for a read phrase in a locale
-without prosody assessment — which is every locale but en-US, so es-ES too —
-it is `0.6·s0 + 0.2·s1 + 0.2·s2` over accuracy, fluency and completeness
-sorted lowest first, and completeness is 100 whenever you say all the words
-while fluency on a five-word phrase is nearly always 95+. Two of the three
-slots are pinned near the top. `accuracyScore` is a mean over the phrase, so
-four good words carry a mangled fifth.
-
-So `attemptScore()` in store.js returns **the lowest word score in the
-attempt**, with an `Omission` counting as zero — not saying a word is the
-worst way of saying it. The doorman doesn't average Deb; he hears the word she
-got wrong. Word detail has been stored on every scored attempt since the first
-version, so this reads back over the whole history with no migration; the
-aggregates are the fallback for an attempt that somehow has none.
-
-**Know what the bands now mean before you touch them.** `PASS_GREAT` (90) means
-*every word in the phrase* cleared 90, and `RECALL_PASS` (75) in store.js means
-every word cleared 75, four times over, before a card goes to level two. That is
-meant to be hard, and it is a real change in difficulty rather than a bug fix —
-the old numbers were 80/60 over Azure's blend, which is roughly 72/50 of actual
-worst-word. All four aggregates stay on the card as sub-scores (Azure's own
-blend included, labelled), and the card names the weakest word so the dial
-points at the chip that earned it.
-
-One thing deliberately left alone: `progress.lessons[].best` still holds
-averages recorded under the old scale, so a lesson's stored best can read
-higher than anything Deb could score today. Migrating them would mean
-inventing numbers; they age out as she repeats lessons.
-
-Xerra scores Catalan through the same call with the same function and the same
-constants. Keep them in step.
-
----
-
-## The trim, and why it has to be one detector
-
-`speechBounds` finds where the speech is, and the picture, the sound and the
-pacing note all ask it. That is the whole of the fix, and the history is why it
-has to stay that way:
-
-- **A fixed threshold silently stops working in a real room.** 0.015 RMS over
-  256-sample frames is right in a quiet one. `autoGainControl` is off, so a fan
-  or traffic puts the room itself over the line, the scan calls the first frame
-  speech, and nothing is trimmed at all — indistinguishable from the feature
-  having been reverted. Measured here, before the port: a 1.2 s lead-in of room
-  noise at 0.02 RMS in front of 1.5 s of speech reported **3.3 s**, the whole
-  untrimmed clip.
-- **Which made the pacing note lie.** A 1.50 s take against a 1.40 s model
-  measured **2.36×** and told Deb to "try running the words together more" —
-  scolding her for the pause before she started talking. It now reads 1.05×,
-  which is "nicely matched".
-- **The room is read from the quietest frames (2nd percentile), not the quiet
-  tenth.** A TTS clip is speech almost end to end, so its tenth percentile
-  lands inside a syllable and sets the line above the dips between them, which
-  shortens the *model's* measured length and inflates every ratio.
-- **Both ways of being wrong must be "trim less".** The threshold is capped
-  well under the voice (`voice * 0.35`) so a loud room can't drag `room * 3` up
-  to the speech's own level and start eating syllables.
-- **Three frames in a row at each end**, so a click or the stop button isn't
-  the first word or the last one.
-- **The tail is padded, not cut close.** `TAIL_PAD` (0.25 s) is what saves a
-  final consonant, whose release sits under the line that found the word.
-  "¿Cuántos?" heard as "¿cuánto?" is a different question. Playback trims the
-  front only and leaves the tail alone entirely.
-- **The duration is measured between the bounds, not across the padded
-  window** — counting the pad would make every recording read a fifth slower
-  than it is.
-
-The fallback, for a clip the bounds can't judge (under eight frames, all room,
-or all voice), is the old fixed-threshold scan, which is why a synthetic 150 Hz
-tone still passes through untouched and still reads 150 Hz.
-
-### One knock used to cancel the whole boost
-
-`forPlayback` lifts a quiet recording to roughly TTS loudness so that You and
-the model can be compared by ear. It very nearly didn't, and the way it failed
-is worth knowing:
-
-- **A 20 ms transient decided the gain for the whole clip.** The tap of a thumb
-  reaching for stop, a knock on the table, a plosive into the mic — louder than
-  anything Deb said. It set `peak`, so `0.98 / peak` pinned the gain at ~1.0,
-  `gain > 1.1` came out false, and **no boost was applied at all**. It also sat
-  inside the trimmed region, so it dragged the average level up and asked for
-  less gain to begin with. Measured on a synthetic take needing 2.9× to reach
-  TTS level: one click took it to 1.0×, and playback came out exactly as faint
-  as it was recorded while the model played at full volume.
-- **It is a cliff, not a slope**, which is why it reads as "playback seems to
-  have got quieter" rather than as a bug: the same voice in the same room is
-  boosted on the go with no knock in it and not on the go with one.
-- **`voiceLevels` reads both numbers from the frames that are plausibly
-  voice.** Anything over four times the 90th-percentile frame is a knock, not a
-  word — twelve dB above a loud vowel is not something a person does
-  mid-phrase — and it is left out of both the average and the peak.
-- **What overshoots is soft-limited, not allowed to veto.** `softLimit` bends
-  everything above a 0.7 knee towards a 0.98 ceiling with `tanh`, whose slope
-  is 1 at zero, so the curve meets the straight part cleanly and nothing below
-  the knee is touched. The rare transient saturates instead of clipping into a
-  square-edged buzz. The limiter only runs when there is a boost to catch: a
-  clip that is merely being trimmed comes through sample for sample.
-- **Both halves self-level, and that is the point.** The model goes through
-  `forPlayback` too, so recording and model are both normalised to
-  `TARGET_RMS` and end up matching each other whatever that constant is. The
-  bug was never the constant — it was one of the two being silently skipped.
-
-#### And then the boost only ever went one way
-
-Fixing the knock got the recording up to `TARGET_RMS` and it was *still* the
-quieter of the two, because the bullet above was a description of the intent
-rather than of the code: `boosting = gain > 1.1` meant a clip already above the
-line was passed through at whatever level it arrived at. Only recordings are
-ever below the line, so only recordings were ever touched, and the model went
-out at Azure's loudness — which is not a constant: three synthetic TTS clips
-came out 5.9 dB apart from each other, with the recording pinned below all
-three.
-
-- **Levelling is symmetric now**: `gain > 1.1 || gain < 0.9`, so a loud TTS
-  clip is brought *down* to the line as well. That is what makes the constant
-  not matter, which is what the bullet above always claimed. Only a boost runs
-  through `softLimit` — turning a clip down can't clip.
-- **`TARGET_RMS` is 0.16 rather than 0.12**, chosen so the model barely moves
-  and the recording comes up to meet it, rather than the whole app getting
-  quieter to meet the recording. `MAX_BOOST` is 12 rather than 8 so a genuinely
-  faint take can still reach the new line; the boost only ever runs on quiet
-  clips, and it lifts the room with the voice, which is the accepted cost of
-  hearing yourself at all.
-- **A plosive no longer holds the gain back, but only just.** The peak cap was
-  `CEILING / headroom` — the same "one sample decides the phrase" shape as the
-  knock, worth about a decibel on a take with a hard *p* in it. It is
-  `CEILING * OVERSHOOT / headroom` now, and `OVERSHOOT` is **1.25 and not 2**:
-  see the crest-factor note below for why that number and not a rounder one.
-- **`voiceLevels` has a floor as well as a lid.** It averaged every frame below
-  the knock line, pauses included — and a recording pauses while a TTS clip is
-  speech end to end, so the same measurement meant two different things on the
-  two halves. Frames under a fifth of the 90th-percentile frame are now out of
-  the number too, so both are read over the words.
-
-#### Crest factor is the variable, and a sine has none
-
-This shipped as v18, was reported as having killed playback outright, was
-reverted the same day, and went back in unchanged apart from `OVERSHOOT` when
-the silence turned out to have been the phone's volume. Two things are worth
-keeping out of that.
-
-The first is that **the checks that passed it were built on summed sinusoids,
-whose crest factor — peak over the level of the words — is about 1.6.** Speech
-is 4 to 8, a TTS clip nearer 3, and crest is precisely what a peak cap is
-about: the cap binds once the crest exceeds `CEILING * OVERSHOOT / TARGET_RMS`.
-A sine clip is therefore the one signal that can never exercise the line being
-moved. Anything touching the gain here wants a clip with a speech-like crest,
-which means a glottal pulse train through a few formants, not a sum of sines —
-and better still, a real exported recording and a real Azure clip, which is the
-one thing none of these tests has ever had.
-
-The second is the sweep that set `OVERSHOOT`, measured on clips built to a
-given crest, reading the level the words come out at and how much of the clip
-the limiter bends:
-
-| crest | `OVERSHOOT` 1 | 1.25 | 1.5 | 2 |
-|---|---|---|---|---|
-| 4 | 0.160 | 0.160 | 0.160 | 0.160 |
-| 6 | 0.160 | 0.160 | 0.160 | 0.160 |
-| 8 | 0.143 | 0.167 | 0.167 | 0.167 |
-| 12 | 0.093 | 0.116 | 0.138 | 0.166 |
-
-Under 0.22% of samples are bent anywhere in that table, so 2 was not the
-disaster it looked like when the app appeared to be dead — but 1.25 reaches the
-line on everything speech-shaped and leaves the limiter catching transients
-rather than reshaping vowels, so 1.25 is what shipped.
-
-**Check this numerically, never by recording in a quiet room** — a quiet room
-is the case the old scan already handled, which is exactly why the bug survived
-so long. See *Running and checking*.
-
----
-
-## Level two: drilling from memory
-
-A card is read aloud until `library.goodAttempts()` reaches `RECALL_AFTER` (4),
-then `library.recallReady()` flips it to a memory question: the drill prints
-the *English* where the Spanish normally goes and withholds three things, all
-of which would answer it — the Spanish text, the `focusNote`, and the
-Listen/Slow buttons (the model audio says it out loud). **If you add anything
-to the drill card, decide which side of that line it falls on.**
-
-Three flags in `state` carry it: `recall` (this card is a question), `revealed`
-(the answer is on screen — always true at level one) and `peeked` (Show me was
-used rather than remembering). Recording reveals; so does Show me. Attempts now
-carry `mode` — `"listen"`, `"recall"` or `"recall-shown"`. Older attempts have
-no `mode`, which reads as `"listen"`, because that is what they were.
-
-An attempt counts toward the four if it scored a pass **or wasn't scored at
-all** — with no Azure key there is no score to judge by, and the alternative is
-that nothing ever leaves level one on the degraded path.
-
-Deliberately *not* done: peeking doesn't demote a card, and nothing ever comes
-back down. Spaced repetition is built now — see *Review* below — and it is a
-decay rule read off the attempts, not a special case bolted onto this: it
-decides *when* a card comes round, never which level it is at.
-
-Xerra has the same feature in the same shape — same constants, same flags, same
-`mode` values. Keep them in step.
-
----
-
-## Review: spaced repetition, read off the attempts
-
-Ported from Xerra, asked for as *"add the review feature. Maybe just 10 or 15
-a day rather than 20"*. Retrieval practice was in (level two) and scheduling
-was not: nothing ever brought a card back except Repaso's random seven.
-
-- **`library.reviewOf(id)` is the whole rule, and nothing is stored.** The
-  interval doubles with every *day* a card has been said well and resets to
-  one day the moment it isn't — `REVIEW_DAYS` is 1, 2, 4, 8, 16, 32, 64 —
-  read off the attempt history like `recallReady` is. Days rather than goes,
-  because four good goes in one sitting are one act of remembering. A card
-  never attempted has no review: it is new, and the path is where new cards
-  are met. Skipping a card (Next, no recording) records no attempt, so a
-  listen-only pass schedules nothing; a typed go in quiet mode is not an
-  attempt either. **Nothing demotes.**
-- **`REVIEW_CAP` is ten**, not Xerra's twenty. A lesson here is five cards
-  and Repaso is seven — one coffee — so ten is the same size of sitting.
-  `reviewToday()` in app.js is the one reader — the session (`min(due,
-  cap)`) and the rest — for the strip, the node and the queue, so the three
-  can never disagree about what Start starts. The backlog is said as the
-  quieter clause (*10 cards to review today · 5 more waiting*), never hidden.
-- **`startReview()` is `startPractice` with the due cards, most overdue
-  first, and a title.** So it is a practice queue like Repaso's: no lesson
-  ticks, no streak, *¡Repaso completado!* at the end. `startPractice` took a
-  `{ title }` option for it; nothing else reads the title yet.
-- **Two surfaces.** The Review tile on the home page — it was a `.due-strip`
-  under the parrot until it was asked down into the grid, see *Home is eight
-  tiles* — and a Review node first in Mézclalo behind Practice, which is still
-  absent when nothing is due. The tile is always there and says *Nothing due
-  today* instead; a tap then only toasts. Teal, kept from the strip; it is
-  quiet mode's colour in the lesson, and the two never share a screen.
-- **Settings only describes it.** There is no switch: a review you can turn
-  off is a review you forget you turned off, and with nothing due it costs
-  nothing to be on.
-
-Worth asserting: a tile reading *Nothing due today* and no node with no
-attempts, and the tile's tap toasting; a good attempt three days old, a good
-one today and a failed one yesterday give a tile reading *2 cards to review
-today* and a node reading *Review · 2 today*, the tile and the node both
-start a queue with the three-day-old card first, and
-finishing it ticks no lesson; fifteen due read *10 cards to review today · 5
-more waiting* and drill ten; one due reads *1 card*.
-
----
-
-## Prizes: three challenges, read off what she did
-
-Asked for in these words: Deb is competitive and wants rewarding for beating a
-challenge, even against herself. The answers she gave to the four questions
-that mattered are the constants at the top of the `awards` section of
-store.js, and nothing about them is hidden in app.js.
-
-- **Ten minutes of study makes a day count** (`DAY_DONE_SECONDS`). Her own
-  number, not a lesson: a lesson is about five, so a day is two, or one and
-  the review. The clock is in app.js — `studyTick` adds five seconds while a
-  drill of any kind or a round of Match is on screen, the tab is visible and
-  she has touched the phone inside the last ninety seconds. The idle guard is
-  the whole reason a lesson left open on the table does not win the week.
-  Browsing Phrases, the interview and the Add page are not study.
-- **Calendar week and calendar month, not rolling windows.** Monday to Sunday
-  (`WEEK_STARTS`, the one place that is decided), 1st to last. Six days wins
-  the week (`WEEK_NEEDS`); a month with no more than four days off wins the
-  month (`MONTH_MISSES`, so 27 of 31 and 26 of 30). A target she can see
-  coming, one shot per period. **The next rung is mine to have picked: three
-  winning months in a row is a prize of its own** (`SEASON_MONTHS`), awarded on
-  every third month of a run.
-- **Pronunciation Pro reads Azure's blend, not the weakest word.** Her choice,
-  made knowing the dial shows the harder number. `attempt.overall` ≥ 70, 80,
-  90, 100 on one attempt, each medal once. The page says which number it is,
-  because the two sit beside each other on the score card.
-- **Match counts pairs over all time**, any card in the app, medals at 50,
-  100, 250 and 500 (`MATCH_TIERS`). Rounds, clean rounds and the best clean
-  time are kept to be beaten and win nothing. Two cards with the same English
-  can't share a round. The Spanish is said aloud on a match only with an
-  Azure key — the browser-voice toast would otherwise fire on every pair.
-  **A matched Spanish card is a Listen button from then on** (asked for by
-  Deb the day it shipped): it goes through `sayAloud` on any voice, since a
-  tap is an explicit ask, and wears a speaker; the English half is inert.
-- **Whether a prize is won is computed; only *when* is stored.** `study` is
-  the one thing written as it happens; weeks, months and seasons are read
-  off it the way `reviewOf` reads the attempts, and the pronunciation tiers
-  are read off the attempts themselves. `earned` exists so a prize is
-  celebrated once and the cabinet can date it. `awards.pending()` is the one
-  reader; `checkAwards()` in app.js grants and celebrates whatever it returns.
-- **Nothing before `awards.since` counts.** Asked for as *"start all the
-  rewards from today"*. The day is written the first time the store loads
-  (or a backup without one is restored), `awards.counted()` filters the
-  attempts by it, and the Prizes page says the date. An Azure 85 from last month
-  lights no medal; a cabinet with prizes in it on day one is not a challenge.
-  Anything won while the app was closed — the week turning over at midnight
-  — is still granted silently at boot rather than thrown as a fanfare.
-- **The celebration is an overlay, never a render.** A medal won mid-lesson
-  must leave the attempt on the screen; `showNextPrize` appends to `body` and
-  queues the rare double. *See all your prizes* is left off it while a drill
-  is on screen, because that tap would quit the lesson.
-- **The flame is a different count and deliberately still is.** It counts
-  finished lessons, as it always has; the challenge counts minutes. The Prizes page
-  says so in one line rather than making the two agree, which would have
-  meant either changing what the flame has meant since the first version or
-  counting a five-minute lesson as a ten-minute day. Tapping the flame now
-  opens Prizes instead of toasting one line.
-- **The titles are English, by request.** The first cut said Premios, Racha,
-  Vitrina and ¡Semana ganada!, on the app's habit of Spanish names; asked
-  what they meant, Fin chose English. The ¡Olé! on the button stays, as it
-  does on the Add and Sobre mí toasts.
-- **Two surfaces, like Review.** The `.week-strip` under the parrot on the
-  home page — seven dots, the thing on that page that changes every day —
-  and the Match tile, in The Past's old square. Everything else is on
-  the Prizes page: the week, the month, the three-in-a-row run, the two medal
-  grids and the *Trophy cabinet*, every prize with its date. Settings describes it
-  and links to it; there is no switch to turn it off.
-
-Worth asserting: eight tiles, one of them `[data-open-match]` and none
-`[data-section="past"]`, `pasado-1` on the Practice path, seven dots and
-`since` set to today on a clean boot, no overlay; attempts from September
-seeded beside one from this morning grant only what today's score clears; five
-done days plus 595 s today, then one tick inside a drill, paints
-`#prize-overlay` reading *Week won!* with no `#prize-all` and the
-`.drill-text` still underneath; 200 s with no input adds at most 95 s;
-three 27-day months seeded grant `month-2026-10` and `season-2026-10` with no
-overlay; a stubbed 93 celebrates 70, 80 and 90 in turn with the score card
-still on screen; a round of Match with `total: 49` planted celebrates
-*Matched!* on the first pair, reports its miss, and a clean second round
-counts as `perfect`; export carries `awards`. The smoke script is in the
-session scratchpad, like the others.
-
-## Stories: a scene, then some questions
-
-Asked for as *"tiny mini stories — three or four sentences that make up a
-scene, followed by a few questions that are multiple-choice, as a kind of
-comprehension test"*. `STORIES` in content.js, `stories` in store.js, and the
-`stories` tab in app.js (`renderStories`, `renderStory`, `openStory`).
-
-- **Hand-written, like everything else in content.js.** Thirty-four scenes from
-  Deb's own week — the doorman, the café, the market, tapas, Pilates, rain
-  and plants, the lift, the restaurant, the bakery, a parcel that is a plant
-  — written out of the course's own vocabulary, easiest first. **The six
-  from `historia-11` on are harder on purpose**, asked for as *"make those
-  stories a little bit more difficult"* once the ten had been used up: five
-  longer sentences rather than four, the past tenses El pasado drills,
-  subordinate clauses, and four questions rather than three. The page
-  iterates lines and questions, so nothing in app.js knows a story's size.
-  They lean on the four Palabras lessons that arrived with them (the till,
-  the shelf, the flat and the street, out and about — `palabras-9` to
-  `palabras-12`, phrase ids from `palabras-14-1`), asked for as *"more
-  everyday words that I would need to use in a store or just in everyday
-  life"*. **The ten from `historia-17` on climb**, asked for as *"more
-  please — maybe slowly make them progressively harder and longer"*: four
-  at six lines and four questions, four at seven lines and five, two at
-  eight lines with a twist. **The eight from `historia-27` on** came with
-  the five everyday units and are written out of their vocabulary — the
-  plants, the flat hunt, Thanksgiving, the lottery, the grapes, the Kings;
-  they carry a `tier` each and are spread across the five, so an easy one
-  appended at the end still lists under Short. The grammar climbs with them — the conditional,
-  *cuando* with the subjunctive, reported speech, *se le rompió*, object
-  pronouns doing real work — and the neighbour and the doorman get names,
-  Carmen and Manolo, because at that length "la vecina del quinto" four
-  times a story is a mouthful. The Worker
-  could write these, and deliberately doesn't: a story is where the cards
-  are met again in a sentence that isn't the card, and that only works if
-  the sentences use the cards. Add a story by appending; never renumber.
-- **`STORY_TIERS` is the climb, declared.** Five steps — Short, A bit
-  harder, Longer, Longer still, Hard — each with a one-line *sub* saying
-  what it adds. A story names its tier in `tier`; the first sixteen predate
-  the field, so `tierOf` reads theirs off the id, and a story with no `tier`
-  is not an error. The list groups by tier under a `.list-banner` in
-  Stories' red (the Phrases shape), with *read of total* on each banner, and
-  the story page says its tier beside *Story 17 of 26*. The numbering runs
-  on through the groups, because "story 17" is how a story gets referred to.
-  Add a tier by adding a row and naming it on the stories — nothing else
-  reads the list. **Keep a new story's length honest to its tier's sub**,
-  since that line is the promise the banner makes.
-- **The question is English and the answers are Spanish.** Deb's choice, of
-  three offered. The question is never the obstacle; reading the Spanish is.
-  The options are lifted from the story, so the distractors are things that
-  were said too. `answer` is an index into `options` as written, and
-  **`openStory` shuffles each option set once** (`order`) so the right one
-  isn't wherever the file put it.
-- **The English is held back until every question is answered**, and a tap
-  on any line says it aloud — the help that isn't an answer. *Read it all to
-  me* says the joined lines as one utterance through `sayAloud`, so it is
-  cached like a phrase and works on the browser voice. Once answered, *Show
-  the English* prints each line's English under it; the toggle re-renders,
-  which is safe here because nothing on the page is an attempt.
-- **A wrong pick costs nothing and closes the question**, with the right
-  answer lit green whether or not it was picked and the verdict naming it.
-  The result card appears when the last question closes, the score is
-  recorded once (`stories.record`, which also says whether the best moved),
-  and *Next story* or *Read it again* opens a fresh session with a fresh
-  shuffle.
-- **A story is reading, not speaking.** Nothing records, nothing is scored
-  for pronunciation and **no attempt is written** — a story counting toward
-  level two or the review schedule would be the quiet-mode mistake again.
-  What it does count is **study time**: `studying()` is true while the
-  questions are still open (`state.story.finishedAt` null), so ten minutes of
-  stories wins a day like ten minutes of lessons. It stops counting at the
-  result card, as Match stops at the end of a round.
-- **It is a tab, like Match and Prizes**, not a stage of `learn`: `state.tab
-  === "stories"` with `state.story` null for the list and set for a story.
-  `homeLink()` on the list, *‹ Stories* on a story, and `[data-open-story]`
-  is handled by the delegated listener on `view` so the result card's
-  buttons and the list's rows share one handler.
-- **Not in Xerra yet.** The machinery ports as is; the stories don't — they
-  are Deb's week in Castilian, and Xerra's would be someone else's in
-  Catalan, the same way the keyword pictures are.
-
-Worth asserting: thirty-four `.story-row`s under five `.list-banner`s
-reading *Short*, *A bit harder*, *Longer*, *Longer still* and *Hard* with
-counts 12, 8, 6, 5 and 3, the rows numbered 1 to 34 straight through, and no
-`.story-best` on a clean boot; `historia-26` opens on eight `.story-line`s
-and five `.story-q`s with its intro reading *Story 26 of 34 · Hard*, and
-`historia-27`, appended with `tier: "easy"`, is numbered 27 but listed
-under *Short*;
-a story opens with four `.story-line`s, four `[data-line]` play buttons,
-`#story-read`, no `.story-en` and no `#story-english`, three `.story-q`s
-and nine `.story-opt`s all `lang="es-ES"`, the question text English; a
-right pick paints `.story-q.right` with `.story-opt.is-right` and three
-disabled options, a wrong one `.story-q.wrong` with the picked option
-`.is-wrong`, the right one `.is-right` and a verdict naming it; the result
-appears only after the third answer, reading *2 of 3*, with `#story-english`
-and a *Next story* button; the store holds `best: 2, of: 3, times: 1` and
-`debolingo.attempts` is still empty; a second read scoring 3 moves `best` to
-3 and `times` to 2, the list shows *3/3 ✓* and the tile *1 of 34 read*; the
-last story offers only *Read it again*; an open story ticks `awards.study`
-and export carries `stories`. The smoke script is in the session scratchpad
-with the others.
-
-## Quiet mode: the lesson with the speaking taken off it
-
-Ported from Xerra, where it is road mode's mirror; this fork has no road mode,
-so it is one flag and nothing to be mutually exclusive with. For a train, a
-waiting room, a house with someone asleep in it: everything you can read stays,
-and the record button is replaced by a box you write the answer into.
-
-- **One flag, read in one place.** `quietNow()` in app.js is
-  `settings.quietMode`, and `renderDrill` reads it; there is deliberately no
-  second renderer, because the first thing a copy would drift on is the
-  level-two gates. The switch is the **Quiet** pill in the lesson bar
-  (`.mode-toggle.quiet-toggle`, between the bar and EDIT, on the gate screen
-  too so it never jumps) and `#s-quiet` in Settings; both write the setting.
-- **It makes *every* card a question, and that is the whole of what it adds
-  to the level-two machinery.** Typing a phrase that is printed on the screen
-  is copying, so the Spanish is withheld at level one too. `typing` is
-  `quiet && !state.typed && !state.attempt`, `questioned` is `asking ||
-  typing`, and everything that waited for a level-two answer — the tip, the
-  aspect note, the picture's third position, the replies, the notes, the
-  chat panel — waits for a typed one through that one flag.
-- **Level two still withholds Listen; level one doesn't.** At level one she
-  may hear it before she writes, which is what makes the same box dictation
-  as well as recall — there is deliberately no setting choosing between them.
-  At level two the model audio is the answer, so Show me plays it and keeps
-  the box: she writes what she heard, and *Shown, not remembered* prints
-  once she has.
-- **Nothing a typed go produces is persisted.** No attempt, no tally, nothing
-  in export/import. `goodAttempts` counts an *unscored* attempt as good —
-  the no-Azure path — so a typed go filed as an attempt would push a card to
-  level two after four quiet sessions in which she never said it, and would
-  land in the review schedule besides. The verdict says so out loud, and
-  Next files the card as skipped exactly as it always has.
-- **The mark is which word, not a percentage.** `checkTyped` is the whole of
-  it: `typedWords` keeps accents in `norm` and folds them in `bare` —
-  `normaliseSentence` can't be the first pass here, since it folds accents
-  itself — and `alignWords` is a weighted LCS so a missed word doesn't mark
-  every word after it wrong. Four verdicts, worst wins: **wrong** (struck
-  through, *Left out: …*), **close** (`closeEnough`: within one edit from
-  four letters, two from eight, swaps allowed; dotted amber with the right
-  spelling under it), **accents** (wavy amber; right, mind the accents) and
-  **right**. `ñ` folds like an accent — it is the same long-press on the
-  keyboard, so `ano` for `año` is marked and forgiven rather than struck.
-- **`autocorrect` and `spellcheck` are off, and are not decoration.** iOS
-  corrects her Spanish for her; `lang="es-ES"` so the keyboard and its
-  dictation key are in the right language.
-- **EDIT stays through the question**, because it is the lesson's only way
-  into the editor and the editor is where Delete lives — Xerra lost the
-  delete off every card in the mode by hiding it. The shape gate still comes
-  first, and its `.aspect-why` waits behind the typed question.
-- **Every verdict ends in *Write it again***, and Show me in *Now write it
-  from memory*: `#quiet-again` clears `state.typed` (and `revealed` at level
-  two, so the audio is withheld again) and leaves `peeked` alone.
-- **Teal**, the one strong colour not already doing a job in the lesson;
-  purple had to be left alone beside the purple Level 2 badge. `--teal` and
-  `--teal-dark` are Xerra's values and the palettes are back in step on it.
-  `.typed-word.ok` is `--green-dark` in the light theme and `--ok-ink` in
-  the dark one, since green-dark vanishes on the dark surface.
-
-Worth asserting, with `quietMode: true` planted: the lesson has
-`#quiet-input`, `#quiet-check`, `#listen`, `.drill-text.recall-prompt` and
-`#drill-edit` and no `#record` or `.focus-note`; the box carries
-`autocorrect="off"`, `spellcheck="false"` and `lang="es-ES"`; an empty Check
-is refused; the exact text paints `.quiet-verdict.right` and puts the Spanish
-and the tip back; `#quiet-again` empties the box and withholds the phrase
-again; Enter checks; the text without accents paints `.accents` with one
-`.typed-word.accent` and nothing struck; one letter off paints `.close` with
-the right spelling in `.typed-fixes` and no *Left out*; a dropped word paints
-`.wrong` naming it; `#quiet-show` prints no verdict; `debolingo.attempts` is
-the same length throughout; `#quiet-toggle` puts `#record` back and writes
-the setting; at level two `#show-me` stands with no `#listen`, writing it
-prints no *Shown, not remembered*, and Show me keeps the box and brings
-Listen back; on `pasado-1` the gate comes first and `.aspect-why` waits for
-the answer.
-
----
-
-## Dot in a box, or line: El pasado
-
-Xerra's past-tense gate, ported in a deliberately reduced form: the **El
-pasado** unit (four lessons, five cards each, all from Deb's actual life —
-Pilates, Atlanta, Chicago, plants; `pasado-4` is tiny derivatives of the other
-fifteen, deliberately very basic) drills the *shape* of a past sentence
-before it will show the Spanish. Three shapes only — a dot in a box
-(preterite, `[●]`), a line (imperfect, `▬▬`), and a line reaching now (present
-perfect, `(▬···●)`). Xerra's `both` and pluperfect stay over there until Deb
-needs them; adding one is an entry in `ASPECTS` and cards that name it.
-
-The point of the drill is **tense recognition and what it does to the ending**,
-not learning the phrases — so, unlike Xerra, the endings line is the loud part:
-`.aspect-endings` rides every choice button in bold and the verdict prints it
-bigger on a gold highlighter tint, while the grammar-book term stays small and
-italic. That emphasis is this app's own divergence, not drift; Xerra keeps term
-and endings on one quiet line.
-
-What came over in Xerra's shape, and should stay in step with it:
-
-- **`ASPECTS` / `aspectOf` / `aspectChoices` in store.js.** One language here,
-  so `endings` are plain strings where Xerra keys them by locale. The gate
-  offers the two `base` shapes always, plus the present perfect only in a
-  lesson that actually contains one — so the question is "Dot in a box, or
-  line?" over two choices and "Which shape?" over three, and a lesson's
-  contents are load-bearing.
-- **The gate is a whole screen** — English sentence, choice buttons, quit and
-  the bar; no Listen, no record, no EDIT (the editor prints the sentence being
-  asked about). No way past the question except answering it.
-- **It stacks above level two.** The gate never shows Spanish, so a level-two
-  card asks its shape first and becomes a memory question after. The verdict's
-  term and endings stay through that; the card's `aspectNote` (`.aspect-why`)
-  waits until the card is revealed, because it quotes Spanish.
-- **A wrong answer costs nothing and nothing is persisted** — no per-shape
-  tally, no demotion. `state.aspectChoice` is per card, reset by `loadPhrase`;
-  answering re-renders the whole drill, which is safe because the gate stands
-  before any attempt exists.
-- **The phrase sheet states the shape flat** (`.phrase-aspect`), gate on or
-  off; **`settings.aspectGate`** is the switch, and cards outside El pasado
-  carry no `aspect`, so it does nothing to the rest of the course.
-- **Each single-shape lesson carries one card of the other shape** on purpose —
-  a lesson whose name answers its own question trains the lesson, not the
-  grammar. The traps are load-bearing too: *fue dura* against *estaba cansada*
-  (both "was", different shapes), and *he ido todos los días esta semana*
-  ("every day" reads habit, but the bracket still has now inside it).
-- **Repaso gates too**: the pool can pick up El pasado cards, and
-  `aspectChoices` reads the queue in front of her either way.
-- **The ending is lit up in the sentence itself.** Once the Spanish is on
-  screen, the verb's tense machinery is lettered in the score-amber shade —
-  `marked` in content.js, `drillSpanish` in app.js. A letter shade and not a
-  background on purpose: a highlighter block behind "aba" made trabaj-aba read
-  as two words. See *Content model* for the reduce-to-text rule that keeps it
-  safe against edits.
-- **The sentences are pruned to the decision.** No word survives that isn't
-  needed to pick the shape from the English: *Antes trabajaba* became plain
-  *Trabajaba* because the -aba alone says "used to", Tampa and the friend
-  clause went, *ayer* replaced *la semana pasada* where either would do. What
-  must stay is any word the *English* needs to be decidable — "every week" on
-  the flying card, "this week" on the trap — because the gate asks from the
-  English alone. Don't fatten them back up for naturalness.
-
-One thing in the drill came with this unit but is not part of it:
-
-- **Next is a real button on every card**, not just gated ones — the old muted
-  SKIP link promoted to a full-width `#next` button so a listen-only pass
-  through a lesson doesn't need hunting for the way past a card. It sits
-  **last on the page**, below the comparison and the notes: under the record
-  circle it was the easy way out of every card, and reachable-but-not-tempting
-  was the ask. Same behaviour: filed as skipped, never counts as a good go,
-  hidden while a banner is up (the banner's Continue is the next button then).
+## Design decisions to keep
+
+Each has a full argument in `notes/`. Do not reverse one without reading it.
+
+- **The score is the weakest word in the attempt** (`attemptScore`), not any
+  Azure aggregate. Pronunciation Pro alone reads Azure's blend, by request.
+- **Nothing is locked.** Ticks and the streak record; they never gate.
+- **Only spoken attempts count.** A typed go in quiet mode, a story and a
+  round of Match write no attempt. Level two and Review are read off attempts.
+- **Nothing demotes.** Review decides when a card comes round, never its level.
+- **Prizes are computed from what she did; only *when* is stored.**
+- **The answer is withheld until you commit**: the Spanish at level two and in
+  quiet mode, the sentence behind the shape gate, a story's English.
+- **Big Worker outputs get their own endpoint.** `/complete-card` stays small
+  and fast; replies, the interview, the batch of cards and the drawing are
+  separate calls that can fail separately.
+- **Nothing is drawn unasked.** Imagining the scene is the method.
+- **Port the machinery between the forks, never the scenes or focusNotes** —
+  they are aimed at one mouth and one life.
+- **Check audio changes numerically**, on clips with a speech-like crest
+  factor, never by recording in a quiet room. `notes/audio.md`.
 
 ---
 
 ## Running and checking
 
 ```bash
-cd docs && python3 -m http.server 8765   # http://127.0.0.1:8765
+cd docs && python3 -m http.server 8765 --bind 127.0.0.1   # http://127.0.0.1:8765
+tools/checks/run.sh            # every headless check; serves docs/ itself
+tools/checks/run.sh smoke      # one of them
 ```
 
-Playwright against that URL beats clicking through. Worth asserting: no
-console errors on boot, the path shows 22 course nodes + Repaso with **nothing
-locked** (`.node.locked` should never match), the deepest lesson opens straight
-away with `.drill-text` populated, an edit to a course phrase drills as edited
-and Reset puts it back, a starred phrase raises the Favourites node, a saved
-card appears in Phrases *and* in Lo tuyo, and completion writes progress +
-lights the streak.
+`tools/checks/` needs Playwright installed globally (it is not a repo
+dependency); `run.sh` sets `NODE_PATH` to the global npm root.
 
-For level two, seed `debolingo.attempts` with four passing attempts on a known
-phrase id and assert the drill shows the *English* in `.drill-text`, carries a
-`.level-badge`, and has no `#listen` and no `.focus-note`; then that `#show-me`
-brings all three back. Recording can be driven headlessly with Chromium's
-`--use-fake-device-for-media-stream` (plus `--use-fake-ui-for-media-stream`),
-which is enough to check the reveal-on-record and the stored `mode`. Anything touching Azure or the card assistant can't be
-covered — no key and no passcode in the repo, ever.
+- `smoke.js` walks every page — a lesson with a recording scored by a fake
+  Azure, quiet mode, Words and Add a word, the shape gate, Sobre mí, Quick,
+  All Phrases and the editor, Add a card, Match, a story, Prizes, Settings —
+  and fails on any console error. Run it after every change: a missing import
+  shows up here.
+- `lib.js` has the helpers: `open()` (a fresh phone-sized page, service worker
+  blocked, settings seeded under `debolingo.settings`), `stubWorker()` (answer
+  the card assistant), `fakeAzure` (a stand-in Speech SDK), `toneWav()`,
+  `tally()`.
 
-With the assistant stubbed (Playwright's `page.route` over the Worker's paths),
-also worth asserting. For replies: `#drill-get-replies` is offered on a card
-without them and absent while a level-two question stands, a successful fetch
-paints `.drill-replies` with working `[data-say]` buttons, `#p-get-replies` on
-the sheet removes itself once they land, and the Add review shows them without
-Save ever having waited. For the chat: `#drill-chat` is there at level one and
-absent while a question stands, `.chat-keep` puts a `.kept-note` under the card
-and flips to `Kept on the card ✓`, `Forget this` on the sheet removes it, and
-the posted `card.replies` carries whatever is on screen — from the sheet, from
-the lesson, and from the Add tab once `askForReplies` has landed — with an
-empty list for a card that has none.
-For Sobre mí: `[data-about]` is a home tile before the unit has cards and is
-still there with no assistant configured, reading *Needs the card builder* and
-opening a page that links to Settings; there is no `#about-open` and no
-`[data-lesson^="about-"]` on the path, seeded or not; home has eight `.tile`s
-in the order Practice, Words, Sobre mí, Quick, Match, Stories, Review, All
-Phrases, one `[data-review]`, one `[data-open-stories]`, no `.due-strip` and
-no `.tile-wide`; the Practice path draws Precios y números, El restaurante, De
-compras and Cada día between El mercado and El pasado, and `library.drillable()`
-is 301 on a clean boot; with an assistant, opening the tile fires exactly one
-`/interview` by itself, `#about-make` is disabled until a learner turn exists,
-a batch containing a punctuation-only repeat adds one fewer than it returned,
-the made cards are ordinary phrases with `deck === "Sobre mí"` that the Sobre mí
-page lists and All Phrases lists too, the transcript survives a reload without
-a second `/interview`, and `#about-reset` takes two taps and leaves the cards
-alone. For the version panel: `#s-running` and `#s-installed` agree after a
-clean install. Two smoke scripts covering all of that live in the session
-scratchpad rather than the repo — there's no test runner here on purpose.
+**When you add or change a feature, add a check for it** as
+`tools/checks/<feature>.js`. What older features were asserted on is in prose
+in `notes/checks-history.md`; turn the relevant list into a script when you
+next touch that feature.
 
-For the dot-or-line gate: `pasado-1` opens on `.aspect-choice` × 2 asking
-*Dot in a box, or line?* with no `.drill-text` (bar the `.recall-prompt`
-English), no `#listen`, `#record` or `#drill-edit`, while `#quit` and the bar
-survive; every choice button carries an `.aspect-endings` line; `pasado-3`
-offers three and asks *Which shape?*; a wrong pick paints
-`.aspect-verdict.wrong` naming both shapes with the endings on the gold tint
-and the `.aspect-why` underneath, and puts the whole drill back beneath it;
-`saludos-1` is never gated; "Trabajaba en Chicago." shows a
-`.phrase-aspect` reading *A line · -aba · -ía* on its sheet; and unticking
-`#s-aspect` removes the gate and the verdict together. Once a gated card's
-Spanish is on screen, `.drill-text .ending-mark` wraps exactly the bracketed
-machinery ("aba" on the Chicago card, "he ido" on the Pilates one); `pasado-4`
-offers all three shapes. For the Next button: `#next` is on `saludos-1` and on
-an answered pasado card alike, absent while the gate stands and while a banner
-is up, advances the bar without recording, and there is no `#skip` anywhere
-any more.
-
-For the keyword pictures: `palabras-1` opens on "el tenedor" with a
-`.picture-note` carrying its `.picture-sounds`, and no `#picture-hint`;
-`saludos-1` has neither; with *Show the meaning up front* off the picture waits
-for `#reveal` alongside the translation. Seed four passing attempts on
-`palabras-1-1` and the same card offers `#picture-hint` with no `.picture-note`
-— pressing it paints the picture while `.drill-text` still reads *the fork*,
-`#listen` is still absent and the "Shown, not remembered" line is still off the
-card, which is the assertion that says peeking and picturing are different
-things. Searching Phrases for `ten-a-door` finds the word by its `sounds`
-alone; the sheet prints `.picture-note` flat; editing it writes an override
-holding `picture` and `sounds` and nothing else, the lesson drills the edited
-scene, and Reset empties the store. With `/chat` stubbed: the two labelled
-lines land in `#f-sounds` and `#f-picture`, an unlabelled reply lands whole in
-`#f-picture`, half a card refuses with a toast, a 503 is reported in
-`#f-picture-note` with the boxes untouched, and Cancel writes nothing.
-
-With `/picture` stubbed: no draw button at all with no assistant configured;
-`.picture-draw` is offered on a card with a scene and nothing is fetched until
-it is pressed; one press paints `.picture-image` from a blob URL; a reload
-shows it again with no second call; the blob in the `pictures` store is an
-image and smaller than what was sent; the sheet's `[data-undraw]` takes it out
-of storage and puts the offer back; and a 503 lands in `.picture-art-error`
-with the offer still there. For the gender cue: `el tenedor` reads *Paint the
-fork blue* with a `.gender-dot.gender-m` and `la cuchara` reads *pink* with
-`.gender-f`; `genderOf` returns null for *La cuenta, por favor*, for `tener`,
-for `¿dónde?` and for `hoy`, and `f` for `el agua`, which is the assertion
-`EL_BUT_FEMININE` exists for; the drawn request carries `card.gender`;
-`#f-gender` opens on *From the article — masculine* and picking Feminine
-repaints the line **and survives the save**, which is the one that fails if
-`gender` is left out of `EDITABLE`. For the redraw: `[data-redraw]` is in the
-drill as well as the sheet and `[data-undraw]` only in the sheet, a 503 on a
-redraw leaves `.picture-image` on screen with the error beside it and the
-button still offered, and the next good one clears it. The Worker half now has a committed test rather
-than a scratchpad one — `worker/tools/picture-test.mjs` in Xerra's repo, which
-drives `worker.fetch` with `globalThis.fetch` stubbed and needs no key, no
-network and no money. It covers the Replicate request shape (`Prefer: wait=45`,
-the bearer token, the input fields), both output shapes, the base64 chunking,
-the error mapping (402 out of credit, 404 wrong model, 429 rate-limited, a
-prediction still running at 45s), and that pulling `REPLICATE_API_TOKEN` puts
-it back on the Gemini path. Whether the picture is any *good* is the other
-tool, `worker/tools/draw-one.mjs`, which spends a cent and writes a file to
-look at — the failure that matters there is a model quietly captioning the card
-with a misspelling, which no assertion catches.
-
-Worth knowing if you re-run that test: the 1 MB fixture is load-bearing. At
-70 KB the naive `btoa(String.fromCharCode(...bytes))` passes and the chunking
-assertion proves nothing — JavaScriptCore only throws `RangeError` past about
-a million arguments, and a real drawing is 150 KB. A megabyte is both realistic
-(seedream-4 handed back 977 KB) and past the cliff.
-
-For the weakest-word score, `attemptScore` is worth driving straight at the
-module: five words with a 61 among them returns 61 and not Azure's 93, an
-`Omission` returns 0, no word detail falls back to `accuracy` and then to
-`overall`, and an unscored attempt stays null. Then that it reaches the screen
-— two seeded attempts scoring 93-with-a-61-in-it must *not* reach level two,
-the attempt rows must read 61, and the phrase row's best must be the best
-worst-word. The score card itself can be driven for real: `--use-fake-device-
-for-media-stream` plus replacing `scoring.score` on the module object (app.js
-holds the same object, so the stub reaches it) gets you a `.dial-value` of 61,
-an `Azure 93` sub-score beside it, and the "your weakest word, “leche”" line.
-
-**The trim is the one thing to check numerically, and it needs no microphone.**
-Build synthetic clips in the page — room noise at a chosen RMS, then a
-150 Hz tone with syllable-rate amplitude modulation, then a tail — encode them
-as WAVs and call `analyse()` on them through Playwright. What the numbers must
-say: the reported duration is the speech alone at 0.001, 0.02 *and* 0.05 RMS of
-room noise; a 1.50 s take against a 1.40 s model reads ~1.05× and not 2.2×; a
-TTS-shaped clip (speech end to end) isn't shortened; a quiet high burst after
-the last vowel still has energy in the last tenth of the drawn envelope; and a
-plain 150 Hz tone comes back untrimmed at 150 Hz. Reverting audio.js and
-re-running is what proves the test has teeth — the old code fails four of those
-and passes the tone.
-
-The playback levelling is checked the same way and also needs no microphone —
-but **build the clips out of glottal pulses through a few formants, not out of
-sinusoids.** A sine's crest factor is about 1.6 where speech is 4 to 8, and the
-peak cap this all turns on is a crest-factor question, so a sine test passes
-changes that a voice would fail; that is how v18 shipped. Measure the RMS over
-the *words* (the frames between a fifth and four times the 90th-percentile
-frame — not the loudest window, which would measure the burst).
-
-What the numbers must say: the same take with and without a 20 ms
-0.9-amplitude burst in it lands within a decibel of itself; a take and a
-TTS-level clip land within a decibel of *each other*, which is the check that
-matters and the one the complaint was about; three model clips 9 dB apart on
-the way in come out level; a faint take reaches the line; no sample exceeds
-0.98; a clip already at the line comes back as the very same blob; and at a
-speech-like crest the limiter bends well under half a per cent of the samples.
-Before the knock fix the tapped one came back at 1.0× gain; before the
-symmetric fix the three model clips came back 5.9 dB apart.
-
-For the Add review: `.dictate` and `[data-dictate]` match nothing anywhere in
-the app and the three boxes still carry their `lang` (`es-ES`, `en-US`,
-`en-US`), the preview line follows an edit to the Spanish box, a
-blank `reviewNote` still gets a notice, `#edit-inputs`
-focuses `#add-situation`, `#try-again` posts the edited situation, and
-`#undo-complete` restores all three raw inputs and re-hides `#card-preview`
-and `#add-chat`. Its order is worth asserting on directly: the review card's
-children are the preview line, `#review-note`, `.regen-hint`, the two fields,
-`#result-replies` and the button row, in that order, with `#try-again` and
-`#undo-complete` both inside the hint. `#save-another` leaves her on Add with
-an empty form and the card saved; `#save-practise` puts `.drill-text` on screen
-showing the card just made. Pick a phrase for that test that is *not* already
-in the course — the duplicate check reads `allPhrases()`, so "Otra, por favor."
-is refused before it ever saves.
-
-Anything touching Azure's real endpoint still can't be covered — no key in the
-repo, ever.
-
-Deployment is GitHub Pages from `main`/`docs`. All paths are relative, so it
-works from a subpath. Bump **both** `VERSION`s (`sw.js` and `js/version.js`)
-when shipping changes or the phone will keep the old build — and Settings will
-tell you which one you forgot.
+A static check worth running after moving code between modules (ESLint
+installed outside the repo): the `no-undef` rule over `docs/js` must report
+nothing.
 
 ---
 
-## Deliberately not built yet (v2 ideas)
+## The sister apps
 
-- **"Say it your way"** — the requested next feature: Deb attempts her own
-  guess at how to say something, the app transcribes it (Azure STT), and
-  explains — kindly — what a native would say instead, especially word-order
-  habits carried over from American English (adjective placement, "¿Puedo
-  tener...?" → "¿Me pone...?", unnecessary subject pronouns, etc.). Needs
-  design: probably free-recording against a *situation* prompt rather than a
-  fixed phrase, plus a small rules/examples table for common EN→ES transfer
-  errors.
-- Demotion. Review brings a card back on a schedule read off the attempts,
-  but nothing ever comes back down from level two — a card peeked at or
-  failed comes round sooner, that is all. If a demotion is ever wanted it
-  belongs in `reviewOf`'s neighbourhood, not as a special case in the drill.
-- Xerra's Practice tab groups a deck's rows with a progress meter and an
-  average. Deb's path shows per-lesson bests instead; if free-practice ever
-  needs more shape than Repaso + Favourites, that's the pattern to port.
-- More units as Deb's world grows (pharmacy, taxi, phone calls).
+`dbFSProductions/listen-record-learn` (Xerra, Catalan) came first and holds
+the shared Worker; this app forked it; `mum-o-lingo` forked this. `audio.js`
+is the same file in all three, `speech.js` the same behaviour, the palette the
+same values. Xerra was split into modules at its v130, this app at v62; the
+module lists differ because the pages do. `notes/project.md` has the lineage
+and the deliberate divergences.
 
-### Where the two forks still differ
+---
 
-Two things here are waiting to be offered to Xerra rather than ported from it:
-the Stories machinery (the scenes themselves don't port — see *Stories*), and
-the Review-as-a-tile shape, if a home screen that always shows Review is
-wanted there too. The four everyday units are situations worth offering, as
-the first four were, with Catalan focusNotes written fresh. What's left is
-deliberate:
+## Notes index
 
-- **The composer's dictate buttons.** Xerra has them; here they are gone,
-  because Safari has no `SpeechRecognition` and they only ever pointed at the
-  keyboard's own microphone. See *The composer has no dictate buttons*.
+Read the file before changing the feature. Each is the history and reasoning
+as it was written at the time, newest additions at the end.
 
-- **The editor's AI rebuild handles replies differently.** Here `wireEditorAI`
-  reports whether the card in the boxes is the assistant's rewrite, and Save
-  drops the replies if it is, so the card offers *What might they say back?*
-  again. Xerra fetches a replacement set instead and lets Undo restore the
-  originals — better, and more moving parts. Either is defensible; don't
-  "fix" one into the other without deciding which.
-- **Deck list versus path.** Xerra browses by deck with an accordion and a
-  merged search page; here everything hangs off the path plus a flat Phrases
-  list. Sobre mí is a home tile in both now; behind it, its cards are a deck
-  there and `ownPhrases` in a named deck here.
-- **Road mode.** Xerra's drill stripped to Listen, record, You and the score
-  for practising on the move. Quiet mode — its mirror — is here now; road
-  mode is not, and this drill card has never carried the situation or the
-  usage note, so half of what road mode is for taking off isn't there.
-- **The dot-or-line gate is here in a three-shape cut.** Xerra has five shapes
-  in two languages; El pasado has dot, line and the present perfect, its own
-  five-card lessons, and the endings printed loud (see *Dot in a box, or
-  line* above). Porting Xerra's `both`/pluperfect later is additive — an
-  `ASPECTS` entry and cards.
-- **The keyword pictures are in all three forks now**, with the same machinery
-  and deliberately different scenes. Xerra's is a **Paraules** family of six
-  decks, thirty-six Catalan words, and it needed no Worker change — `/picture`
-  was already deployed. Two things it had to solve that Spanish doesn't pose:
-  Catalan's `ll` has no English sound to bridge to (the scenes say "ya" and the
-  focusNote says *the lli of 'million'*), and its stress decides which vowels
-  survive, so *l'escala* is not "escalator" and *la maleta* is not the "mallet"
-  used here. Over there the fields ride on the phrase itself rather than
-  through an override, since its cards are data rather than code.
-- **The content.** Same situations in the everyday decks, deliberately
-  different focusNotes — hers teach Castilian, Xerra's teach Catalan.
+| file | read it before touching |
+|---|---|
+| `notes/project.md` | Lineage, the two version strings, the service worker, what is not built, where the forks differ. |
+| `notes/home-and-navigation.md` | The header, the eight tiles, the path, sections, list colours, page heads. |
+| `notes/content.md` | `COURSE` and `STORIES`: ids, lesson size, focusNotes, the units. |
+| `notes/data-and-editing.md` | The stores, overrides, `decorate()`, deleting, the editor and its AI rebuild. |
+| `notes/drill.md` | The drill card, the ask panel and kept notes, the weakest-word score, level two, quiet mode. |
+| `notes/grammar.md` | El pasado: the dot-or-line gate, its colours, its sentences. |
+| `notes/vocab-pictures.md` | Palabras, Add a word, keyword pictures, drawings, gender, Imagine it again. |
+| `notes/replies-and-add.md` | Replies, the composer, the Add review. |
+| `notes/quick.md` | Quick, and what `/complete-card` must be sent. |
+| `notes/about-me.md` | Sobre mí: the interview and its cards. |
+| `notes/review.md` | Spaced repetition read off the attempts. |
+| `notes/prizes-and-match.md` | The study clock, the challenges, the medals, Match. |
+| `notes/stories.md` | Stories: tiers, questions, what a read does and does not count for. |
+| `notes/audio.md` | Listen's silent failures, the trim, playback levelling, crest factor. |
+| `notes/checks-history.md` | What each feature was asserted on when it shipped. |
+
+**Keep this file short.** When you finish a piece of work, add the reasoning
+to the end of the right `notes/` file and, only if a rule, the map or the
+state below changed, update this one.
+
+---
+
+## State
+
+- **v62 / `debolingo-v62`** — `js/version.js` first, `sw.js` second.
+- Home is eight tiles: Practice, Words, Sobre mí, Quick, Match, Stories,
+  Review, All Phrases; plus the week strip, the streak and the cog.
+- The course is fourteen units behind Practice, Palabras (sixteen lessons,
+  eighty-one words) behind Words, and thirty-four stories in five tiers.
+- Azure (key on the phone) does voices and scoring. The shared Worker does
+  every AI call and the drawings.
+- v62 was a refactor with no intended change in behaviour: `app.js` split
+  into modules, checks added under `tools/checks/`, these notes reorganised.
+- Not built: "Say it your way", demotion, road mode. `notes/project.md`.
