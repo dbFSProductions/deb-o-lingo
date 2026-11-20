@@ -87,3 +87,35 @@ still on screen; a round of Match with `total: 49` planted celebrates
 *Matched!* on the first pair, reports its miss, and a clean second round
 counts as `perfect`; export carries `awards`. The smoke script is in the
 session scratchpad, like the others.
+
+### Harder rounds: Listen, and more pairs
+
+Asked for as *"is there also a way to make things more challenging?"*, and
+of four offered (Listen, similar words together, bigger rounds, words only)
+these two were chosen.
+
+- **Two pill rows on the Match page**, Read / Listen and 6 / 8 / 10, kept in
+  `settings.matchListen` and `settings.matchPairs`. Changing either starts a
+  fresh round: a round that changed shape halfway has no honest time.
+- **Listen turns the Spanish column into speakers.** A tap says the card and
+  picks it; a second tap says it again and *keeps* it picked, because hearing
+  it again is the game and losing your place for it would punish that. The
+  writing appears once the pair is matched, and the matched card stays a
+  Listen button as before. Nothing is said on the match itself in Listen —
+  she has just heard it.
+- **Listen needs Azure.** The browser voice on iOS can accept an utterance
+  and never say it, and a round of silent speakers can't be played. Without a
+  key the option is shown disabled with one line saying why, and a saved
+  Listen falls back to reading.
+- **A best time is only a best against the same kind of round.** `bestTime`
+  stays what it always was — six pairs, read, every round before this
+  existed — and every other kind keeps its own in `awards.match.bests`, keyed
+  `read-8`, `listen-10` and so on. Additive, so an older backup imports as it
+  did. Pairs count towards the medals whatever the round, so a ten-pair round
+  earns faster; that is fair, it is more work.
+- `tools/checks/match.js`: default six and Read; ten and Listen remembered;
+  every Spanish card a speaker with no writing; a tap asks the (fake) Azure
+  for that card's text and picks it, a second tap keeps it picked; a miss;
+  matched cards show their Spanish; a round with a miss sets no best, a clean
+  one sets `listen-10` and leaves `bestTime` alone; without a key, Listen is
+  disabled and a saved Listen plays as Read with the saved eight pairs.

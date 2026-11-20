@@ -993,7 +993,7 @@ export function monthPlus(key, n) {
 
 export const awards = {
   study: {},
-  match: { total: 0, rounds: 0, perfect: 0, bestTime: null },
+  match: { total: 0, rounds: 0, perfect: 0, bestTime: null, bests: {} },
   earned: {},
   /* The day the counting started: the first day this ran, or the day a
      backup without one is restored. Nothing before it counts — an Azure 85
@@ -1026,6 +1026,10 @@ export const awards = {
       rounds: Number(match.rounds) || 0,
       perfect: Number(match.perfect) || 0,
       bestTime: typeof match.bestTime === "number" ? match.bestTime : null,
+      bests: Object.fromEntries(
+        Object.entries(match.bests && typeof match.bests === "object" ? match.bests : {})
+          .filter(([mode, s]) => /^(read|listen)-\d+$/.test(mode) && typeof s === "number")
+      ),
     };
     this.since = /^\d{4}-\d{2}-\d{2}$/.test(data?.since ?? "") ? data.since : localDay();
     /* A prize dated before the counting started cannot have been won. The
@@ -1108,14 +1112,27 @@ export const awards = {
     this.save();
   },
 
-  /** A round finished: how clean it was and how long it took. */
-  recordRound({ misses, seconds }) {
+  /** A round finished: how clean it was and how long it took. A best time
+      is only a best against rounds of the same kind, so each kind keeps its
+      own (`bests`, keyed "read-6", "listen-10"…). `bestTime` was there first
+      and is every round's before the choice existed — six pairs, read — so it
+      stays the one for that kind rather than being moved. */
+  recordRound({ misses, seconds, mode = "read-6" }) {
     this.match.rounds += 1;
     if (!misses) {
       this.match.perfect += 1;
-      if (this.match.bestTime == null || seconds < this.match.bestTime) this.match.bestTime = seconds;
+      if (mode === "read-6") {
+        if (this.match.bestTime == null || seconds < this.match.bestTime) this.match.bestTime = seconds;
+      } else if (this.match.bests[mode] == null || seconds < this.match.bests[mode]) {
+        this.match.bests[mode] = seconds;
+      }
     }
     this.save();
+  },
+
+  /** The best clean time for one kind of round, or null. */
+  bestFor(mode) {
+    return mode === "read-6" ? this.match.bestTime : this.match.bests[mode] ?? null;
   },
 
   /* Everything won that has not been written down yet, with when it was won.
@@ -1196,6 +1213,10 @@ const DEFAULT_SETTINGS = {
   // Quiet mode: the lesson with the speaking taken off it — a box you write
   // the answer into where the record button was. See `quietNow` in app.js.
   quietMode: false,
+  // Match: how many pairs a round, and whether the Spanish is read or only
+  // heard. See `startMatch`.
+  matchPairs: 6,
+  matchListen: false,
 };
 
 export const settings = {
