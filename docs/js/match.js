@@ -102,7 +102,7 @@ export function renderMatch() {
     <p class="muted section-intro">${
       game.listen
         ? "Tap a speaker to hear the Spanish, then tap its English. The words show once you've matched them."
-        : "Tap a Spanish card, then its English. Tap a matched Spanish card to hear it again."
+        : "Tap a Spanish card to hear it, then tap its English. Tap a matched card to hear it again."
     }${settings.hasAzure ? "" : " <em>Listen</em> needs the Azure key in Settings."}</p>
     <div class="match-bar">
       <span><strong id="match-count">${game.matched.size}</strong> of ${game.pairs.length}</span>
@@ -164,13 +164,17 @@ function pickMatch(button) {
   if (game.finishedAt) return;
   const picked = game.picked;
 
-  /* Listen: a tap on a speaker says it, every time — hearing it again is the
-     whole game — and picks it. It never unpicks, so a second tap to hear it
-     again doesn't lose your place. */
-  if (game.listen && side === "es") {
-    sayAloud(button, game.pairs.find((p) => p.id === id)?.text ?? "");
-    if (picked?.side === "es" && picked.id === id) return;
+  /* A Spanish card says itself when it is picked, in Read as in Listen —
+     asked for by Deb: the card is for saying, and hearing it as you choose it
+     is half the point. In Listen a second tap says it again and keeps it
+     picked, since hearing it again is the whole game there; in Read a second
+     tap unpicks it quietly. Only with Azure, as on a match: the browser voice
+     on iOS fails silently, and its toast would fire on every tap. */
+  const again = picked?.side === "es" && picked.id === id && side === "es";
+  if (side === "es" && settings.hasAzure && (game.listen || !again)) {
+    sayAloud(button, game.pairs.find((p) => p.id === id)?.text ?? "", "");
   }
+  if (game.listen && again) return;
 
   // Same side: a second tap on the same card unpicks it, any other switches.
   if (!picked || picked.side === side) {
@@ -202,7 +206,11 @@ function pickMatch(button) {
     /* Hear it as it lands — the pair is a card, and a card is for saying.
        Only with Azure: the browser voice on iOS fails silently and the toast
        that names that failure would fire on every pair. */
-    if (settings.hasAzure && !game.listen) sayAloud(esButton, esButton.textContent, "");
+    /* Said again as it lands, in both modes — unless it is still being said
+       from the tap that picked it, which would only cut it off. */
+    if (settings.hasAzure && esButton.dataset.busy !== "1") {
+      sayAloud(esButton, game.pairs.find((p) => p.id === id)?.text ?? "", "");
+    }
     esButton.setAttribute("aria-label", `${esButton.textContent} — tap to hear it again`);
     if (game.matched.size === game.pairs.length) finishMatch();
     else checkAwards();

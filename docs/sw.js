@@ -6,7 +6,7 @@
 
 // Bumped with VERSION in js/version.js — Settings shows the two side by side,
 // so forgetting one of them shows up as two different numbers on screen.
-const VERSION = "debolingo-v64";
+const VERSION = "debolingo-v65";
 const SHELL = [
   "./",
   "./index.html",
@@ -49,7 +49,12 @@ const SHELL = [
    next version bump, which no amount of reloading fixes. `reload` bypasses the
    HTTP cache, so a version's cache is all of one version. Xerra was bitten by
    this for real; don't undo it for "fewer requests". */
-const fromNetwork = (url) => new Request(url, { cache: "reload" });
+/* And past every cache between here and Pages, too: the URL carries the
+   version, so no CDN edge can have a copy of it from before this deploy.
+   v64 reached a phone as new scripts beside the old stylesheet, which this is
+   for. The cache stores it under that URL; every lookup below already uses
+   `ignoreSearch`, so `app.css` still finds `app.css?v=…`. */
+const fromNetwork = (url) => new Request(`${url}?v=${VERSION}`, { cache: "reload" });
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -91,7 +96,7 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request, { ignoreSearch: true }).then((cached) => cached || caches.match("./index.html")))
+        .catch(() => caches.match(request, { ignoreSearch: true }).then((cached) => cached || caches.match("./index.html", { ignoreSearch: true })))
     );
     return;
   }

@@ -27,6 +27,28 @@ const recordingAzure = `(${fakeAzure})();
   ok((await esCards()).length === 6, "a round is six pairs by default");
   ok(await page.$('.match-option[data-match-listen="0"][aria-pressed="true"]'), "Read is the default");
 
+  // Read: picking a Spanish card says it, and so does matching it.
+  const { COURSE_PHRASES: course } = await import(path.resolve(__dirname, "../../docs/js/content.js"));
+  const saidCount = () => page.evaluate(() => (window.__sdk.said || []).length);
+  const readCard = (await esCards())[0];
+  await page.click(`.match-card[data-side="es"][data-id="${readCard.id}"]`);
+  await page.waitForFunction(() => (window.__sdk.said || []).length > 0);
+  ok((await page.evaluate(() => window.__sdk.said.join("|"))).includes(course.find((p) => p.id === readCard.id).text),
+    "Read: picking a Spanish card says it");
+  await page.waitForFunction((id) => document.querySelector(`.match-card[data-side="es"][data-id="${id}"]`).dataset.busy !== "1", readCard.id);
+  const before = await saidCount();
+  await page.click(`.match-card[data-side="en"][data-id="${readCard.id}"]`);
+  await page.waitForFunction((n) => (window.__sdk.said || []).length > n, before);
+  ok(true, "Read: matching it says it again");
+  // English first, then the Spanish: said once on the pick (the match leaves it talking).
+  const second = (await esCards())[1];
+  await page.click(`.match-card[data-side="en"][data-id="${second.id}"]`);
+  const b2 = await saidCount();
+  await page.click(`.match-card[data-side="es"][data-id="${second.id}"]`);
+  await page.waitForFunction((n) => (window.__sdk.said || []).length > n, b2);
+  ok(await page.$(`.match-card.matched[data-side="es"][data-id="${second.id}"]`), "English then Spanish matches and is said");
+  await page.evaluate(() => { window.__sdk.said = []; });
+
   await page.click('.match-option[data-match-pairs="10"]');
   await page.waitForFunction(() => document.querySelectorAll('.match-card[data-side="es"]').length === 10);
   ok((await stored("settings")).matchPairs === 10, "ten pairs is remembered");
@@ -63,7 +85,7 @@ const recordingAzure = `(${fakeAzure})();
   ok(cards.every((c) => !c.listen && c.text === textOf(c.id)), "a matched card shows its Spanish");
   await page.waitForSelector("#match-again");
   const awards = (await stored("awards")).match;
-  ok(awards.total === 10 && awards.rounds === 1, `ten pairs and one round counted: ${awards.total}, ${awards.rounds}`);
+  ok(awards.total === 12 && awards.rounds === 1, `two read pairs, ten listened, one round and one round counted: ${awards.total}, ${awards.rounds}`);
   ok(awards.bests?.["listen-10"] == null && awards.bestTime == null, "a round with a miss sets no best");
   ok(/10-pair listening round|Done/.test(await page.textContent("#match-done")), "the result names the round");
 

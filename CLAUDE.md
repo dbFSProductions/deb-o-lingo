@@ -265,7 +265,7 @@ state below changed, update this one.
 
 ## State
 
-- **v64 / `debolingo-v64`** — `js/version.js` first, `sw.js` second.
+- **v65 / `debolingo-v65`** — `js/version.js` first, `sw.js` second.
 - Home is eight tiles: Practice, Words, Sobre mí, Quick, Match, Stories,
   Review, All Phrases; plus the week strip, the streak and the cog.
 - The course is fourteen units behind Practice, Palabras (twenty lessons,
