@@ -7,7 +7,7 @@ cava, tapas, *para llevar*, holding your own at a market counter, prices and
 the time, booking a table, the bakery and the fish counter, the weather and
 the neighbours, the pharmacy and the phone, your plants, hunting for a flat,
 asking the way, and the holidays from Thanksgiving to the Kings — plus the
-past tense in dots and lines, eighty-one everyday words with a ridiculous
+past tense in dots and lines, a hundred and one everyday words with a ridiculous
 picture nailed to each one, and thirty-four tiny stories with questions. You hear a native voice, record yourself saying the
 same thing, and the app shows you how close you got: side-by-side waveforms, an
 intonation comparison, and a word-by-word pronunciation score.

@@ -84,3 +84,16 @@ ticks and the streak record what Deb has done, they don't gate what she may do
 next. The old sequential unlocking and its "Unlock all" testing toggle are
 gone — don't reintroduce gating as a "fix" for the path looking uniformly
 available.
+
+- **Four more Palabras lessons** (`palabras-17` to `palabras-20`, phrase ids
+  from `palabras-22-1`), asked for as *more words* once again: the body
+  (pilates, the pharmacy), wrapped up for winter, five more everyday verbs to
+  sit beside tener / querer / ir / saber, and the people she talks to — the
+  neighbour, the waiter, the shop assistant. Words only this time, no new
+  units or stories. Two cards are worth knowing about: *la mano* ends in -o
+  and is still la, which the article carries, so `genderOf` reads it right
+  with no `gender` field; and *el pie*'s note says out loud that it is not
+  English "pie", since the bridge (*pea, YEH*) is the nearest honest sound.
+  `tools/checks/content.js` came with them: unique ids and texts, every
+  Palabras word with its sounds, picture and focusNote, none ending in a
+  stop, and the Words tile's count matching the course.

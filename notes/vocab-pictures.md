@@ -138,7 +138,7 @@ is decks you can file into. Here there is one pile, so the field goes.
 
 ## A word, a sound and one ridiculous picture
 
-The **Palabras** unit (sixteen lessons, eighty-one words, purple) is vocabulary by
+The **Palabras** unit (twenty lessons, a hundred and one words, purple) is vocabulary by
 the keyword method: you hear an English sound inside the Spanish word, and you
 build one absurd scene out of that sound and the meaning. `tenedor` sounds like
 "ten-a-door", so a ten-dollar bill is nailed to your front door and the nail is a fork. It is

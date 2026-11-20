@@ -3043,6 +3043,234 @@ export const COURSE = [
           },
         ],
       },
+      /* Four more, asked for as "more words" once again. Lesson ids carry on
+         from palabras-16, phrase ids from the last block, 21. The body is for
+         pilates and the pharmacy, the coat for the winter coming, the verbs
+         to finish the hour-by-hour set, and the people she talks to. */
+      {
+        id: "palabras-17",
+        title: "The body",
+        phrases: [
+          {
+            id: "palabras-22-1",
+            text: "la cabeza",
+            translation: "the head",
+            sounds: "cab, BETH-a",
+            picture:
+              "A tiny cab parks on top of your head and Beth climbs out — cab, BETH-a — stamping on it in high heels.",
+            focusNote:
+              "ka-BE-tha. The z is the Spain 'th' of 'think'; stress on BE. Three short syllables.",
+          },
+          {
+            id: "palabras-22-2",
+            text: "la espalda",
+            translation: "the back",
+            sounds: "es-PAL-da",
+            picture:
+              "At the spa your pal — es-PAL-da — walks up and down your back in ski boots, and you tip him for it.",
+            focusNote:
+              "es-PAL-da. Stress on PAL; the d is soft. Start with a clean e — not 'ess-' with a hiss and no vowel.",
+          },
+          {
+            id: "palabras-22-3",
+            text: "la rodilla",
+            translation: "the knee",
+            sounds: "ro-DEE-ya",
+            picture:
+              "A karate master called Rod chops you on the knee — 'Rod-EE-YA!' — and bows while you hop about.",
+            focusNote:
+              "ro-DI-ya. The ll is a y; stress on DI. The first r is the rolled one, because it starts the word.",
+          },
+          {
+            id: "palabras-22-4",
+            text: "el pie",
+            translation: "the foot",
+            sounds: "pea, YEH",
+            picture:
+              "You step barefoot on a single frozen pea and yelp 'pea — YEH!' — your foot leaves a green print on the floor.",
+            focusNote:
+              "PYE, one syllable — not English 'pie'. The i glides straight into an e, as in 'yes'.",
+          },
+          {
+            id: "palabras-22-5",
+            text: "la mano",
+            translation: "the hand",
+            sounds: "Ma, no!",
+            picture:
+              "Your hand goes into the cookie jar and Ma slaps it out — 'Ma, NO!' — then eats the cookie herself.",
+            focusNote:
+              "MA-no. Stress on MA. It ends in -o and it is still la mano — one of the few, so learn it with the la.",
+          },
+        ],
+      },
+      {
+        id: "palabras-18",
+        title: "Wrapped up for winter",
+        phrases: [
+          {
+            id: "palabras-23-1",
+            text: "el abrigo",
+            translation: "the coat",
+            sounds: "ah, BREE, go",
+            picture:
+              "Your winter coat is lined with Brie, and when you open it the cheese shouts 'ah — BRIE — go!' and runs off down the street.",
+            focusNote:
+              "a-BRI-go. Stress on BRI; tap the r once; the g is soft, almost swallowed between the vowels.",
+          },
+          {
+            id: "palabras-23-2",
+            text: "la bufanda",
+            translation: "the scarf",
+            sounds: "boo, FAN, da",
+            picture:
+              "A ghost goes 'BOO!' at a football fan, who pulls his scarf up over his whole face — boo-FAN-da.",
+            focusNote:
+              "bu-FAN-da. Stress on FAN; the d is soft. The u is a short 'oo'.",
+          },
+          {
+            id: "palabras-23-3",
+            text: "el paraguas",
+            translation: "the umbrella",
+            sounds: "pa, RAG was",
+            picture:
+              "Pa's umbrella is just a dish rag on a stick — pa-RAG-was — and the rain pours straight through it onto his bald head.",
+            focusNote:
+              "pa-RA-gwas. Stress on RA, a single tap; the gu before a is 'gw', one quick sound.",
+          },
+          {
+            id: "palabras-23-4",
+            text: "el jersey",
+            translation: "the sweater, the jumper",
+            sounds: "hair-SAY",
+            picture:
+              "Your sweater is knitted from human hair, and it SAYs so on the label — hair-SAY — and it itches all day.",
+            focusNote:
+              "kher-SEI. The j is the throat-scrape h, like clearing your throat; stress on SEI. Same spelling as the island, said the Spanish way.",
+          },
+          {
+            id: "palabras-23-5",
+            text: "la manta",
+            translation: "the blanket",
+            sounds: "manta (ray)",
+            picture:
+              "A manta ray flops onto the sofa and spreads itself over you as a blanket — warm, flat and breathing.",
+            focusNote:
+              "MAN-ta. Stress on MAN; the a's are open 'ah', both of them — not the 'a' of 'man'.",
+          },
+        ],
+      },
+      {
+        id: "palabras-19",
+        title: "More words for every hour",
+        phrases: [
+          {
+            id: "palabras-24-1",
+            text: "hacer",
+            translation: "to do, to make",
+            sounds: "ah, THERE",
+            picture:
+              "Your boss points at the mess — 'ah, THERE!' — and you have to make the whole thing again from scratch.",
+            focusNote:
+              "a-THER. The h is silent and the c before e is 'th'; stress at the end; the final r is a light tap.",
+          },
+          {
+            id: "palabras-24-2",
+            text: "poder",
+            translation: "to be able to, can",
+            sounds: "Po, dare",
+            picture:
+              "A panda called Po takes the dare — Po, DARE — and leaps over a bus, because he can.",
+            focusNote:
+              "po-DER. Stress at the end; the d is soft, nearly the 'th' of 'this'; tap the r.",
+          },
+          {
+            id: "palabras-24-3",
+            text: "comer",
+            translation: "to eat",
+            sounds: "co-MARE",
+            picture:
+              "A mare trots into the café and eats your sandwich off the plate — co-MARE — then asks for the bill.",
+            focusNote:
+              "ko-MER. Stress at the end; the e is a clean 'eh', not 'air'; tap the r.",
+          },
+          {
+            id: "palabras-24-4",
+            text: "hablar",
+            translation: "to speak, to talk",
+            sounds: "ah, BLARE",
+            picture:
+              "Every time you start to talk a trumpet blares out of your mouth — ah-BLARE — so the whole street hears you speak.",
+            focusNote:
+              "a-BLAR. The h is silent; the b is soft; stress at the end; the final r is a tap.",
+          },
+          {
+            id: "palabras-24-5",
+            text: "vivir",
+            translation: "to live",
+            sounds: "bee-BEER",
+            picture:
+              "A bee lives in your glass of beer — bee-BEER — with a tiny sofa and a lease, and won't move out.",
+            focusNote:
+              "bi-BIR. Both v's are a soft b — lips barely touching; stress at the end. Not 'vee-veer'.",
+          },
+        ],
+      },
+      {
+        id: "palabras-20",
+        title: "The people around you",
+        phrases: [
+          {
+            id: "palabras-25-1",
+            text: "el vecino",
+            translation: "the neighbour",
+            sounds: "Beth-EE-no",
+            picture:
+              "Your neighbour Beth plays the drums at midnight and you bang on the wall — 'Beth! EE, NO!'",
+            focusNote:
+              "be-THI-no. The v is a soft b and the c before i is 'th'; stress on THI. She is la vecina.",
+          },
+          {
+            id: "palabras-25-2",
+            text: "la gente",
+            translation: "people",
+            sounds: "HEN-teh",
+            picture:
+              "The plaza is full of people, and every single one of them is a hen in a coat — HEN-teh.",
+            focusNote:
+              "KHEN-te. The g before e is the throat-scrape h; stress on KHEN. It is singular: la gente es, never son.",
+          },
+          {
+            id: "palabras-25-3",
+            text: "el niño",
+            translation: "the child, the little boy",
+            sounds: "knee, NO",
+            picture:
+              "A small child kicks you in the knee — 'KNEE? NO!' — and runs off laughing behind his mother.",
+            focusNote:
+              "NI-nyo. The ñ is the ny of 'canyon', one sound; stress on NI. A girl is la niña.",
+          },
+          {
+            id: "palabras-25-4",
+            text: "el camarero",
+            translation: "the waiter",
+            sounds: "camera-RARE-oh",
+            picture:
+              "The waiter's head is a camera — cam-a-RARE-oh — that photographs your steak and brings it back rare.",
+            focusNote:
+              "ka-ma-RE-ro. Four short syllables, stress on RE; both r's are single taps. A waitress is la camarera.",
+          },
+          {
+            id: "palabras-25-5",
+            text: "la dependienta",
+            translation: "the shop assistant",
+            sounds: "depend, YEN-ta",
+            picture:
+              "The shop assistant is the neighbourhood yenta — depend-YEN-ta — you depend on her for your size and every bit of gossip.",
+            focusNote:
+              "de-pen-DYEN-ta. Stress on DYEN, one glide; both d's soft. A man in the same job is el dependiente.",
+          },
+        ],
+      },
     ],
   },
 ];
