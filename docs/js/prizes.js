@@ -36,7 +36,7 @@ import { render } from "./app.js";
 
 const STUDY_TICK_MS = 5000;
 const IDLE_AFTER_MS = 90 * 1000;
-export const MATCH_ROUND = 6;
+export const MATCH_SIZES = [6, 8, 10]; // pairs a round, her choice on the Match page
 
 let lastTouch = Date.now();
 for (const type of ["pointerdown", "keydown", "touchstart"]) {
@@ -317,8 +317,14 @@ export function renderPrizes() {
         ${MATCH_TIERS.map((tier) => medalCell(`match-${tier}`, tier, `${Math.max(0, tier - match.total)} to go`)).join("")}
       </div>
       <p class="prize-stat">rounds <strong>${match.rounds}</strong> · clean rounds <strong>${match.perfect}</strong>${
-        match.bestTime != null ? ` · best clean round <strong>${match.bestTime}s</strong>` : ""
-      }${nextMatch ? ` · next medal in <strong>${nextMatch - match.total}</strong>` : ""}</p>
+        match.bestTime != null ? ` · best clean 6-pair round <strong>${match.bestTime}s</strong>` : ""
+      }${Object.entries(match.bests ?? {})
+        .sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }))
+        .map(([mode, s]) => {
+          const [how, n] = mode.split("-");
+          return ` · ${n}-pair${how === "listen" ? " listening" : ""} <strong>${s}s</strong>`;
+        })
+        .join("")}${nextMatch ? ` · next medal in <strong>${nextMatch - match.total}</strong>` : ""}</p>
       <button class="btn btn-primary" data-open-match style="width:100%;margin-top:6px">Play a round</button>
     </div>
 
