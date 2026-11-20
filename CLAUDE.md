@@ -265,11 +265,11 @@ state below changed, update this one.
 
 ## State
 
-- **v62 / `debolingo-v62`** — `js/version.js` first, `sw.js` second.
+- **v63 / `debolingo-v63`** — `js/version.js` first, `sw.js` second.
 - Home is eight tiles: Practice, Words, Sobre mí, Quick, Match, Stories,
   Review, All Phrases; plus the week strip, the streak and the cog.
-- The course is fourteen units behind Practice, Palabras (sixteen lessons,
-  eighty-one words) behind Words, and thirty-four stories in five tiers.
+- The course is fourteen units behind Practice, Palabras (twenty lessons,
+  a hundred and one words) behind Words, and thirty-four stories in five tiers.
 - Azure (key on the phone) does voices and scoring. The shared Worker does
   every AI call and the drawings.
 - v62 was a refactor with no intended change in behaviour: `app.js` split
