@@ -1735,6 +1735,10 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 .match-options { display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: space-between; margin: 0 2px 10px; }
 .match-choice { display: inline-flex; border: 2px solid var(--line); border-radius: 999px; overflow: hidden; }
 .match-option {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+  margin: 0;
   border: 0;
   background: var(--surface);
   color: var(--text-2);

@@ -119,3 +119,23 @@ these two were chosen.
   matched cards show their Spanish; a round with a miss sets no best, a clean
   one sets `listen-10` and leaves `bestTime` alone; without a key, Listen is
   disabled and a saved Listen plays as Read with the saved eight pairs.
+
+#### Said on the pick, and a stylesheet that didn't arrive (v65)
+
+- **A Spanish card says itself when picked, in Read too** — asked for by Deb
+  the day Listen shipped, *"always make it say the sentence when it is
+  selected, as well as when it's correct"*. So a pick says it and a match says
+  it again, in both modes. The one exception is a match made while the pick is
+  still talking: `sayAloud` stops the player before its busy guard, so a
+  second call would cut the line off and say nothing. In Read a second tap on
+  the picked card still unpicks it, silently. Azure only, as before.
+- **v64's pills arrived unstyled on her phone** — the new Match page, with
+  Read / Listen and 6 / 8 / 10 as bare iOS buttons and Listen on but not gold.
+  That is new scripts beside an older `app.css`. It could not be reproduced
+  here (no WebKit, no route to Pages), so the cause is inferred: the install
+  fetched a copy of the stylesheet from before the deploy, and cache-first
+  kept the mix until the next bump. `sw.js` now precaches `url?v=VERSION`, so
+  no cache between the phone and Pages can answer with an old copy; every
+  lookup already used `ignoreSearch` (the one that didn't, the offline
+  fallback to `./index.html`, does now). The pills also set
+  `appearance: none` so they never lean on Safari's default button.
