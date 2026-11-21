@@ -103,3 +103,29 @@ days; Review was the one place measured in milliseconds.
 
 Asserted in `tools/checks/review.js`: a good go at 06:40 yesterday is due at
 06:30 today and from midnight; one at 06:40 today is not due again today.
+
+## Never the same ten twice running (v68)
+
+Ported from Xerra's v135. There, a session gone through in quiet mode or
+with Next filed no attempt (rightly: only spoken attempts count), so all ten
+were still due when it ended and Review offered the same ten again. The same
+was true here: Next is filed as `skipped` and a typed go is not an attempt.
+
+- **A card shown in Review is put aside until she says it.** `loadPhrase`
+  calls `library.setAside([id])` on every card of a `review` lesson;
+  `library.recordAttempt` takes it back out. What stays aside comes back in
+  `REVIEW_ASIDE_DAYS` (three) days. `library.aside` is phrase id → the local
+  day it may return, stored as `debolingo.reviewAside`, with expired entries
+  dropped on load. It is in export/import.
+- **A session is topped up to ten** (`library.reviewSession`): the most
+  overdue, then cards met but not yet due (soonest first, none said today),
+  then cards never tried, at random. `startReview` shuffles it. The tile
+  reads *3 due today + 7 fresh*; with nothing due it still says *Nothing due
+  today* and a tap only toasts.
+- **No "Ten different ones" link here.** Xerra's sits under its Review
+  strip. Here Review is a tile, which cannot hold a second button, and Deb
+  had not asked for a fresh start.
+
+Asserted in `tools/checks/review-fresh.js`. `review.js` puts every other
+card aside so its three-card steering holds, and checks that a shown,
+unsaid card is put aside.

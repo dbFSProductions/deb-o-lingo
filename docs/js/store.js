@@ -26,6 +26,7 @@ const KEYS = {
   aboutMe: "debolingo.aboutMe",
   awards: "debolingo.awards",
   stories: "debolingo.stories",
+  reviewAside: "debolingo.reviewAside",
 };
 
 // The fields an edit can touch. Course phrases are code, so editing one is
@@ -93,6 +94,8 @@ const REVIEW_STEP_BACK = 2;
 /* Missed on this many days running, a card is rested this many days. */
 const REVIEW_REST_AFTER = 3;
 const REVIEW_REST_DAYS = 7;
+/* A card shown in Review and not said is put aside this many days. */
+export const REVIEW_ASIDE_DAYS = 3;
 
 /* The shape a past sentence has — Xerra's dot-and-line table, cut down to the
    three shapes Deb's course teaches: a dot in a box, a line, and a line
@@ -396,6 +399,7 @@ export const library = {
     this.overrides = readJSON(KEYS.overrides, {});
     this.notes = readJSON(KEYS.notes, {});
     this.replies = readJSON(KEYS.replies, {});
+    this.loadAside(readJSON(KEYS.reviewAside, {}));
   },
 
   saveCustom() {
@@ -707,14 +711,81 @@ export const library = {
 
   /** Every drillable card whose review has come round, most overdue first. */
   due(now = Date.now()) {
+    const today = localDay(new Date(now));
     return this.drillable()
+      .filter((phrase) => !this.isAside(phrase.id, today))
       .map((phrase) => ({ phrase, review: this.reviewOf(phrase.id) }))
       .filter(({ review }) => review && review.dueAt <= now)
       .sort((a, b) => a.review.dueAt - b.review.dueAt || a.review.last - b.review.last)
       .map(({ phrase }) => phrase);
   },
 
+  /* What a Review session drills: the most overdue cards, topped up to
+     `cap` when fewer than that are due — first with cards already met that
+     are not due yet (soonest first, none said today), then with cards never
+     tried, at random. Ported from Xerra's v135, where a session of only what
+     was due turned out to be the same handful for weeks. Cards put aside are
+     left out of all three. The caller shuffles. */
+  reviewSession(cap, now = Date.now()) {
+    const due = this.due(now);
+    const session = due.slice(0, cap);
+    if (session.length >= cap) return session;
+    const today = localDay(new Date(now));
+    const midnight = new Date(now);
+    midnight.setHours(0, 0, 0, 0);
+    const taken = new Set(session.map((p) => p.id));
+    const open = this.drillable().filter((p) => !taken.has(p.id) && !this.isAside(p.id, today));
+    const met = open
+      .map((phrase) => ({ phrase, review: this.reviewOf(phrase.id) }))
+      .filter(({ review }) => review && review.last < midnight.getTime())
+      .sort((a, b) => a.review.dueAt - b.review.dueAt)
+      .map(({ phrase }) => phrase);
+    const fresh = open.filter((p) => !this.attemptsFor(p.id).length);
+    for (let i = fresh.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [fresh[i], fresh[j]] = [fresh[j], fresh[i]];
+    }
+    return [...session, ...met, ...fresh].slice(0, cap);
+  },
+
+  /* Put aside: phrase id -> the local day it may come back to Review
+     (YYYY-MM-DD). A card shown in a Review session is put aside when it is
+     shown and taken back out when she says it, so the only cards left aside
+     are the ones looked at and not spoken — typed in quiet mode, or passed
+     with Next. Before this, those were never filed, stayed due, and the next
+     session was the same ten again. Stored, because it is a thing she did
+     rather than something read off the attempts; in export/import. */
+  aside: {},
+
+  loadAside(data) {
+    const today = localDay();
+    this.aside = {};
+    for (const [id, day] of Object.entries(data && typeof data === "object" ? data : {})) {
+      if (typeof day === "string" && day > today) this.aside[id] = day;
+    }
+    this.saveAside();
+  },
+
+  saveAside() {
+    writeJSON(KEYS.reviewAside, this.aside);
+  },
+
+  isAside(phraseID, today = localDay()) {
+    const day = this.aside[phraseID];
+    return Boolean(day && day > today);
+  },
+
+  setAside(phraseIDs, days = REVIEW_ASIDE_DAYS) {
+    const until = dayPlus(localDay(), days);
+    for (const id of phraseIDs) this.aside[id] = until;
+    this.saveAside();
+  },
+
   recordAttempt(attempt) {
+    if (this.aside[attempt.phraseID]) {
+      delete this.aside[attempt.phraseID];
+      this.saveAside();
+    }
     this.attempts.push(attempt);
     this.saveAttempts();
   },
@@ -751,6 +822,8 @@ export const library = {
         awards: awards.data,
         // Which stories have been read, and the best score on each.
         stories: stories.results,
+        // Review cards she looked at and did not say, and when they return.
+        reviewAside: this.aside,
       },
       null,
       2
@@ -778,6 +851,8 @@ export const library = {
     aboutMe.replace(Array.isArray(parsed.aboutMe) ? parsed.aboutMe : []);
     awards.replace(parsed.awards ?? {});
     stories.replace(parsed.stories ?? {});
+    // Absent in a backup taken before cards could be put aside; not an error.
+    this.loadAside(parsed.reviewAside);
     if (parsed.progress) {
       progress.lessons = parsed.progress.lessons ?? {};
       progress.streak = parsed.progress.streak ?? { count: 0, lastDay: null };

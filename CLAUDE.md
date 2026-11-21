@@ -179,6 +179,8 @@ Each has a full argument in `notes/`. Do not reverse one without reading it.
 - **Nothing demotes.** Review decides when a card comes round, never its level.
   A miss steps the interval back two rungs, not to the bottom, and a card
   missed three days running rests a week. `notes/review.md`.
+- **Review never deals the same ten twice running**: a card shown and not
+  said is put aside three days, and a session is topped up to ten.
 - **Review varies the task, never the card's level**: as its level has it, by
   ear, or from a reply (`reviewTask` in `drill.js`). Only in Review.
 - **Prizes are computed from what she did; only *when* is stored.**
@@ -212,7 +214,8 @@ dependency); `run.sh` sets `NODE_PATH` to the global npm root.
   and fails on any console error. Run it after every change: a missing import
   shows up here.
 - `review.js` covers Review: the ladder, the shuffled session, and the
-  three ways a card is asked, with `Math.random` steered.
+  three ways a card is asked, with `Math.random` steered. `review-fresh.js`:
+  cards put aside, and the top-up.
 - `lib.js` has the helpers: `open()` (a fresh phone-sized page, service worker
   blocked, settings seeded under `debolingo.settings`), `stubWorker()` (answer
   the card assistant), `fakeAzure` (a stand-in Speech SDK), `toneWav()`,
@@ -271,7 +274,7 @@ state below changed, update this one.
 
 ## State
 
-- **v67 / `debolingo-v67`** — `js/version.js` first, `sw.js` second.
+- **v68 / `debolingo-v68`** — `js/version.js` first, `sw.js` second.
 - Home is eight tiles: Practice, Words, Sobre mí, Quick, Match, Stories,
   Review, All Phrases; plus the week strip, the streak and the cog.
 - The course is fourteen units behind Practice, Palabras (twenty lessons,
@@ -286,4 +289,7 @@ state below changed, update this one.
   and the session is shuffled. Ported from Xerra's v131 and v133.
 - v67: reviews fall due by calendar day (midnight of the last attempt's
   day plus the interval), not to the minute. From Xerra's v134.
+- v68: a card shown in Review and not said (quiet mode, Next) is put aside
+  three days instead of staying due, and a session is topped up to ten with
+  met, then new cards. From Xerra's v135.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.

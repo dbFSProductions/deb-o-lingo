@@ -8,7 +8,7 @@ import {
 import { Recorder, analyse } from "./audio.js";
 import { speech, browserSpeech, scoring } from "./speech.js";
 import {
-  PASS_GREAT, PASS_OK, PLAY_SVG, REVIEW_CAP, autosize, closeSheet, esc, flameSVG, noVoice, parrotSVG, player,
+  PASS_GREAT, PASS_OK, PLAY_SVG, autosize, reviewToday, closeSheet, esc, flameSVG, noVoice, parrotSVG, player,
   sayAloud, scoreColour, shuffle, state, stopEverything, toast, view,
 } from "./core.js";
 import { render } from "./app.js";
@@ -68,12 +68,12 @@ export function startPractice(queueOverride = null, { title = "Repaso", review =
    ticks and the streak is untouched; the attempts it records are what move
    the cards' next review. */
 export function startReview() {
-  const due = library.due();
-  if (!due.length) {
+  const { cards } = reviewToday();
+  if (!cards.length) {
     toast("Nothing to review today — cards come round once you've said them well.");
     return;
   }
-  startPractice(shuffle(due.slice(0, REVIEW_CAP)), { title: "Review", review: true });
+  startPractice(shuffle([...cards]), { title: "Review", review: true });
 }
 
 // ------------------------------------------------------------------- drill
@@ -202,6 +202,11 @@ async function loadPhrase() {
   state.taskHint = false;
   const task = phrase ? reviewTask(phrase) : null;
   if (phrase) state.lastTask = task;
+  /* Shown in Review is put aside until she says it: recording takes it back
+     out (`recordAttempt`), so what stays aside is a card typed in quiet mode
+     or passed with Next — which used to stay due and fill the next session
+     with the same ten. See `library.aside`. */
+  if (phrase && state.lesson?.review) library.setAside([phrase.id]);
   if (task === "echo") {
     state.task = "echo";
     state.recall = false;

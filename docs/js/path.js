@@ -186,7 +186,7 @@ export function renderPath(section = null) {
   const doneCount = LESSONS.filter((l) => progress.isDone(l.id)).length;
   const current = firstOpenLesson();
   const favourites = library.favouritePhrases().filter((p) => p.text.trim());
-  const { session: due, rest: waiting } = reviewToday();
+  const { session: due, dueIn, fresh, rest: waiting } = reviewToday();
 
   const greeting =
     streak > 0 && !owed
@@ -469,7 +469,9 @@ export function renderPath(section = null) {
          quieter clause after it. */
       { key: "review", title: "Review", blurb: "Cards that have come round", colour: "teal",
         count: due
-          ? `${due} card${due === 1 ? "" : "s"} to review today${waiting ? ` · ${waiting} more waiting` : ""}`
+          ? `${
+              fresh ? `${dueIn} due today + ${fresh} fresh` : `${due} card${due === 1 ? "" : "s"} to review today`
+            }${waiting ? ` · ${waiting} more waiting` : ""}`
           : "Nothing due today",
         mark: CLOCK_SVG },
       { key: "phrases", title: "All Phrases", blurb: "Every card, searchable", colour: "blue",
