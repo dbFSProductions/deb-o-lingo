@@ -51,7 +51,7 @@ export const state = {
   /* The last thing Quick answered, so the card survives a repaint. Cleared
      when you ask again, practise it, or throw it away. */
   quick: null, // within learn: path | drill | complete | about
-  lesson: null, // { id, title, color, colorDark, queue, index, results, practice }
+  lesson: null, // { id, title, color, colorDark, queue, index, results, practice, review }
   celebration: null,
 
   // drill substate
@@ -67,6 +67,19 @@ export const state = {
   recall: false,
   revealed: true,
   peeked: false,
+  /* Review asks a card back a different way each time it comes round — see
+     `reviewTask` in drill.js. `task` is which way this card is being asked:
+     null (as its level has it), "echo" (by ear, no text) or "answer" (one of
+     its replies is the prompt, `taskReply`). `taskHint` is the English, asked
+     for on an answer card. `lastTask` is the previous card's, so two in a row
+     are not asked the same way; `levelTwo` is what the card had earned before
+     a task was laid over it. All per card and reset by loadPhrase, and none
+     of it is written anywhere. Ported from Xerra's v131. */
+  task: null,
+  taskReply: null,
+  taskHint: false,
+  lastTask: undefined,
+  levelTwo: false,
   /* Dot or line: which shape she picked for this card, or null while the
      question is still standing. Per card — loadPhrase resets it. */
   aspectChoice: null,

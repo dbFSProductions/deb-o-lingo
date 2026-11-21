@@ -1755,3 +1755,8 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 /* A Spanish card in Listen is a speaker until it is matched. */
 .match-card.match-listen { font-size: 1.5rem; }
 .match-card.match-listen.busy { border-color: var(--gold-dark); }
+
+/* An answer card in Review: the reply is the question, with its play button. */
+.task-reply { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.task-reply .reply-main { display: grid; gap: 4px; }
+.task-hint { margin-top: 6px; }
