@@ -85,3 +85,21 @@ the same machinery, so it would hit the same wall.
 Asserted in `tools/checks/review.js`: the ladder from planted histories, six
 sessions over twelve due cards, and the three ways with `Math.random`
 steered (two 0.99s leave the shuffle as it was).
+
+## Due by calendar day (v67)
+
+Ported from Xerra's v134. `dueAt` was the last attempt's timestamp plus the
+interval to the millisecond, so a card she said well at 06:40 was due at
+06:40 the next day — and Deb practises at about the same time each morning,
+so a session at 06:30 found it ten minutes short and it waited a whole extra
+day. The tile also says *to review today* and the streak counts in local
+days; Review was the one place measured in milliseconds.
+
+- **`dueAt` is local midnight of the last attempt's day plus `interval`
+  days**, with `setDate`, so a clock change cannot shift it by an hour.
+- **Ties are broken by `last`**, so same-day cards are chosen oldest first
+  for the capped session, which is then shuffled.
+- Nothing stored; no migration.
+
+Asserted in `tools/checks/review.js`: a good go at 06:40 yesterday is due at
+06:30 today and from midnight; one at 06:40 today is not due again today.

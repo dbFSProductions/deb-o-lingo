@@ -58,6 +58,29 @@ const { ok, done } = tally("review");
   r = await review([[3, null], [2, null]]);
   ok(r.interval === 2, `unscored goes count as good (got ${r.interval})`);
 
+  /* Due by calendar day. One good go at 06:40 yesterday is due today from
+     midnight, so a session at 06:30 finds it; one at 06:40 today is not due
+     until tomorrow. */
+  const morning = await page.evaluate(async () => {
+    const { library } = await import("/js/store.js");
+    const phrase = library.drillable()[0];
+    const at = (daysAgo, h, m) => { const d = new Date(); d.setDate(d.getDate() - daysAgo); d.setHours(h, m, 0, 0); return d; };
+    const saved = library.attempts;
+    const plant = (when) => {
+      library.attempts = [{ id: "m", phraseID: phrase.id, recordedAt: when.toISOString(), duration: 1, mode: "listen", overall: 90, words: [], engine: "Fake" }];
+    };
+    plant(at(1, 6, 40));
+    const yesterday = library.due(at(0, 6, 30).getTime()).some((p) => p.id === phrase.id);
+    const dueAt = new Date(library.reviewOf(phrase.id).dueAt);
+    plant(at(0, 6, 40));
+    const today = library.due(at(0, 23, 59).getTime()).some((p) => p.id === phrase.id);
+    library.attempts = saved;
+    return { yesterday, today, midnight: dueAt.getHours() === 0 && dueAt.getMinutes() === 0 };
+  });
+  ok(morning.yesterday, "said at 06:40 yesterday: due at 06:30 today");
+  ok(morning.midnight, "and due from midnight");
+  ok(!morning.today, "said at 06:40 today: not due again today");
+
   // --------------------------------------------------------- the session
   const sessions = await page.evaluate(async () => {
     const { library } = await import("/js/store.js");
