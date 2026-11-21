@@ -89,6 +89,11 @@ const RECALL_PASS = 75; // the same "understandable" line the lesson banner uses
 /* The review ladder, in days — see `library.reviewOf`. Ported from Xerra. */
 const REVIEW_DAYS = [1, 2, 4, 8, 16, 32, 64];
 const DAY_MS = 24 * 60 * 60 * 1000;
+/* A day with a miss in it takes the card this many rungs down the ladder. */
+const REVIEW_STEP_BACK = 2;
+/* Missed on this many days running, a card is rested this many days. */
+const REVIEW_REST_AFTER = 3;
+const REVIEW_REST_DAYS = 7;
 
 /* The shape a past sentence has — Xerra's dot-and-line table, cut down to the
    three shapes Deb's course teaches: a dot in a box, a line, and a line
@@ -642,35 +647,56 @@ export const library = {
   },
 
   /* Spaced repetition, read off the attempts rather than stored. Ported from
-     Xerra in the same shape.
+     Xerra in the same shape, and its v133 change with it.
 
-     The interval doubles with every *day* she has said the card well and
-     resets to one day the moment she doesn't: one day, two, four, eight, up
-     to about two months. Days rather than goes, because four good goes in one
-     sitting are one act of remembering, and counting them as four would put
-     a card just learned a week away. A card never attempted has no review —
-     it is new, and the path is where new cards are met. A skipped card
-     (Next, no recording) is not an attempt either, so a listen-only pass
-     through a lesson schedules nothing. Nothing here ever demotes: level two
-     is `recallReady` and stays whatever this says. A typed go in quiet mode
-     is not an attempt and so does not count, on the argument that credit in
-     this app means having said it. */
+     The history is read a day at a time, oldest first, and climbs a ladder:
+     every day she said the card well is a rung up (one day, two, four,
+     eight, up to about two months), and a day with a miss in it is two rungs
+     down — sixteen days back to four, not back to one. Days rather than goes,
+     because four good goes in one sitting are one act of remembering, and
+     three bad goes in one sitting are one bad day.
+
+     A miss used to reset the card to tomorrow, and with the score being the
+     weakest word, one stubborn sound failed the whole card every time: a
+     handful of those came back every day and filled the session. So a card
+     missed on three days running is rested — a week out rather than
+     tomorrow — because by then daily repetition is not what fixes it. A good
+     day ends the run.
+
+     A card never attempted has no review — it is new, and the path is where
+     new cards are met. A skipped card (Next, no recording) is not an attempt
+     either, so a listen-only pass through a lesson schedules nothing.
+     Nothing here ever demotes: level two is `recallReady` and stays whatever
+     this says. A typed go in quiet mode is not an attempt and so does not
+     count, on the argument that credit in this app means having said it. */
   reviewOf(phraseID) {
     const attempts = [...this.attemptsFor(phraseID)].sort(
       (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
     );
     if (!attempts.length) return null;
-    const days = new Set();
-    let streak = 0;
-    for (let i = attempts.length - 1; i >= 0; i -= 1) {
-      const score = attemptScore(attempts[i]);
-      if (score != null && score < RECALL_PASS) break;
-      days.add(new Date(attempts[i].recordedAt).toDateString());
-      streak = days.size;
+    /* One verdict per day: a day with any miss in it is a miss day. */
+    const daysMissed = new Map();
+    for (const attempt of attempts) {
+      const day = new Date(attempt.recordedAt).toDateString();
+      const score = attemptScore(attempt);
+      const missed = score != null && score < RECALL_PASS;
+      daysMissed.set(day, (daysMissed.get(day) ?? false) || missed);
     }
+    let streak = 0; // the rung reached, 0 to REVIEW_DAYS.length
+    let missRun = 0; // miss days running, ended by a good day
+    for (const missed of daysMissed.values()) {
+      if (missed) {
+        streak = Math.max(0, streak - REVIEW_STEP_BACK);
+        missRun += 1;
+      } else {
+        streak = Math.min(streak + 1, REVIEW_DAYS.length);
+        missRun = 0;
+      }
+    }
+    const resting = missRun >= REVIEW_REST_AFTER;
     const last = new Date(attempts[attempts.length - 1].recordedAt).getTime();
-    const interval = REVIEW_DAYS[Math.min(Math.max(streak, 1) - 1, REVIEW_DAYS.length - 1)];
-    return { last, streak, interval, dueAt: last + interval * DAY_MS };
+    const interval = resting ? REVIEW_REST_DAYS : REVIEW_DAYS[Math.max(streak, 1) - 1];
+    return { last, streak, interval, resting, dueAt: last + interval * DAY_MS };
   },
 
   /** Every drillable card whose review has come round, most overdue first. */

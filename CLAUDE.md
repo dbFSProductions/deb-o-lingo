@@ -177,6 +177,10 @@ Each has a full argument in `notes/`. Do not reverse one without reading it.
 - **Only spoken attempts count.** A typed go in quiet mode, a story and a
   round of Match write no attempt. Level two and Review are read off attempts.
 - **Nothing demotes.** Review decides when a card comes round, never its level.
+  A miss steps the interval back two rungs, not to the bottom, and a card
+  missed three days running rests a week. `notes/review.md`.
+- **Review varies the task, never the card's level**: as its level has it, by
+  ear, or from a reply (`reviewTask` in `drill.js`). Only in Review.
 - **Prizes are computed from what she did; only *when* is stored.**
 - **The answer is withheld until you commit**: the Spanish at level two and in
   quiet mode, the sentence behind the shape gate, a story's English.
@@ -207,6 +211,8 @@ dependency); `run.sh` sets `NODE_PATH` to the global npm root.
   All Phrases and the editor, Add a card, Match, a story, Prizes, Settings —
   and fails on any console error. Run it after every change: a missing import
   shows up here.
+- `review.js` covers Review: the ladder, the shuffled session, and the
+  three ways a card is asked, with `Math.random` steered.
 - `lib.js` has the helpers: `open()` (a fresh phone-sized page, service worker
   blocked, settings seeded under `debolingo.settings`), `stubWorker()` (answer
   the card assistant), `fakeAzure` (a stand-in Speech SDK), `toneWav()`,
@@ -265,7 +271,7 @@ state below changed, update this one.
 
 ## State
 
-- **v65 / `debolingo-v65`** — `js/version.js` first, `sw.js` second.
+- **v66 / `debolingo-v66`** — `js/version.js` first, `sw.js` second.
 - Home is eight tiles: Practice, Words, Sobre mí, Quick, Match, Stories,
   Review, All Phrases; plus the week strip, the streak and the cog.
 - The course is fourteen units behind Practice, Palabras (twenty lessons,
@@ -274,4 +280,8 @@ state below changed, update this one.
   every AI call and the drawings.
 - v62 was a refactor with no intended change in behaviour: `app.js` split
   into modules, checks added under `tools/checks/`, these notes reorganised.
+- v66: Review asks each card one of three ways (as its level has it, by
+  ear, or from one of its replies), a miss steps a card back two rungs
+  rather than to one day, a card missed three days running rests a week,
+  and the session is shuffled. Ported from Xerra's v131 and v133.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.

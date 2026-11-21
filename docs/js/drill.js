@@ -8,8 +8,8 @@ import {
 import { Recorder, analyse } from "./audio.js";
 import { speech, browserSpeech, scoring } from "./speech.js";
 import {
-  PASS_GREAT, PASS_OK, REVIEW_CAP, autosize, closeSheet, esc, flameSVG, noVoice, parrotSVG, player,
-  scoreColour, shuffle, state, stopEverything, toast, view,
+  PASS_GREAT, PASS_OK, PLAY_SVG, REVIEW_CAP, autosize, closeSheet, esc, flameSVG, noVoice, parrotSVG, player,
+  sayAloud, scoreColour, shuffle, state, stopEverything, toast, view,
 } from "./core.js";
 import { render } from "./app.js";
 import { cardChatPanel, chatContext, notesBlock } from "./ask.js";
@@ -40,7 +40,7 @@ export function startLesson(lesson) {
 /* Repaso draws from everything drillable — the whole course and Deb's own
    cards. It used to be limited to lessons already completed; with nothing
    locked there is nothing to hold back. */
-export function startPractice(queueOverride = null, { title = "Repaso" } = {}) {
+export function startPractice(queueOverride = null, { title = "Repaso", review = false } = {}) {
   stopEverything();
   const pool = queueOverride ?? shuffle(library.drillable()).slice(0, 7);
   if (!pool.length) {
@@ -56,21 +56,24 @@ export function startPractice(queueOverride = null, { title = "Repaso" } = {}) {
     index: 0,
     results: [],
     practice: true,
+    review,
   };
   state.stage = "drill";
   loadPhrase();
 }
 
-/* What is due for review, most overdue first — see `library.due`. A practice
-   queue like Repaso's, so nothing ticks and the streak is untouched; the
-   attempts it records are what move the cards' next review. */
+/* What is due for review: the most overdue are the ones chosen (see
+   `library.due`), then shuffled, so a session does not open on the same cards
+   in the same order every time. A practice queue like Repaso's, so nothing
+   ticks and the streak is untouched; the attempts it records are what move
+   the cards' next review. */
 export function startReview() {
   const due = library.due();
   if (!due.length) {
     toast("Nothing to review today — cards come round once you've said them well.");
     return;
   }
-  startPractice(due.slice(0, REVIEW_CAP), { title: "Review" });
+  startPractice(shuffle(due.slice(0, REVIEW_CAP)), { title: "Review", review: true });
 }
 
 // ------------------------------------------------------------------- drill
@@ -128,6 +131,52 @@ export async function deletePhrase(phrase) {
   else render();
 }
 
+/* ------------------------------------------------------- Review's tasks
+
+   Ported from Xerra's v131, where Review was reported as boring: the same
+   cards back, asked the same way every time. The cards have to come round;
+   the task does not have to be the same one. So in a Review session each card
+   is asked in one of up to three ways, picked at random with the previous
+   card's way left out:
+
+   - as its level has it (null): read aloud at level one, from the English at
+     level two — what Review always did;
+   - "echo": by ear. No Spanish and no English on the card, Listen and Slow
+     stay, and she says back what she heard;
+   - "answer": one of the card's replies is the prompt — somebody answers her
+     with this, so what had she said? Only on a card that has replies, and
+     only with level two switched on, since it is a memory question.
+
+   Every one of them ends in a spoken, scored attempt, filed exactly as it
+   always was — "listen" for an echo, "recall" or "recall-shown" for an
+   answer — so level two and the review schedule read the same history they
+   did before. Nothing here is persisted and nothing changes a card's level.
+
+   Only in Review: a lesson on the path is where a card is met. Not in quiet
+   mode, which already makes every card a written question. */
+function reviewTask(phrase) {
+  if (!state.lesson?.review || settings.quietMode) return null;
+  const options = [null, "echo"];
+  if (settings.recallMode && phrase.replies?.some((r) => r.text?.trim())) options.push("answer");
+  const fresh = options.filter((option) => option !== state.lastTask);
+  const pool = fresh.length ? fresh : options;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/* Take the task off a card that has not been answered yet, and put the card
+   back to what its level says. Quiet mode calls this when it is switched on
+   or off mid-card: it has its own way of asking, and a card cannot be asked
+   two ways at once. */
+function dropTask(phrase) {
+  if (!state.task || state.attempt) return;
+  state.task = null;
+  state.taskReply = null;
+  state.taskHint = false;
+  state.recall = Boolean(settings.recallMode && library.recallReady(phrase.id));
+  state.revealed = !state.recall;
+  state.peeked = false;
+}
+
 async function loadPhrase() {
   const phrase = currentPhrase();
   state.modelBlob = null;
@@ -143,6 +192,27 @@ async function loadPhrase() {
   state.pictured = false;
   state.aspectChoice = null;
   state.typed = null;
+  /* What the card has earned, kept apart from how it is about to be asked:
+     a task below may lay a question over a level-one card or take one off a
+     level-two card, and `announceLevelUp` must not mistake either for a
+     change of level. */
+  state.levelTwo = state.recall;
+  state.task = null;
+  state.taskReply = null;
+  state.taskHint = false;
+  const task = phrase ? reviewTask(phrase) : null;
+  if (phrase) state.lastTask = task;
+  if (task === "echo") {
+    state.task = "echo";
+    state.recall = false;
+    state.revealed = false;
+  } else if (task === "answer") {
+    const replies = phrase.replies.filter((r) => r.text?.trim());
+    state.task = "answer";
+    state.taskReply = replies[Math.floor(Math.random() * replies.length)];
+    state.recall = true;
+    state.revealed = false;
+  }
   scoring.lastError = null;
   window.scrollTo(0, 0);
   if (!phrase) return render();
@@ -204,7 +274,13 @@ export function renderDrill() {
   /* "Printing this would answer the question in front of her." Everything
      that waits for a level-two answer waits for a typed one too, and for
      exactly the same reason, so the two flags are read as one from here down. */
-  const questioned = asking || typing;
+  /* Review's two tasks — see `reviewTask`. By ear, the Spanish and its
+     English are both withheld and the model audio is the prompt, so unlike
+     `asking` this one keeps Listen. An answer card is a memory question like
+     any other; it only changes what is printed as the question. */
+  const echoing = state.task === "echo" && !state.revealed && !quiet;
+  const answering = asking && state.task === "answer" && Boolean(state.taskReply);
+  const questioned = asking || typing || echoing;
 
   /* One switch, flipped from where she is using it: she decides she is
      somewhere she can't speak while already in the lesson, not before she
@@ -225,6 +301,7 @@ export function renderDrill() {
          Turning it off drops the verdict with the box, since neither is
          anything a spoken lesson shows. */
       state.typed = null;
+      dropTask(phrase);
       render();
     });
 
@@ -279,13 +356,17 @@ export function renderDrill() {
     </div>
 
     <p class="instruction">${
-      asking
+      echoing
+        ? "By ear — listen, then say it back"
+        : answering
+        ? "Somebody answers you with this. What had you said?"
+        : asking
         ? "From memory — how do you say this?"
         : typing
         ? phrase.translation?.trim()
           ? "Write it in Spanish"
           : "Listen, then write what you hear"
-        : state.recall && state.attempt
+        : (state.recall || state.task) && state.attempt
         ? "Here's the phrase — how close were you?"
         : quiet
         ? "Here's the phrase — how close were you?"
@@ -295,9 +376,36 @@ export function renderDrill() {
     ${aspectVerdict(shape, state.aspectChoice, questioned)}
 
     <div class="card drill-card">
-      ${state.recall ? `<div class="level-badge">Level 2 · from memory</div>` : ""}
       ${
-        questioned
+        state.task === "echo"
+          ? `<div class="level-badge">Review · by ear</div>`
+          : state.task === "answer"
+          ? `<div class="level-badge">Review · what did you say?</div>`
+          : state.recall
+          ? `<div class="level-badge">Level 2 · from memory</div>`
+          : ""
+      }
+      ${
+        echoing
+          ? `<p class="drill-text recall-prompt">Listen and say it back</p>
+             <p class="tiny muted" style="margin:10px 0 0">No words this time. Say what you hear, then you'll see it.</p>`
+          : answering
+          ? `<div class="reply task-reply">
+               <button class="reply-play" id="task-reply-say" aria-label="Listen to the answer">${PLAY_SVG}</button>
+               <span class="reply-main">
+                 <span class="drill-text recall-prompt" lang="es-ES">${esc(state.taskReply.text)}</span>
+                 <span class="drill-translation">${esc(state.taskReply.translation ?? "")}</span>
+               </span>
+             </div>
+             ${
+               !phrase.translation?.trim()
+                 ? ""
+                 : state.taskHint
+                 ? `<p class="drill-translation task-hint">You meant: ${esc(phrase.translation)}</p>`
+                 : `<button class="link" id="task-hint" style="padding-left:0">Hint: what you meant, in English</button>`
+             }
+             <p class="tiny muted" style="margin:10px 0 0">Say your line out loud, then you'll see it.</p>`
+          : questioned
           ? `<p class="drill-text recall-prompt">${
               /* Normally the English is the question. A card with no English
                  on it can still be asked in quiet mode, though — the model
@@ -349,7 +457,13 @@ export function renderDrill() {
         : `<div class="btn-row">
              <button class="btn btn-primary" id="listen">🔊 Listen</button>
              <button class="btn" id="slow">🐢 Slow</button>
-           </div>`
+           </div>${
+             /* By ear is a task, not a wall: the Spanish is one tap away, and
+                looking turns the card back into the one she reads aloud. */
+             echoing
+               ? `<p class="center" style="margin:10px 0 0"><button class="link" id="echo-show">Show the words</button></p>`
+               : ""
+           }`
     }
     ${
       asking
@@ -498,6 +612,20 @@ export function renderDrill() {
   document.getElementById("picture-hint")?.addEventListener("click", () => {
     state.pictured = true;
     render();
+  });
+  /* Review's tasks. Both re-render, which is safe for the reason it is safe
+     on the shape gate: while the question stands there is no attempt on the
+     screen for a render() to throw away. */
+  document.getElementById("echo-show")?.addEventListener("click", () => {
+    state.revealed = true;
+    render();
+  });
+  document.getElementById("task-hint")?.addEventListener("click", () => {
+    state.taskHint = true;
+    render();
+  });
+  document.getElementById("task-reply-say")?.addEventListener("click", (event) => {
+    sayAloud(event.currentTarget, state.taskReply?.text ?? "", "Couldn't play that reply.");
   });
   document.getElementById("show-me")?.addEventListener("click", () => {
     state.revealed = true;
@@ -867,7 +995,7 @@ async function handleRecording({ blob, duration }) {
 /* Say so the once, on the go that tips a card over. Silent if the card was
    already a memory question, or if recall is switched off in Settings. */
 function announceLevelUp(phrase) {
-  if (state.recall || !settings.recallMode) return;
+  if (state.recall || state.levelTwo || !settings.recallMode) return;
   if (library.goodAttempts(phrase.id) !== RECALL_AFTER) return;
   toast("¡Nivel 2! Next time you'll say this one from memory.", 3600);
 }
