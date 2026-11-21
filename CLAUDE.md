@@ -271,7 +271,7 @@ state below changed, update this one.
 
 ## State
 
-- **v66 / `debolingo-v66`** — `js/version.js` first, `sw.js` second.
+- **v67 / `debolingo-v67`** — `js/version.js` first, `sw.js` second.
 - Home is eight tiles: Practice, Words, Sobre mí, Quick, Match, Stories,
   Review, All Phrases; plus the week strip, the streak and the cog.
 - The course is fourteen units behind Practice, Palabras (twenty lessons,
@@ -284,4 +284,6 @@ state below changed, update this one.
   ear, or from one of its replies), a miss steps a card back two rungs
   rather than to one day, a card missed three days running rests a week,
   and the session is shuffled. Ported from Xerra's v131 and v133.
+- v67: reviews fall due by calendar day (midnight of the last attempt's
+  day plus the interval), not to the minute. From Xerra's v134.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.

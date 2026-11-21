@@ -88,7 +88,6 @@ export const RECALL_AFTER = 4;
 const RECALL_PASS = 75; // the same "understandable" line the lesson banner uses
 /* The review ladder, in days — see `library.reviewOf`. Ported from Xerra. */
 const REVIEW_DAYS = [1, 2, 4, 8, 16, 32, 64];
-const DAY_MS = 24 * 60 * 60 * 1000;
 /* A day with a miss in it takes the card this many rungs down the ladder. */
 const REVIEW_STEP_BACK = 2;
 /* Missed on this many days running, a card is rested this many days. */
@@ -696,7 +695,14 @@ export const library = {
     const resting = missRun >= REVIEW_REST_AFTER;
     const last = new Date(attempts[attempts.length - 1].recordedAt).getTime();
     const interval = resting ? REVIEW_REST_DAYS : REVIEW_DAYS[Math.max(streak, 1) - 1];
-    return { last, streak, interval, resting, dueAt: last + interval * DAY_MS };
+    /* Due at the start of a day, not to the minute: a card said at 06:40 is
+       due from midnight, so a session at 06:30 the next morning finds it.
+       setDate rather than adding milliseconds, so a clock change cannot
+       shift it by an hour. */
+    const due = new Date(last);
+    due.setHours(0, 0, 0, 0);
+    due.setDate(due.getDate() + interval);
+    return { last, streak, interval, resting, dueAt: due.getTime() };
   },
 
   /** Every drillable card whose review has come round, most overdue first. */
@@ -704,7 +710,7 @@ export const library = {
     return this.drillable()
       .map((phrase) => ({ phrase, review: this.reviewOf(phrase.id) }))
       .filter(({ review }) => review && review.dueAt <= now)
-      .sort((a, b) => a.review.dueAt - b.review.dueAt)
+      .sort((a, b) => a.review.dueAt - b.review.dueAt || a.review.last - b.review.last)
       .map(({ phrase }) => phrase);
   },
 
