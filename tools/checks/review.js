@@ -63,6 +63,7 @@ const { ok, done } = tally("review");
      until tomorrow. */
   const morning = await page.evaluate(async () => {
     const { library } = await import("/js/store.js");
+    library.aside = {};
     const phrase = library.drillable()[0];
     const at = (daysAgo, h, m) => { const d = new Date(); d.setDate(d.getDate() - daysAgo); d.setHours(h, m, 0, 0); return d; };
     const saved = library.attempts;
@@ -95,6 +96,7 @@ const { ok, done } = tally("review");
     }));
     const runs = [];
     for (let n = 0; n < 6; n += 1) {
+      library.aside = {}; // starting a session puts its first card aside
       startReview();
       runs.push(state.lesson.queue.map((p) => p.id));
     }
@@ -130,6 +132,11 @@ const { ok, done } = tally("review");
     const { library, aspectOf } = await import("/js/store.js");
     const three = library.drillable().filter((p) => p.translation && !aspectOf(p)).slice(0, 3);
     localStorage.setItem(`${store}.replies`, JSON.stringify({ [three[0].id]: [{ text: "Igualmente.", translation: "Likewise." }] }));
+    // Every other card is put aside, so the session is these three and
+    // nothing tops it up: the steering below counts on three.
+    const later = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    localStorage.setItem(`${store}.reviewAside`, JSON.stringify(Object.fromEntries(
+      library.drillable().filter((p) => !three.some((t) => t.id === p.id)).map((p) => [p.id, later]))));
     const day = 86400000;
     localStorage.setItem(`${store}.attempts`, JSON.stringify(three.map((p, i) => ({
       id: `seed-${i}`, phraseID: p.id, recordedAt: new Date(Date.now() - (9 - i) * day).toISOString(),
@@ -139,6 +146,15 @@ const { ok, done } = tally("review");
   }, [STORE]);
   await page.reload();
   await page.waitForSelector("[data-review]");
+  ok(/3 cards to review today/.test(await page.textContent("[data-review]")), "three cards are due");
+  /* The third card will be shown and not said, which puts it aside; this
+     takes it back out and repaints home, so it can be asked again. */
+  const unaside = () => page.evaluate(async (id) => {
+    const { library } = await import("/js/store.js");
+    delete library.aside[id];
+    library.saveAside();
+    (await import("/js/app.js")).render();
+  }, cards[2].id);
 
   // Two 0.99s leave the shuffled session where it was; then 0.99 of three
   // ways is the answer, and 0 picks the one reply.
@@ -182,6 +198,9 @@ const { ok, done } = tally("review");
   // Show the words, and quiet mode taking a task off.
   await page.click("#quit");
   await page.waitForSelector("[data-review]");
+  ok(/Nothing due today/.test(await page.textContent("[data-review]")), "shown and not said, the third card is put aside: nothing is due");
+  await unaside();
+  await page.waitForSelector("[data-review]");
   await steer(0.5);
   await page.click("[data-review]");
   await page.waitForSelector("#echo-show");
@@ -190,10 +209,14 @@ const { ok, done } = tally("review");
   // One card is left due and it has no replies, so the ways alternate.
   await page.click("#quit");
   await page.waitForSelector("[data-review]");
+  await unaside();
+  await page.waitForSelector("[data-review]");
   await page.click("[data-review]");
   await page.waitForSelector(".drill-text:not(.recall-prompt)");
   ok(!(await page.$(".level-badge")), "the same way is not asked twice running");
   await page.click("#quit");
+  await page.waitForSelector("[data-review]");
+  await unaside();
   await page.waitForSelector("[data-review]");
   await page.click("[data-review]");
   await page.waitForSelector("#echo-show");
