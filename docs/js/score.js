@@ -143,10 +143,10 @@ export function wireComparison() {
     // Bring the playback row to the top so the score and word-by-word detail
     // below it are on screen while she listens.
     document.getElementById("playback-row")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    if (state.modelBlob) player.play(state.modelBlob);
+    if (state.modelBlob) player.play(state.modelBlob).catch(() => {}); // a later tap stopping it is not an error
   });
   document.getElementById("play-you")?.addEventListener("click", () => {
-    if (state.attemptBlob) player.play(state.attemptBlob);
+    if (state.attemptBlob) player.play(state.attemptBlob).catch(() => {});
   });
   document.getElementById("pitch-details")?.addEventListener("toggle", drawCanvases);
 

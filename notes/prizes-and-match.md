@@ -233,3 +233,24 @@ Talked through with the advisor again before building.
   article marked out and the rest right, the hint naming the word, Check
   disabled, the marks still there after the shake, cleared by a move; the
   order hint and gold marks; Show me with the reason kept.
+
+#### The noun before its article (v71)
+
+Asked for as *"when it's correcting the sentences, it should show that the
+noun needs correction first and then correct the article"*. Right: the
+article hangs on the noun, so with the wrong noun on the line a hint about
+its article is about a word that shouldn't be there — and putting *una*
+right in front of *tenedor* would teach the wrong pair. `hintFor` now reads
+wrong noun → wrong article → another sentence's opening → a word short →
+order. The marks are unchanged: both tiles still show red ✕, because they
+are both wrong; the hint is which to fix first. Asserted: a wrong noun with
+a wrong article gets the noun's hint, and a wrong article beats a stray
+opening.
+
+Also in v71, unrelated: the smoke check failed about one run in twelve on
+`AbortError: The play() request was interrupted by a call to pause()`. The
+score card's Model / You buttons and the phrase sheet's recordings called
+`player.play()` without a catch, so a tap that stopped a clip before it
+started left an unhandled rejection — silent on the phone, a console error
+in the check. They now catch and ignore it, as Listen in the drill already
+did; a later tap stopping a clip is not an error.

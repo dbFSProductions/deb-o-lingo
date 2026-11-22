@@ -215,18 +215,21 @@ function articleReason(item) {
 }
 
 /* One hint after a wrong Check, the most useful that applies — several at
-   once is a lecture. The wrong article first, because el or la is what the
-   game is for; then a tile that doesn't belong; then a gap; then the order,
-   which gets more specific on the second miss. Written here, never asked of
-   the Worker: one line, instant, and read before it shipped. */
+   once is a lecture. The wrong noun first: the article hangs on the noun, so
+   until the noun is right a hint about its article is about the wrong word —
+   asked for in those words, "show that the noun needs correction first and
+   then correct the article" (v71; v70 had the article first). Then the wrong
+   article, because el or la is what the game is for; then an opening from
+   another sentence; then a gap; then the order, which gets more specific on
+   the second miss. Written here, never asked of the Worker: one line,
+   instant, and read before it shipped. */
 export function hintFor(item, placed, tries) {
+  const stray = (kind) => placed.find((text) => item.decoyOf[text]?.kind === kind);
+  const noun = stray("noun");
+  if (noun) return `${em(noun)} is the ${esc(item.decoyOf[noun].english)} — this one wants the ${esc(item.english)}.`;
   if (placed.includes(item.wrong)) return articleReason(item);
-  const stray = placed.find((text) => item.decoyOf[text]);
-  if (stray) {
-    const why = item.decoyOf[stray];
-    if (why.kind === "noun") return `${em(stray)} is the ${esc(why.english)} — this one wants the ${esc(item.english)}.`;
-    if (why.kind === "opener") return `${em(stray)} is “${esc(why.english)}” — this sentence starts another way.`;
-  }
+  const opener = stray("opener");
+  if (opener) return `${em(opener)} is “${esc(item.decoyOf[opener].english)}” — this sentence starts another way.`;
   const short = item.answer.length - placed.length;
   if (short > 0) {
     return short === 1

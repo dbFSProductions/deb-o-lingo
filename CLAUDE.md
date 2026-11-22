@@ -275,7 +275,7 @@ state below changed, update this one.
 
 ## State
 
-- **v70 / `debolingo-v70`** — `js/version.js` first, `sw.js` second.
+- **v71 / `debolingo-v71`** — `js/version.js` first, `sw.js` second.
 - Home is the week strip, the Review strip under it, then eight tiles:
   Practice, Words, Sobre mí, Quick, Match, Stories, Build, All Phrases; plus
   the streak and the cog.
@@ -299,4 +299,5 @@ state below changed, update this one.
   its square. `notes/prizes-and-match.md`.
 - v70: in Build each tile says itself when placed, a wrong Check leaves
   green / gold / red marks until a tile moves, and one hint line says why.
+- v71: Build's hint names a wrong noun before a wrong article.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.
