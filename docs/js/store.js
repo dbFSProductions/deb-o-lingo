@@ -1101,6 +1101,9 @@ export function monthPlus(key, n) {
 export const awards = {
   study: {},
   match: { total: 0, rounds: 0, perfect: 0, bestTime: null, bests: {} },
+  /* Build, the sentence game: sentences built without Show me, rounds, and
+     rounds with no miss. Additive — an older backup has none and reads as 0. */
+  build: { total: 0, rounds: 0, perfect: 0 },
   earned: {},
   /* The day the counting started: the first day this ran, or the day a
      backup without one is restored. Nothing before it counts — an Azure 85
@@ -1117,7 +1120,7 @@ export const awards = {
   },
 
   get data() {
-    return { study: this.study, match: this.match, earned: this.earned, since: this.since };
+    return { study: this.study, match: this.match, build: this.build, earned: this.earned, since: this.since };
   },
 
   /** Take a stored or imported shape, forgivingly — an older backup has none. */
@@ -1127,6 +1130,12 @@ export const awards = {
     for (const [day, seconds] of Object.entries(study)) {
       if (/^\d{4}-\d{2}-\d{2}$/.test(day) && typeof seconds === "number" && seconds > 0) this.study[day] = seconds;
     }
+    const build = data?.build && typeof data.build === "object" ? data.build : {};
+    this.build = {
+      total: Number(build.total) || 0,
+      rounds: Number(build.rounds) || 0,
+      perfect: Number(build.perfect) || 0,
+    };
     const match = data?.match && typeof data.match === "object" ? data.match : {};
     this.match = {
       total: Number(match.total) || 0,
@@ -1234,6 +1243,19 @@ export const awards = {
         this.match.bests[mode] = seconds;
       }
     }
+    this.save();
+  },
+
+  /** One sentence put together in Build, unaided. */
+  recordBuilt() {
+    this.build.total += 1;
+    this.save();
+  },
+
+  /** A round of Build finished. */
+  recordBuildRound({ misses }) {
+    this.build.rounds += 1;
+    if (!misses) this.build.perfect += 1;
     this.save();
   },
 

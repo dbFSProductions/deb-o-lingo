@@ -274,6 +274,8 @@ export function renderPath(section = null) {
 
            ${weekStrip()}
 
+           ${reviewStrip()}
+
            ${tiles()}`
     }
 
@@ -407,7 +409,11 @@ export function renderPath(section = null) {
      there, because a tile that comes and goes leaves a hole in the grid, and
      with nothing due it says so quietly rather than nagging. It keeps the
      strip's teal. Stories is red, the one strong colour left; the two games
-     sit together on the third row and the two lists on the fourth. */
+     sit together on the third row and the two lists on the fourth.
+
+     At v69 Review went back to being a strip — under the week this time,
+     and always there — and Build, the sentence game, took its square, in
+     pink. Asked for in one breath with the game. */
 
   /* The streak challenge's one surface on the home page: seven dots for the
      week, under the parrot and above the squares, because it is the thing
@@ -428,6 +434,32 @@ export function renderPath(section = null) {
           <span class="week-sub">${sub}</span>
         </span>
         <span class="week-go">Prizes ›</span>
+      </button>`;
+  }
+
+  /* Review, under the week: a strip the width of the page and half a square
+     high, asked for in those words — "move the daily review up to be under
+     streak … a full width, half tile like streak", with Build taking its
+     square. It is the one thing on the home page that is different every
+     day, like the week, so the two sit together above the squares. Always
+     shown, as the square was: "nothing due" is still an answer to the
+     question it is there to ask. The headline is the session — what a tap
+     actually starts — and the backlog is the quieter clause after it. It
+     keeps the teal it has always had. */
+  function reviewStrip() {
+    const count = due
+      ? `${
+          fresh ? `${dueIn} due today + ${fresh} fresh` : `${due} card${due === 1 ? "" : "s"} to review today`
+        }${waiting ? ` · ${waiting} more waiting` : ""}`
+      : "Nothing due today";
+    return `
+      <button class="week-strip review-strip ${due ? "" : "quiet"}" data-review="1" aria-label="Review what is due">
+        <span class="review-mark" aria-hidden="true">${CLOCK_SVG}</span>
+        <span class="week-main">
+          <span class="week-title">Review</span>
+          <span class="week-sub">${esc(count)}</span>
+        </span>
+        <span class="week-go">${due ? "Start ›" : ""}</span>
       </button>`;
   }
 
@@ -462,18 +494,9 @@ export function renderPath(section = null) {
       { key: "stories", title: "Stories", blurb: "A little scene, then some questions", colour: "red",
         count: read ? `${read} of ${STORIES.length} read` : `${STORIES.length} stories`,
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>` },
-      /* Always shown, unlike the strip it replaced: the count is the one
-         thing on the tile that changes, and "nothing due" is still an answer
-         to the question the tile is there to ask. The headline is the
-         session — what a tap actually starts — and the backlog is the
-         quieter clause after it. */
-      { key: "review", title: "Review", blurb: "Cards that have come round", colour: "teal",
-        count: due
-          ? `${
-              fresh ? `${dueIn} due today + ${fresh} fresh` : `${due} card${due === 1 ? "" : "s"} to review today`
-            }${waiting ? ` · ${waiting} more waiting` : ""}`
-          : "Nothing due today",
-        mark: CLOCK_SVG },
+      { key: "build", title: "Build", blurb: "Put a Spanish sentence together", colour: "pink",
+        count: awards.build.total ? `${awards.build.total} sentence${awards.build.total === 1 ? "" : "s"} built` : "Build a sentence",
+        mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="13" width="8" height="6" rx="1.5"/><rect x="13" y="13" width="8" height="6" rx="1.5"/><rect x="8" y="5" width="8" height="6" rx="1.5"/></svg>` },
       { key: "phrases", title: "All Phrases", blurb: "Every card, searchable", colour: "blue",
         count: `${library.drillable().length} cards`,
         mark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg>` },
@@ -491,8 +514,8 @@ export function renderPath(section = null) {
               ? `data-open-match="1"`
               : tile.key === "stories"
               ? `data-open-stories="1"`
-              : tile.key === "review"
-              ? `data-review="1"`
+              : tile.key === "build"
+              ? `data-open-build="1"`
               : `data-section="${tile.key}"`
           }>
             <span class="tile-mark" aria-hidden="true">${tile.mark}</span>

@@ -6,7 +6,7 @@
 
 // Bumped with VERSION in js/version.js — Settings shows the two side by side,
 // so forgetting one of them shows up as two different numbers on screen.
-const VERSION = "debolingo-v68";
+const VERSION = "debolingo-v69";
 const SHELL = [
   "./",
   "./index.html",
@@ -16,6 +16,7 @@ const SHELL = [
   "./js/about.js",
   "./js/add.js",
   "./js/ask.js",
+  "./js/build.js",
   "./js/core.js",
   "./js/drill.js",
   "./js/match.js",

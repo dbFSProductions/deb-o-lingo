@@ -90,13 +90,14 @@ module per page. Older notes that say "in app.js" mean one of these.
 | `about.js` | Sobre mí: the interview and the cards it writes. |
 | `prizes.js` | The study clock (`studyTick`, started at import), `checkAwards`, the celebration overlay, the Prizes page. |
 | `match.js` | Match, the pairs game. |
+| `build.js` | Build, the sentence game: frames from `FRAMES` (in `content.js`) filled with Palabras nouns. |
 | `story-page.js` | Stories: the list and a story with its questions. (The stories themselves are `STORIES` in `content.js`.) |
 | `settings.js` | Settings, the version panel, the storage line. |
 | `store.js` | All persisted data and its rules: `library`, `settings`, `progress`, `aboutMe`, `awards`, `stories`, `attemptScore`, `ASPECTS`, `genderOf`, review, IndexedDB. |
 | `speech.js` | Azure synthesis and scoring, the browser-voice fallback. Same behaviour in all three apps. |
 | `audio.js` | Recorder, Player, the speech detector, waveform and pitch analysis. **Verbatim copy in all three apps.** |
 | `card-assistant.js` | The client for every Worker endpoint. |
-| `content.js` | `COURSE` (units → lessons → phrases) and `STORIES`. Hand-written. |
+| `content.js` | `COURSE` (units → lessons → phrases), `STORIES` and `FRAMES`. Hand-written. |
 | `version.js` | `VERSION`. |
 
 To find where something lives: `grep -n "function name" docs/js/*.js`.
@@ -109,8 +110,8 @@ To find where something lives: `grep -n "function name" docs/js/*.js`.
   (in `app.js`) reads it and calls one `renderX()`, which replaces
   `view.innerHTML` and wires its own listeners. To navigate: set `state`,
   call `render()`.
-- **`state.tab`** is `learn`, `add`, `add-word`, `prizes`, `match`, `stories`
-  or `settings` (there is no tab bar; the name is historical). Inside `learn`,
+- **`state.tab`** is `learn`, `add`, `add-word`, `prizes`, `match`, `build`,
+  `stories` or `settings` (there is no tab bar; the name is historical). Inside `learn`,
   **`state.stage`** is `path`, `drill`, `complete` or `about`, and
   **`state.section`** is which tile you are behind: `null` for home,
   `practice`, `words`, `phrases`, `quick`. `state.lesson` is the queue being
@@ -261,7 +262,7 @@ as it was written at the time, newest additions at the end.
 | `notes/quick.md` | Quick, and what `/complete-card` must be sent. |
 | `notes/about-me.md` | Sobre mí: the interview and its cards. |
 | `notes/review.md` | Spaced repetition read off the attempts. |
-| `notes/prizes-and-match.md` | The study clock, the challenges, the medals, Match. |
+| `notes/prizes-and-match.md` | The study clock, the challenges, the medals, Match, Build. |
 | `notes/stories.md` | Stories: tiers, questions, what a read does and does not count for. |
 | `notes/audio.md` | Listen's silent failures, the trim, playback levelling, crest factor. |
 | `notes/checks-history.md` | What each feature was asserted on when it shipped. |
@@ -274,9 +275,10 @@ state below changed, update this one.
 
 ## State
 
-- **v68 / `debolingo-v68`** — `js/version.js` first, `sw.js` second.
-- Home is eight tiles: Practice, Words, Sobre mí, Quick, Match, Stories,
-  Review, All Phrases; plus the week strip, the streak and the cog.
+- **v69 / `debolingo-v69`** — `js/version.js` first, `sw.js` second.
+- Home is the week strip, the Review strip under it, then eight tiles:
+  Practice, Words, Sobre mí, Quick, Match, Stories, Build, All Phrases; plus
+  the streak and the cog.
 - The course is fourteen units behind Practice, Palabras (twenty lessons,
   a hundred and one words) behind Words, and thirty-four stories in five tiers.
 - Azure (key on the phone) does voices and scoring. The shared Worker does
@@ -292,4 +294,7 @@ state below changed, update this one.
 - v68: a card shown in Review and not said (quiet mode, Next) is put aside
   three days instead of staying due, and a session is topped up to ten with
   met, then new cards. From Xerra's v135.
+- v69: Build, the sentence game — seven frames filled with Palabras nouns,
+  the article the decision. Review became a strip under the week; Build took
+  its square. `notes/prizes-and-match.md`.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.
