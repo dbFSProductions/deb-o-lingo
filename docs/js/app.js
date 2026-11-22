@@ -11,6 +11,7 @@ import { library, settings, progress, aboutMe, awards, stories } from "./store.j
 import { state, stopEverything, view } from "./core.js";
 import { renderAbout } from "./about.js";
 import { renderAdd, renderAddWord } from "./add.js";
+import { renderBuild, startBuild } from "./build.js";
 import { renderComplete, renderDrill } from "./drill.js";
 import { renderMatch, startMatch } from "./match.js";
 import { renderPath } from "./path.js";
@@ -61,6 +62,7 @@ view.addEventListener("click", (event) => {
   }
   if (event.target.closest("[data-open-prizes]")) return openPrizes();
   if (event.target.closest("[data-open-match]")) return startMatch();
+  if (event.target.closest("[data-open-build]")) return startBuild();
   if (event.target.closest("[data-open-stories]")) return openStories();
   const story = event.target.closest("[data-open-story]");
   if (story) return openStory(story.dataset.openStory);
@@ -90,6 +92,7 @@ export function render() {
   if (state.tab === "add-word") return renderAddWord();
   if (state.tab === "prizes") return renderPrizes();
   if (state.tab === "match") return renderMatch();
+  if (state.tab === "build") return renderBuild();
   if (state.tab === "stories") return state.story ? renderStory() : renderStories();
   return renderSettings();
 }

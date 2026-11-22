@@ -49,6 +49,7 @@ for (const type of ["pointerdown", "keydown", "touchstart"]) {
 function studying() {
   if (state.tab === "learn" && state.stage === "drill") return true;
   if (state.tab === "match") return Boolean(state.match) && !state.match.finishedAt;
+  if (state.tab === "build") return Boolean(state.build) && !state.build.finishedAt;
   return state.tab === "stories" && Boolean(state.story) && !state.story.finishedAt;
 }
 

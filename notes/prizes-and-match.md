@@ -139,3 +139,56 @@ these two were chosen.
   lookup already used `ignoreSearch` (the one that didn't, the offline
   fallback to `./index.html`, does now). The pills also set
   `appearance: none` so they never lean on Safari's default button.
+
+### Build, the sentence game (v69)
+
+Asked for as *"Deb's individual word vocab is coming on nicely but not putting
+the words into full sentences. Maybe there is a game that gets her to combine
+words and build sentences"*, with "can I have a cookie please" as the example.
+The design was talked through with an advisor model first, and cut to the
+first version below.
+
+- **The mechanic.** An English prompt, an empty line, a tray of Spanish tiles.
+  Tap a tile to place it, tap a placed one to send it back (no dragging on
+  iOS), Check commits. Match trains recognising a word; this is the step after
+  it, from a meaning to Spanish in order.
+- **Frames, not free grammar.** A beginner gets to sentences through set
+  phrases with a gap. `FRAMES` in `content.js`: *¿Me pone ___, por favor?*,
+  *Quiero*, *Necesito*, *¿Dónde está*, *Voy a*, *Me duele*, *¿Cuánto
+  cuesta*, each with a hand-picked list of Palabras ids that make sense in it
+  ("¿Me pone una farmacia?" is grammatical and silly). Hand-written like the
+  rest of the content (rule 6); the Worker was not used, since that would
+  need a new endpoint over there and would give Spanish nobody had read.
+- **The article is the decision.** The noun's `el`/`la` is turned into the
+  frame's form: un/una, el/la, al/a la. Frame chunks are one tile ("me pone"),
+  the article and noun two. The tray has three decoys: the article of the
+  other gender, another noun the frame takes, and another frame's opening.
+  Punctuation and capitals stay off the tiles ("¿Me" would give away where it
+  goes) and appear on the finished line.
+- **Her edits count.** Words are read through `library.phraseById`, so an
+  edited Palabras word shows as edited. A word that is deleted, no longer
+  starts with el/la, or is el-but-feminine (el agua) is skipped.
+- **Misses.** A wrong Check shakes the tiles in the wrong slots and counts;
+  two misses offer *Show me*, which counts one more and isn't tallied as
+  built. A right one is said aloud (Azure only, as in Match); Listen beside
+  it always works.
+- **No attempt is written.** A built sentence is not a card, and level two and
+  Review are read off attempts by phrase id. It counts study time while a
+  round is open (`studying()` in prizes.js) and keeps `awards.build`
+  `{ total, rounds, perfect }`, additive, so an older backup imports as 0.
+- **Home.** Review went from a square to a strip under the week, the same
+  shape, in its teal, by request: "move the daily review up to be under
+  streak … a full width, half tile like streak. Then put this in the space
+  of the full tile where review is now." Build is that square, in pink.
+- **Not built yet:** a Listen pill (hear the sentence, build what you heard),
+  saying it into the mic with an unsaved score, round sizes, medals, more
+  frames, plurals, her own Your-words nouns in the gaps, keeping a built
+  sentence as a card, a word-by-word hard mode.
+- `tools/checks/build.js`: every frame × noun is made by the app's own code
+  (`BUILD_PRINT=1` prints them all to be read by eye), three distinct decoys
+  and no punctuation on any tray, *Me duele el pie*, *Voy al médico* with
+  *a la* as the decoy, *an umbrella*; eight squares with Build seventh and
+  Review a strip under the week less than 0.7 of a square high; a round of
+  six with no noun twice, place, take back, a wrong order shakes, Show me
+  after two, each right sentence said by the fake Azure, a finished round
+  tallied, no attempt written, the square's count.

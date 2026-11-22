@@ -3992,3 +3992,87 @@ export function tierOf(story) {
 export function storyById(id) {
   return STORIES.find((s) => s.id === id) ?? null;
 }
+
+// ------------------------------------------------------------------- frames
+//
+// Build, the sentence game (build.js): a frame with one gap, filled with a
+// Palabras noun. Asked for as a game that gets her to "combine words and build
+// sentences" — her single words were coming on and her sentences were not.
+// A beginner reaches sentences through set phrases with a hole in them, not by
+// assembling grammar a word at a time, so a handful of frames times the nouns
+// she already owns is a lot of real Spanish at almost no new vocabulary.
+//
+// Each frame lists its nouns by Palabras id, by hand: "¿Me pone una farmacia?"
+// is grammatical and silly, and only a person can tell. The article is worked
+// out from the word's own `el`/`la`, so her edit to a word is respected:
+//   indef  un / una        def  el / la        a  al / a la
+// `tiles` is the answer in order; "{np}" is the article tile then the noun
+// tile. `es` and `en` are the finished line, with the punctuation the tiles
+// leave off; in `en`, {np} is "a fork" / "the fork" as the rule has it and
+// {noun} is the bare English. `english` overrides a word's translation where
+// the card's own reads badly in a sentence.
+//
+// Ids are stable, like phrase ids: never renumber, append.
+
+export const FRAMES = [
+  {
+    id: "frame-pone",
+    es: "¿Me pone {np}, por favor?",
+    en: "Could I have {np}, please?",
+    tiles: ["me pone", "{np}", "por favor"],
+    article: "indef",
+    nouns: ["palabras-1-1", "palabras-1-2", "palabras-1-3", "palabras-12-5", "palabras-15-4", "palabras-12-2"],
+  },
+  {
+    id: "frame-quiero",
+    es: "Quiero {np}.",
+    en: "I want {np}.",
+    tiles: ["quiero", "{np}"],
+    article: "indef",
+    nouns: ["palabras-15-4", "palabras-17-4", "palabras-21-2", "palabras-19-1", "palabras-23-2", "palabras-23-1"],
+  },
+  {
+    id: "frame-necesito",
+    es: "Necesito {np}.",
+    en: "I need {np}.",
+    tiles: ["necesito", "{np}"],
+    article: "indef",
+    nouns: ["palabras-17-2", "palabras-9-5", "palabras-23-3", "palabras-23-5", "palabras-11-2", "palabras-2-3"],
+    english: { "palabras-2-3": "chair" },
+  },
+  {
+    id: "frame-donde",
+    es: "¿Dónde está {np}?",
+    en: "Where is {np}?",
+    tiles: ["dónde está", "{np}"],
+    article: "def",
+    nouns: ["palabras-16-5", "palabras-16-3", "palabras-3-5", "palabras-13-3", "palabras-14-1", "palabras-17-5", "palabras-16-1", "palabras-3-3"],
+    english: { "palabras-3-5": "bus stop", "palabras-14-1": "till", "palabras-16-3": "toilet", "palabras-17-5": "entrance" },
+  },
+  {
+    id: "frame-voy",
+    es: "Voy {np}.",
+    en: "I'm going to {np}.",
+    tiles: ["voy", "{np}"],
+    article: "a",
+    nouns: ["palabras-16-5", "palabras-17-1", "palabras-16-4", "palabras-16-3", "palabras-16-2"],
+    english: { "palabras-16-5": "chemist's", "palabras-17-1": "doctor's", "palabras-16-3": "bathroom" },
+  },
+  {
+    id: "frame-duele",
+    es: "Me duele {np}.",
+    en: "My {noun} hurts.",
+    tiles: ["me duele", "{np}"],
+    article: "def",
+    nouns: ["palabras-22-1", "palabras-22-2", "palabras-22-3", "palabras-22-4", "palabras-22-5"],
+  },
+  {
+    id: "frame-cuesta",
+    es: "¿Cuánto cuesta {np}?",
+    en: "How much is {np}?",
+    tiles: ["cuánto cuesta", "{np}"],
+    article: "def",
+    nouns: ["palabras-23-1", "palabras-23-2", "palabras-23-4", "palabras-11-2", "palabras-23-3", "palabras-17-4"],
+    english: { "palabras-17-4": "ticket", "palabras-23-4": "jumper" },
+  },
+];

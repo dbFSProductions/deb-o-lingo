@@ -108,6 +108,9 @@ export const state = {
   match: null,
   matchTimer: null,
 
+  /* A round of Build, the sentence game — see `startBuild`. */
+  build: null,
+
   /* The story being read — see `openStory`. Null on the list of stories and
      everywhere else. */
   story: null,
