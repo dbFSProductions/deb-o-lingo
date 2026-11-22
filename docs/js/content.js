@@ -4010,13 +4010,16 @@ export function storyById(id) {
 // tile. `es` and `en` are the finished line, with the punctuation the tiles
 // leave off; in `en`, {np} is "a fork" / "the fork" as the rule has it and
 // {noun} is the bare English. `english` overrides a word's translation where
-// the card's own reads badly in a sentence.
+// the card's own reads badly in a sentence. `gist` is what the frame's
+// opening means, for the hint when it turns up as the wrong opening in
+// another sentence's tray.
 //
 // Ids are stable, like phrase ids: never renumber, append.
 
 export const FRAMES = [
   {
     id: "frame-pone",
+    gist: "could I have",
     es: "¿Me pone {np}, por favor?",
     en: "Could I have {np}, please?",
     tiles: ["me pone", "{np}", "por favor"],
@@ -4025,6 +4028,7 @@ export const FRAMES = [
   },
   {
     id: "frame-quiero",
+    gist: "I want",
     es: "Quiero {np}.",
     en: "I want {np}.",
     tiles: ["quiero", "{np}"],
@@ -4033,6 +4037,7 @@ export const FRAMES = [
   },
   {
     id: "frame-necesito",
+    gist: "I need",
     es: "Necesito {np}.",
     en: "I need {np}.",
     tiles: ["necesito", "{np}"],
@@ -4042,6 +4047,7 @@ export const FRAMES = [
   },
   {
     id: "frame-donde",
+    gist: "where is",
     es: "¿Dónde está {np}?",
     en: "Where is {np}?",
     tiles: ["dónde está", "{np}"],
@@ -4051,6 +4057,7 @@ export const FRAMES = [
   },
   {
     id: "frame-voy",
+    gist: "I'm going",
     es: "Voy {np}.",
     en: "I'm going to {np}.",
     tiles: ["voy", "{np}"],
@@ -4060,6 +4067,7 @@ export const FRAMES = [
   },
   {
     id: "frame-duele",
+    gist: "it hurts me",
     es: "Me duele {np}.",
     en: "My {noun} hurts.",
     tiles: ["me duele", "{np}"],
@@ -4068,6 +4076,7 @@ export const FRAMES = [
   },
   {
     id: "frame-cuesta",
+    gist: "how much is",
     es: "¿Cuánto cuesta {np}?",
     en: "How much is {np}?",
     tiles: ["cuánto cuesta", "{np}"],

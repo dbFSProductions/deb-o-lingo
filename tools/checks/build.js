@@ -77,27 +77,93 @@ const recordingAzure = `(${fakeAzure})();
   ok(new Set(g.nouns).size === 6, "no noun twice in a round");
   ok(await page.$("#build-check[disabled]"), "Check waits for a tile");
 
-  // Wrong: the answer backwards (or a decoy first) — shakes, counts, twice offers Show me.
+  // Every hint, made by the app's own code on a sentence built for it.
+  const hints = await page.evaluate(async () => {
+    const { FRAMES } = await import("./js/content.js");
+    const { makeSentence, nounFor, hintFor, marksFor } = await import("./js/build.js");
+    const make = (f, id) => { const frame = FRAMES.find((x) => x.id === f); return makeSentence(frame, nounFor(frame, id)); };
+    const silla = make("frame-necesito", "palabras-2-3");
+    const medico = make("frame-voy", "palabras-17-1");
+    const farmacia = make("frame-voy", "palabras-16-5");
+    const cabeza = make("frame-duele", "palabras-22-1");
+    const strayNoun = Object.keys(silla.decoyOf).find((t) => silla.decoyOf[t].kind === "noun");
+    const strayOpener = Object.keys(silla.decoyOf).find((t) => silla.decoyOf[t].kind === "opener");
+    const text = (html) => html.replace(/<[^>]+>/g, "");
+    return {
+      indef: text(hintFor(silla, ["necesito", "un", "silla"], 1)),
+      al: text(hintFor(medico, ["voy", "a la", "médico"], 1)),
+      ala: text(hintFor(farmacia, ["voy", "al", "farmacia"], 1)),
+      def: text(hintFor(cabeza, ["me duele", "el", "cabeza"], 1)),
+      noun: text(hintFor(silla, ["necesito", "una", strayNoun], 1)),
+      opener: text(hintFor(silla, [strayOpener, "una", "silla"], 1)),
+      short: text(hintFor(silla, ["necesito", "silla"], 1)),
+      swapped: text(hintFor(silla, ["necesito", "silla", "una"], 1)),
+      order1: text(hintFor(silla, ["una", "silla", "necesito"], 1)),
+      order2: text(hintFor(silla, ["una", "silla", "necesito"], 2)),
+      marks: marksFor(silla, ["una", "necesito", strayNoun]).join(" "),
+    };
+  });
+  ok(hints.indef === "silla is a la word — so una, not un.", `wrong un: ${hints.indef}`);
+  ok(hints.al === "médico is an el word, and a + el squeezes into al.", `wrong a la: ${hints.al}`);
+  ok(hints.ala === "farmacia is a la word — a la, not al.", `wrong al: ${hints.ala}`);
+  ok(hints.def === "cabeza is a la word — la cabeza.", `wrong el: ${hints.def}`);
+  ok(/^\S+ is the .+ — this one wants the chair\.$/.test(hints.noun), `a stray noun: ${hints.noun}`);
+  ok(/^\S+( \S+)? is “.+” — this sentence starts another way\.$/.test(hints.opener), `a stray opener: ${hints.opener}`);
+  ok(hints.short === "One word short — there's still one in the tray for this.", `a word short: ${hints.short}`);
+  ok(hints.swapped === "The little word goes first: una silla.", `noun before article: ${hints.swapped}`);
+  ok(hints.order1 === "All the right words — just the order.", `order, first miss: ${hints.order1}`);
+  ok(hints.order2 === "Right words. Start with necesito.", `order, second miss: ${hints.order2}`);
+  ok(hints.marks === "place place out", `marks: right word wrong place, and a stray: ${hints.marks}`);
+
+  // Placing a tile says it; taking it back says nothing.
   const tap = (text, where = "tray") =>
     page.evaluate(({ text, where }) => {
       const el = [...document.querySelectorAll(`.build-tile[data-where="${where}"]`)].find((b) => b.textContent === text);
       el.click();
     }, { text, where });
-  const wrong = [...g.item.answer].reverse();
-  for (const t of wrong) await tap(t);
-  ok((await page.$$('.build-line .build-tile')).length === wrong.length, "tapped tiles go onto the line");
-  ok((await page.$$(".build-tray .build-gap")).length === wrong.length, "and leave their outline in the tray");
-  await tap(wrong[0], "line");
-  ok((await page.$$('.build-line .build-tile')).length === wrong.length - 1, "a tile on the line goes back on a tap");
-  await tap(wrong[0]);
+  const said = () => page.evaluate(() => (window.__sdk.said || []).slice());
+  const settle = () => page.waitForFunction(() => ![...document.querySelectorAll(".build-tile")].some((b) => b.dataset.busy === "1"));
+  await page.evaluate(() => { window.__sdk.said = []; });
+  const first = g.item.answer[0];
+  await tap(first);
+  await page.waitForFunction((t) => (window.__sdk.said || []).includes(t), first);
+  ok(true, `placing "${first}" says it`);
+  await settle();
+  const n = (await said()).length;
+  await tap(first, "line");
+  await page.waitForTimeout(150);
+  ok((await said()).length === n, "taking it back says nothing");
+  ok((await page.$$(".build-tray .build-gap")).length === 0, "and it is back in the tray");
+
+  // The wrong article, in the right order: marked, hinted, and kept until a tile moves.
+  const withWrong = g.item.answer.map((t) => (t === g.item.article ? g.item.wrong : t));
+  for (const t of withWrong) await tap(t);
+  ok((await page.$$(".build-line .build-tile")).length === withWrong.length, "tapped tiles go onto the line");
+  ok((await page.$$(".build-tray .build-gap")).length === withWrong.length, "and leave their outline in the tray");
   await page.click("#build-check");
-  ok(await page.$(".build-line .build-tile.miss"), "a wrong order shakes");
+  const marks = await page.$$eval(".build-line .build-tile", (els) => els.map((e) => (e.className.match(/mark-(\w+)/) || [])[1]));
+  ok(marks.join(" ") === withWrong.map((t) => (t === g.item.wrong ? "out" : "ok")).join(" "), `the wrong article is marked out, the rest right: ${marks}`);
+  ok(await page.$(".build-line .build-tile.miss"), "a wrong Check shakes");
+  const hint1 = await page.textContent(".build-hint");
+  ok(hint1.includes(g.item.noun) && (await page.isVisible(".build-hint")), `the hint names the word: ${hint1}`);
+  ok(await page.$("#build-check[disabled]"), "Check waits until something changes");
+  await page.waitForTimeout(600);
+  ok(await page.$(".build-line .build-tile.mark-out"), "the marks stay after the shake");
   ok((await game()).misses === 1 && !(await page.$("#build-show")), "one miss, no Show me yet");
+
+  // Swap the article: marks and hint clear; it lands last, so the order is wrong.
+  await tap(g.item.wrong, "line");
+  ok(!(await page.$(".build-line [class*=mark-]")) && !(await page.isVisible(".build-hint")), "moving a tile clears the marks and the hint");
+  await tap(g.item.article);
   await page.click("#build-check");
+  const hint2 = await page.textContent(".build-hint");
+  ok(/goes first|Start with/.test(hint2), `out of order: ${hint2}`);
+  ok(await page.$(".build-line .build-tile.mark-place"), "a right word in the wrong place is marked as such");
   ok(await page.$("#build-show"), "two misses offer Show me");
   await page.click("#build-show");
   await page.waitForSelector(".build-said");
   ok((await page.textContent(".build-said")) === g.item.es, `Show me shows the sentence: ${g.item.es}`);
+  ok((await page.textContent(".build-why")).includes(g.item.noun), "having slipped on the article, the reason stays beside the answer");
   ok((await game()).misses === 3, "Show me counts as a miss");
   ok((await stored("awards")).build.total === 0, "a shown sentence is not counted as built");
 

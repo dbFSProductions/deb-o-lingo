@@ -192,3 +192,44 @@ first version below.
   six with no noun twice, place, take back, a wrong order shakes, Show me
   after two, each right sentence said by the fake Azure, a finished round
   tallied, no attempt written, the square's count.
+
+#### Each tile says itself; a wrong Check says where and why (v70)
+
+From Deb's first rounds, three asks together: *"says the word every time it
+was clicked, so she hears the words as she's building"*, *"more clear that
+they are in the wrong order after she clicks check — the colour change is
+quite subtle"*, and *"maybe it should offer hints as to why it's wrong"*.
+Talked through with the advisor again before building.
+
+- **A tile says itself as it goes onto the line.** Placing only: taking one
+  back is undoing, and silence keeps the gestures apart. Exactly what is on
+  the tile ("me pone", "a la", "un"); isolated articles sound a little
+  clipped, and that is accepted. Decoys speak too, so the sound carries no
+  verdict. Azure only, as in Match. The busy flag is put on the tile just
+  painted onto the line, which the next repaint replaces, so a quick second
+  tap stops the first and is said rather than refused as busy.
+- **Marks that stay.** v69's red border on a pink tile lasted half a second.
+  Now every placed tile is filled, with a glyph so colour is never alone:
+  green ✓ right word right place, gold ↔ in the sentence but not here, red ✕
+  struck through not in this sentence. They stay (`game.marks`) until she
+  moves any tile, then all clear — a half-updated set would lie. Check is
+  disabled until something changes, so one mistake can't cost two misses.
+  Marking a slot right gives nothing away: she has committed and paid.
+- **One hint line, the most useful that applies** (`hintFor`): the wrong
+  article first ("*silla* is a **la** word — so **una**, not un"; "a + el
+  squeezes into **al**"), then a decoy noun ("*tenedor* is the fork — this
+  one wants the chair"), then a decoy opening ("*quiero* is 'I want' — this
+  sentence starts another way", from each frame's new `gist`), then a word
+  short, then the order ("The little word goes first: **una** silla"; "All
+  the right words — just the order", and on the second miss "Start with
+  **necesito**"). Hand-written, never the Worker: one line, instant, read
+  before it shipped.
+- **The reason stays with the answer.** If the wrong article was on the line
+  at any Check, the solved card keeps the article line beside ¡Eso es! or
+  Show me's answer, so she leaves with the rule and not just the sentence.
+- `tools/checks/build.js` now also: every hint's wording on sentences built
+  for it; marks for right-word-wrong-place and a stray; placing a tile asks
+  the fake Azure for its text and taking it back asks for nothing; the wrong
+  article marked out and the rest right, the hint naming the word, Check
+  disabled, the marks still there after the shake, cleared by a move; the
+  order hint and gold marks; Show me with the reason kept.
