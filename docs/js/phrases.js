@@ -331,7 +331,7 @@ export function showPhrase(phrase) {
   sheetBody.querySelectorAll("[data-play]").forEach((button) =>
     button.addEventListener("click", async () => {
       const blob = await audioStore.getRecording(button.dataset.play);
-      if (blob) player.play(blob);
+      if (blob) player.play(blob).catch(() => {}); // a later tap stopping it is not an error
       else toast("That recording's audio is missing.");
     })
   );

@@ -95,6 +95,8 @@ const recordingAzure = `(${fakeAzure})();
       ala: text(hintFor(farmacia, ["voy", "al", "farmacia"], 1)),
       def: text(hintFor(cabeza, ["me duele", "el", "cabeza"], 1)),
       noun: text(hintFor(silla, ["necesito", "una", strayNoun], 1)),
+      both: text(hintFor(silla, ["necesito", "un", strayNoun], 1)),
+      bothOpener: text(hintFor(silla, [strayOpener, "un", "silla"], 1)),
       opener: text(hintFor(silla, [strayOpener, "una", "silla"], 1)),
       short: text(hintFor(silla, ["necesito", "silla"], 1)),
       swapped: text(hintFor(silla, ["necesito", "silla", "una"], 1)),
@@ -108,6 +110,8 @@ const recordingAzure = `(${fakeAzure})();
   ok(hints.ala === "farmacia is a la word — a la, not al.", `wrong al: ${hints.ala}`);
   ok(hints.def === "cabeza is a la word — la cabeza.", `wrong el: ${hints.def}`);
   ok(/^\S+ is the .+ — this one wants the chair\.$/.test(hints.noun), `a stray noun: ${hints.noun}`);
+  ok(hints.both === hints.noun.replace(/^/, "") && /wants the chair/.test(hints.both), `wrong noun and wrong article: the noun first: ${hints.both}`);
+  ok(hints.bothOpener === "silla is a la word — so una, not un.", `wrong article before a stray opening: ${hints.bothOpener}`);
   ok(/^\S+( \S+)? is “.+” — this sentence starts another way\.$/.test(hints.opener), `a stray opener: ${hints.opener}`);
   ok(hints.short === "One word short — there's still one in the tray for this.", `a word short: ${hints.short}`);
   ok(hints.swapped === "The little word goes first: una silla.", `noun before article: ${hints.swapped}`);
