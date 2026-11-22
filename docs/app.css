@@ -1475,7 +1475,29 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 .build-tile:active { transform: translateY(2px); border-bottom-width: 2px; }
 .build-line .build-tile { border-color: var(--pink); }
 .build-tile.build-gap { visibility: hidden; }
-.build-tile.miss { animation: match-shake 0.4s; border-color: var(--red); }
+.build-tile.miss { animation: match-shake 0.4s; }
+
+/* What a Check found, kept until a tile moves. Filled, not outlined — the
+   first cut was a red border on a pink one for half a second, and she
+   couldn't see it — and each with a glyph, so colour is never the only
+   signal. */
+.build-line .build-tile.mark-ok { background: var(--green); border-color: var(--green-dark); color: #fff; }
+.build-line .build-tile.mark-place { background: var(--gold); border-color: var(--gold-dark); color: #4b4b4b; }
+.build-line .build-tile.mark-out { background: var(--red); border-color: var(--red-dark); color: #fff; text-decoration: line-through; }
+.build-tile.mark-ok::after { content: " ✓"; }
+.build-tile.mark-place::after { content: " ↔"; }
+.build-tile.mark-out::after { content: "\00a0✕"; display: inline-block; text-decoration: none; }
+.build-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border-left: 5px solid var(--orange);
+  background: color-mix(in srgb, var(--orange) 12%, var(--surface));
+  font-weight: 700;
+  line-height: 1.35;
+}
+.build-hint[hidden] { display: none; }
+.build-why { margin: -8px 0 0; font-weight: 700; color: var(--text-2); }
 
 /* ------------------------------------------------------- phrases, add, chat */
 

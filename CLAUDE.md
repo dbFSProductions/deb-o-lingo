@@ -275,7 +275,7 @@ state below changed, update this one.
 
 ## State
 
-- **v69 / `debolingo-v69`** — `js/version.js` first, `sw.js` second.
+- **v70 / `debolingo-v70`** — `js/version.js` first, `sw.js` second.
 - Home is the week strip, the Review strip under it, then eight tiles:
   Practice, Words, Sobre mí, Quick, Match, Stories, Build, All Phrases; plus
   the streak and the cog.
@@ -297,4 +297,6 @@ state below changed, update this one.
 - v69: Build, the sentence game — seven frames filled with Palabras nouns,
   the article the decision. Review became a strip under the week; Build took
   its square. `notes/prizes-and-match.md`.
+- v70: in Build each tile says itself when placed, a wrong Check leaves
+  green / gold / red marks until a tile moves, and one hint line says why.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.
