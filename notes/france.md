@@ -61,3 +61,14 @@ lines in `app.js`, the `.france-*` CSS and `tools/checks/france.js`.
 - with no key, Azure is never asked.
 
 Not tried: the real Azure French voice, and iOS Safari's fr-FR browser voice.
+
+## v73: the strip takes itself away
+
+Asked for the day it shipped: "set it to disappear from the front page in 72
+hours". `FRANCE_UNTIL` in `france.js` is 2026-11-28 10:00 UTC, 72 hours
+after the ask. After that, read off the phone's clock, `franceStrip()` draws
+nothing. Only the strip goes. The page and its saved clips stay, so moving the
+date later brings it back with nothing else to change. Done as a date in the
+code rather than a later pull request that deletes it: it needs nobody to be
+around on the day, and it can't half-happen. The check pins the clock the day
+before for everything it does, then the day after to see the strip gone.

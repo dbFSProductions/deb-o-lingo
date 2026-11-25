@@ -24,6 +24,13 @@ const frenchSettings = () => ({ ...settings, azureVoice: VOICE });
 /* `say` is a rough respelling for an English mouth. Capitals are the
    stressed bit (French leans on the end); "(n)" is a nasal n — start it,
    don't finish it. */
+/* The strip on the home page goes away by itself 72 hours after it was asked
+   for ("set it to disappear from the front page in 72 hours"), read off the
+   phone's clock. Only the strip: the page stays, so moving this date later
+   brings it back with nothing else to undo. */
+export const FRANCE_UNTIL = Date.parse("2026-11-28T10:00:00Z");
+export const franceShown = () => Date.now() < FRANCE_UNTIL;
+
 export const FRENCH = [
   { fr: "Bonjour", en: "Hello", say: "bo(n)-ZHOOR" },
   { fr: "Bonsoir", en: "Good evening", say: "bo(n)-SWAHR" },

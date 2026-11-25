@@ -4,7 +4,18 @@
 // app falls through to the browser voice). So this proves a French voice was
 // asked for French text — not that anything was heard. Nothing is written to
 // attempts, the streak or Review.
-const { open, fakeAzure, tally, STORE } = require("./lib.js");
+const lib = require("./lib.js");
+const { fakeAzure, tally, STORE } = lib;
+// The strip hides itself after FRANCE_UNTIL (2026-11-28 10:00 UTC), so every
+// page here runs with the clock pinned the day before, and one at the end the
+// day after.
+const BEFORE = new Date("2026-11-27T12:00:00Z");
+const AFTER = new Date("2026-11-28T10:01:00Z");
+const open = async (opts, when = BEFORE) => {
+  const opened = await lib.open({ ...opts, init: `(() => { const T = ${when.getTime()}; const D = Date; const off = T - D.now();
+    Date = class extends D { constructor(...a) { a.length ? super(...a) : super(D.now() + off); } static now() { return D.now() + off; } }; })();\n${opts.init || ""}` });
+  return opened;
+};
 const { ok, done } = tally("france");
 
 const recordingAzure = `(${fakeAzure})();
@@ -82,5 +93,13 @@ const recordingAzure = `(${fakeAzure})();
   await page.click("[data-french]");
   await page.waitForTimeout(200);
   ok((await page.evaluate(() => (window.__sdk.synth || []).length)) === 0, "without a key Azure is never asked");
+  await browser.close();
+  ok(errors.length === 0, `no console errors without a key: ${errors.join(" | ")}`);
+
+  // After the deadline the strip is gone and the squares are as they were.
+  ({ browser, page, errors } = await open({ init: recordingAzure }, AFTER));
+  await page.waitForSelector(".tiles .tile");
+  ok(!(await page.$("[data-open-france]")), "after 28 Nov 10:00 UTC the strip is gone");
+  ok(await page.$$eval(".tiles .tile", (t) => t.length) === 8, "and the eight squares are still there");
   await done(browser, errors);
 })();
