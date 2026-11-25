@@ -13,6 +13,7 @@ import { renderAbout } from "./about.js";
 import { renderAdd, renderAddWord } from "./add.js";
 import { renderBuild, startBuild } from "./build.js";
 import { renderComplete, renderDrill } from "./drill.js";
+import { openFrance, renderFrance } from "./france.js";
 import { renderMatch, startMatch } from "./match.js";
 import { renderPath } from "./path.js";
 import { renderPhrases } from "./phrases.js";
@@ -64,6 +65,7 @@ view.addEventListener("click", (event) => {
   if (event.target.closest("[data-open-match]")) return startMatch();
   if (event.target.closest("[data-open-build]")) return startBuild();
   if (event.target.closest("[data-open-stories]")) return openStories();
+  if (event.target.closest("[data-open-france]")) return openFrance();
   const story = event.target.closest("[data-open-story]");
   if (story) return openStory(story.dataset.openStory);
 });
@@ -94,6 +96,7 @@ export function render() {
   if (state.tab === "match") return renderMatch();
   if (state.tab === "build") return renderBuild();
   if (state.tab === "stories") return state.story ? renderStory() : renderStories();
+  if (state.tab === "france") return renderFrance();
   return renderSettings();
 }
 

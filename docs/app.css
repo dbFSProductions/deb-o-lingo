@@ -1303,6 +1303,17 @@ input[type="range"] { width: 100%; accent-color: var(--green); }
 .review-strip .week-go { color: var(--teal-dark); }
 .review-strip.quiet .week-sub { color: var(--text-3); }
 .review-mark { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--teal); color: #fff; }
+/* France, under Review and the same shape, in blue. */
+.france-strip { border-left-color: var(--blue); margin-top: -6px; }
+.france-strip .week-go { color: var(--blue-dark); }
+.france-mark { background: var(--blue); font-weight: 900; font-size: 0.8rem; }
+.france-row { align-items: center; gap: 12px; }
+.france-row.busy { opacity: 0.6; }
+.france-speaker { flex: none; font-size: 1.3rem; }
+.france-fr { display: block; font-size: 1.1rem; font-weight: 900; }
+.france-en { display: block; font-size: 0.85rem; color: var(--text-2); }
+.france-say { display: block; font-size: 0.8rem; color: var(--blue-dark); font-weight: 700; }
+.france-offline { margin-top: 14px; text-align: center; font-size: 0.85rem; }
 .review-mark svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Seven dots, Monday first. Done is a filled orange disc with a tick; today

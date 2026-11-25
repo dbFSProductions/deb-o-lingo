@@ -10,6 +10,7 @@ import {
 } from "./core.js";
 import { render } from "./app.js";
 import { startLesson, startPractice, startReview } from "./drill.js";
+import { FRENCH } from "./france.js";
 import { openPrizes, weekDots } from "./prizes.js";
 
 // -------------------------------------------------------------------- path
@@ -276,6 +277,8 @@ export function renderPath(section = null) {
 
            ${reviewStrip()}
 
+           ${franceStrip()}
+
            ${tiles()}`
     }
 
@@ -460,6 +463,22 @@ export function renderPath(section = null) {
           <span class="week-sub">${esc(count)}</span>
         </span>
         <span class="week-go">${due ? "Start ›" : ""}</span>
+      </button>`;
+  }
+
+  /* French for a two-day trip, asked for as "a tile of just very, very
+     basic French". A strip rather than a ninth square: eight squares are a
+     full grid and a ninth leaves a hole, and a strip reads as what it is —
+     a visitor, easy to take away again. Blue, for the flag. See france.js. */
+  function franceStrip() {
+    return `
+      <button class="week-strip france-strip" data-open-france="1" aria-label="French for the trip">
+        <span class="review-mark france-mark" aria-hidden="true">FR</span>
+        <span class="week-main">
+          <span class="week-title">Bonjour! French</span>
+          <span class="week-sub">${FRENCH.length} phrases for the trip</span>
+        </span>
+        <span class="week-go">Open ›</span>
       </button>`;
   }
 

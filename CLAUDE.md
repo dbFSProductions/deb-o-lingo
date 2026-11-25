@@ -91,6 +91,7 @@ module per page. Older notes that say "in app.js" mean one of these.
 | `prizes.js` | The study clock (`studyTick`, started at import), `checkAwards`, the celebration overlay, the Prizes page. |
 | `match.js` | Match, the pairs game. |
 | `build.js` | Build, the sentence game: frames from `FRAMES` (in `content.js`) filled with Palabras nouns. |
+| `france.js` | France: the French phrases for the trip and their page. Standalone, fr-FR voice. |
 | `story-page.js` | Stories: the list and a story with its questions. (The stories themselves are `STORIES` in `content.js`.) |
 | `settings.js` | Settings, the version panel, the storage line. |
 | `store.js` | All persisted data and its rules: `library`, `settings`, `progress`, `aboutMe`, `awards`, `stories`, `attemptScore`, `ASPECTS`, `genderOf`, review, IndexedDB. |
@@ -111,7 +112,7 @@ To find where something lives: `grep -n "function name" docs/js/*.js`.
   `view.innerHTML` and wires its own listeners. To navigate: set `state`,
   call `render()`.
 - **`state.tab`** is `learn`, `add`, `add-word`, `prizes`, `match`, `build`,
-  `stories` or `settings` (there is no tab bar; the name is historical). Inside `learn`,
+  `stories`, `france` or `settings` (there is no tab bar; the name is historical). Inside `learn`,
   **`state.stage`** is `path`, `drill`, `complete` or `about`, and
   **`state.section`** is which tile you are behind: `null` for home,
   `practice`, `words`, `phrases`, `quick`. `state.lesson` is the queue being
@@ -265,6 +266,7 @@ as it was written at the time, newest additions at the end.
 | `notes/prizes-and-match.md` | The study clock, the challenges, the medals, Match, Build. |
 | `notes/stories.md` | Stories: tiers, questions, what a read does and does not count for. |
 | `notes/audio.md` | Listen's silent failures, the trim, playback levelling, crest factor. |
+| `notes/france.md` | The French page: why it is apart from the course, the voice, offline. |
 | `notes/checks-history.md` | What each feature was asserted on when it shipped. |
 
 **Keep this file short.** When you finish a piece of work, add the reasoning
@@ -275,7 +277,7 @@ state below changed, update this one.
 
 ## State
 
-- **v71 / `debolingo-v71`** — `js/version.js` first, `sw.js` second.
+- **v72 / `debolingo-v72`** — `js/version.js` first, `sw.js` second.
 - Home is the week strip, the Review strip under it, then eight tiles:
   Practice, Words, Sobre mí, Quick, Match, Stories, Build, All Phrases; plus
   the streak and the cog.
@@ -300,4 +302,6 @@ state below changed, update this one.
 - v70: in Build each tile says itself when placed, a wrong Check leaves
   green / gold / red marks until a tile moves, and one hint line says why.
 - v71: Build's hint names a wrong noun before a wrong article.
+- v72: France — a strip under Review opening fourteen French phrases for
+  a trip, tap to hear, nothing recorded or saved. `notes/france.md`.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.
