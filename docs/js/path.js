@@ -10,7 +10,7 @@ import {
 } from "./core.js";
 import { render } from "./app.js";
 import { startLesson, startPractice, startReview } from "./drill.js";
-import { FRENCH } from "./france.js";
+import { FRENCH, franceShown } from "./france.js";
 import { openPrizes, weekDots } from "./prizes.js";
 
 // -------------------------------------------------------------------- path
@@ -471,6 +471,7 @@ export function renderPath(section = null) {
      full grid and a ninth leaves a hole, and a strip reads as what it is —
      a visitor, easy to take away again. Blue, for the flag. See france.js. */
   function franceStrip() {
+    if (!franceShown()) return "";
     return `
       <button class="week-strip france-strip" data-open-france="1" aria-label="French for the trip">
         <span class="review-mark france-mark" aria-hidden="true">FR</span>

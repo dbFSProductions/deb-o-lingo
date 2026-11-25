@@ -277,7 +277,7 @@ state below changed, update this one.
 
 ## State
 
-- **v72 / `debolingo-v72`** — `js/version.js` first, `sw.js` second.
+- **v73 / `debolingo-v73`** — `js/version.js` first, `sw.js` second.
 - Home is the week strip, the Review strip and the France strip under it,
   then eight tiles:
   Practice, Words, Sobre mí, Quick, Match, Stories, Build, All Phrases; plus
@@ -305,4 +305,6 @@ state below changed, update this one.
 - v71: Build's hint names a wrong noun before a wrong article.
 - v72: France — a strip under Review opening fourteen French phrases for
   a trip, tap to hear, nothing recorded or saved. `notes/france.md`.
+- v73: the France strip hides itself after 2026-11-28 10:00 UTC
+  (`FRANCE_UNTIL`); the page stays in the code.
 - Not built: "Say it your way", demotion, road mode. `notes/project.md`.
