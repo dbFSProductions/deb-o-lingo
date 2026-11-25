@@ -148,3 +148,10 @@ The Phrases page carries *Add a card*; there is no Add destination of its own
 any more. Palabras and El pasado offer nothing to add, because in this fork they
 are course content — unlike Xerra, where Vocab is decks you can file into and
 therefore has an *Add a word*.
+
+
+## v72: the France strip
+
+A third strip under Review, "Bonjour! French", opens the French page for a
+trip. It is a strip and not a ninth square, so the grid stays full. Everything
+about it is in `notes/france.md`.

@@ -37,7 +37,9 @@ She'll be abroad, maybe with no data. With a key, opening the page fetches
 every clip into IndexedDB one at a time, and the line at the bottom says when
 all are saved. **Open the page once at home on wifi before the trip.**
 Cached clips are served before the Azure SDK is loaded, so they play with no
-signal.
+signal. The one thing that removes them is Settings' clear-the-audio-cache
+button, which empties the whole model cache, French included. After
+pressing it, open the French page on wifi again.
 
 ## Removing it
 
@@ -54,6 +56,8 @@ lines in `app.js`, the `.france-*` CSS and `tools/checks/france.js`.
   right text;
 - a failed save says to retry on wifi;
 - nothing French reaches localStorage;
+- with a synthesiser that succeeds, the page reaches "All saved" and a
+  later tap makes no new Azure call (served from the cache);
 - with no key, Azure is never asked.
 
 Not tried: the real Azure French voice, and iOS Safari's fr-FR browser voice.

@@ -25,8 +25,8 @@ const frenchSettings = () => ({ ...settings, azureVoice: VOICE });
    stressed bit (French leans on the end); "(n)" is a nasal n — start it,
    don't finish it. */
 export const FRENCH = [
-  { fr: "Bonjour", en: "Hello", say: "bon-ZHOOR" },
-  { fr: "Bonsoir", en: "Good evening", say: "bon-SWAHR" },
+  { fr: "Bonjour", en: "Hello", say: "bo(n)-ZHOOR" },
+  { fr: "Bonsoir", en: "Good evening", say: "bo(n)-SWAHR" },
   { fr: "S'il vous plaît", en: "Please", say: "seel voo PLAY" },
   { fr: "Merci", en: "Thank you", say: "mair-SEE" },
   { fr: "Merci beaucoup", en: "Thank you very much", say: "mair-SEE boh-KOO" },

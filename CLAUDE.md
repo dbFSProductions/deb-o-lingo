@@ -278,7 +278,8 @@ state below changed, update this one.
 ## State
 
 - **v72 / `debolingo-v72`** — `js/version.js` first, `sw.js` second.
-- Home is the week strip, the Review strip under it, then eight tiles:
+- Home is the week strip, the Review strip and the France strip under it,
+  then eight tiles:
   Practice, Words, Sobre mí, Quick, Match, Stories, Build, All Phrases; plus
   the streak and the cog.
 - The course is fourteen units behind Practice, Palabras (twenty lessons,

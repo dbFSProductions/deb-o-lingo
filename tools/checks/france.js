@@ -60,6 +60,20 @@ const recordingAzure = `(${fakeAzure})();
   await browser.close();
   ok(errors.length === 0, `no console errors with Azure: ${errors.join(" | ")}`);
 
+  // Azure succeeds: every clip is saved, and a tap afterwards is served from
+  // the cache (no new synthesis) — the property the trip depends on.
+  const savingAzure = recordingAzure.replaceAll('bad("no synthesis in the checks");', 'good({ reason: 9, audioData: new Uint8Array(64).buffer });');
+  ({ browser, page, errors } = await open({ settings: { azureKey: "k" }, init: savingAzure }));
+  await page.click("[data-open-france]");
+  await page.waitForFunction(() => /All saved/.test(document.getElementById("france-offline")?.textContent || ""), null, { timeout: 15000 });
+  ok(true, "with Azure answering, the page reaches All saved");
+  await page.evaluate(() => { window.__sdk.synth = []; });
+  await page.click('[data-french]:has-text("Merci beaucoup")');
+  await page.waitForTimeout(400);
+  ok((await page.evaluate(() => window.__sdk.synth.length)) === 0, "after saving, a tap is served from the cache");
+  await browser.close();
+  ok(errors.filter((e) => !/play|decode|NotSupported|media/i.test(e)).length === 0, `no console errors when saving: ${errors.join(" | ")}`);
+
   // No key: no saving line, the phone's voice.
   ({ browser, page, errors } = await open({ init: recordingAzure }));
   await page.click("[data-open-france]");
